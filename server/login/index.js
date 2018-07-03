@@ -7,7 +7,7 @@ router.post('/checkAuth', checkAuth, (req, res) => {
     res.send('o.k');
 });
 
-function isEqual(str1, srt2) {
+function isEqual(str1 = "", srt2= "") {
   return str1.trim().toLowerCase() === srt2.trim().toLowerCase();
 }
 

@@ -1,0 +1,27 @@
+{
+  "ipAddress": "localhost:",
+  "appPort": 3000,
+  "serverPort": 4000,
+  "geoserverPort": 8080,
+  "baseUrlGeoserver": {
+    "baseUrl": "http://localhost:8080/geoserver",
+    "restUrl": "http://localhost:8080/geoserver/rest",
+    "restWorkspaces": "http://localhost:8080/geoserver/rest/workspaces",
+    "restImports": "http://localhost:8080/geoserver/rest/imports"
+  },
+  "baseUrlAppGetLayer": "http://localhost:4000/api/layers/layer",
+  "wmtsServiceUrl": "gwc/service/wmts?SERVICE=wmts&REQUEST=getcapabilities&VERSION=1%2E0%2E0",
+  "baseCurl": "curl -u admin:geoserver",
+  "headers": {
+    "Authorization": "Basic YWRtaW46Z2Vvc2VydmVy",
+    "Content-Type": "application/json",
+    "Accept": "application/json"
+  },
+  "authorization": "Basic YWRtaW46Z2Vvc2VydmVy",
+  "maxFileSize" : 20000000000,
+  "login": {
+    "usernameKey": "TB_USERNAME",
+    "passwordKey": "TB_PASSWORD"
+  }
+}
+

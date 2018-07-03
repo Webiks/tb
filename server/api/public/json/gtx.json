@@ -1,0 +1,4 @@
+{
+  "type": "GdalTranslateTransform",
+  "options": [ "-co", "TILED=YES", "-co", "BLOCKXSIZE=512", "-co", "BLOCKYSIZE=512"]
+}

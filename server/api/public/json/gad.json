@@ -1,0 +1,5 @@
+{
+  "type": "GdalAddoTransform",
+  "options": [ "-r", "average"],
+  "levels" : [2, 4, 8, 16]
+}

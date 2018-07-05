@@ -1,0 +1,51 @@
+{
+  "name": "tb-admin-app",
+  "version": "0.1.0",
+  "private": true,
+  "homepage": "https://tb-admin-app.webiks.com",
+  "dependencies": {
+    "@material-ui/core": "^1.3.1",
+    "@material-ui/icons": "^1.1.0",
+    "axios": "^0.18.0",
+    "classnames": "^2.2.5",
+    "font-awesome": "^4.7.0",
+    "history": "^4.7.2",
+    "lodash": "^4.17.10",
+    "openlayers": "^4.6.5",
+    "primeicons": "^1.0.0-beta.9",
+    "primereact": "^1.6.2",
+    "prop-types-ts": "^0.6.0",
+    "react": "^16.3.2",
+    "react-dom": "^16.3.2",
+    "react-redux": "^5.0.7",
+    "react-router": "^4.2.0",
+    "react-router-dom": "^4.2.2",
+    "react-router-redux": "^5.0.0-alpha.9",
+    "react-scripts-ts": "2.16.0",
+    "react-transition-group": "^2.3.1",
+    "redux": "^4.0.0"
+  },
+  "scripts": {
+    "predeploy": "npm run build && npm run CNAME",
+    "deploy": "gh-pages --repo https://$GITHUB_TOKEN@github.com/webiks/tb-admin-app.git -d build",
+    "start": "react-scripts-ts start",
+    "build": "react-scripts-ts build",
+    "CNAME": "echo https://tb-admin-app.webiks.com > build/CNAME",
+    "test": "echo \"fix your tests\" ",
+    "eject": "react-scripts-ts eject"
+  },
+  "devDependencies": {
+    "@types/classnames": "^2.2.4",
+    "@types/history": "^4.6.2",
+    "@types/jest": "^22.2.3",
+    "@types/lodash": "^4.14.110",
+    "@types/node": "^10.0.8",
+    "@types/react": "^16.3.14",
+    "@types/react-dom": "^16.0.5",
+    "@types/react-redux": "^6.0.0",
+    "@types/react-router-dom": "^4.2.7",
+    "@types/react-router-redux": "^5.0.15",
+    "gh-pages": "^1.1.0",
+    "typescript": "^2.8.3"
+  }
+}

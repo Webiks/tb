@@ -15,7 +15,7 @@ const authorization = config.headers.Authorization;
 // get all the worlds from geoserver
 router.get('/', (req, res) => {
     console.log("TB SERVER: start getWorlds url = " + urlGetWorkspaces);
-    axios.get(`${urlGetWorkspaces}.json`, { headers: {authorization} })
+    axios.get(`${urlGetWorkspaces}.json`, { headers: { authorization } })
         .then((response) => res.send(response.data))
         .catch((error) => {
             console.error("error!", error.response);
@@ -25,7 +25,7 @@ router.get('/', (req, res) => {
 
 // get world from geoserver
 router.get('/:worldName', (req, res) => {
-    axios.get(`${urlGetWorkspaces}/${req.params.worldName}.json`, { headers: {authorization} })
+    axios.get(`${urlGetWorkspaces}/${req.params.worldName}.json`, { headers: { authorization } })
         .then((response) => res.send(response.data))
         .catch((error) => {
             console.error("error!", error.response);

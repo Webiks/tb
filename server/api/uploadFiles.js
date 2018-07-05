@@ -21,7 +21,6 @@ router.use(zip());
 
 router.post('/:worldName', (req, res) => {
     const workspaceName = req.params.worldName;
-    // const fileType = req.params.fileType;
     const reqFiles = req.files.uploads;
     let fileType = '';
     const filesToZip = [];

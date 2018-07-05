@@ -13,7 +13,7 @@ require('./curlMethods')();
 const uploadDir = '/public/uploads/';
 const dirPath = __dirname.replace(/\\/g, "/");
 const uploadPath = `${dirPath}${uploadDir}`;
-const jsonPath = `${dirPath}/public/json/`;
+const jsonPath = `${dirPath}/public/json`;
 
 const opts = setOptions(uploadPath);
 router.use(formidable(opts));
@@ -21,7 +21,6 @@ router.use(zip());
 
 router.post('/:worldName', (req, res) => {
     const workspaceName = req.params.worldName;
-    // const fileType = req.params.fileType;
     const reqFiles = req.files.uploads;
     let fileType = '';
     const filesToZip = [];
@@ -37,7 +36,7 @@ router.post('/:worldName', (req, res) => {
         filePath = uploadPath + filename;
         console.log("filePath: " + filePath);
         renameFile(reqFiles.path, filePath);     // renaming the files full path
-        console.log("loadToGeoserver single file");
+        console.log("uploadToGeoserver single file");
         loadToGeoserver();
     }
     else {
@@ -51,7 +50,7 @@ router.post('/:worldName', (req, res) => {
         reqFiles.map( file => {
             console.log("req file name: " + file.name);
             fileType = findFileType(file.type);                // find the file type
-            renameFile(file.path, filePath);       // renaming the files full path
+            renameFile(file.path, filePath);                   // renaming the files full path
 
             // define the layers parameters for the zip operation
             filesToZip.push(fileToZip(file.name, uploadPath));
@@ -87,7 +86,7 @@ router.post('/:worldName', (req, res) => {
         else{
             importObj = createImportObjectWithData(workspaceName, filePath);
         }
-        console.log(JSON.stringify(importObj));
+        console.log("importJSON: " + JSON.stringify(importObj));
         console.log("writeFile..." );
         const importJsonPath = `${jsonPath}/import.json`;
         writeFile(importJsonPath, JSON.stringify(importObj));

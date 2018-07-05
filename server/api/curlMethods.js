@@ -4,10 +4,10 @@ const { execSync } = require('child_process');          // for using the cURL co
 
 // setting the cURL commands line (name and password, headers, request url)
 const baseCurl = config.baseCurl;
-const curlContentTypeHeader = '-H "Content-type: application/json"';
-const curlAcceptHeader = '-H  "accept: application/json"';
-const reqImportCurl = config.baseUrlGeoserverImports;
-const reqWorkspaceCurl = config.baseUrlGeoserverWorkspaces;
+const curlContentTypeHeader = '-H "Content-type:application/json"';
+const curlAcceptHeader = '-H  "accept:application/json"';
+const reqImportCurl = config.baseUrlGeoserver.restImports;
+const reqWorkspaceCurl = config.baseUrlGeoserver.restWorkspaces;
 
 module.exports = function() {
 
@@ -72,10 +72,10 @@ module.exports = function() {
     //   LAYERS
     //============
     // upload new layer to geoserver by the importer extension
-    this.uploadFileToGeoserverStepOne = (importJsonPath) => {
+    this.uploadFileToGeoserverStepOne = (importJson) => {
         console.log("Upload File using the cURL...");
         // 1. create a empty import with no store as the target
-        const curl_createEmptyImport = `${baseCurl} -XPOST ${curlContentTypeHeader} -d @${importJsonPath} ${reqImportCurl}`;
+        const curl_createEmptyImport = `${baseCurl} -XPOST ${curlContentTypeHeader} -d @${importJson} ${reqImportCurl}`;
         console.log("step 1 is DONE..." + curlContentTypeHeader);
         return execSync(curl_createEmptyImport);
     };

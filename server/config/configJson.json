@@ -13,9 +13,9 @@
   "wmtsServiceUrl": "gwc/service/wmts?SERVICE=wmts&REQUEST=getcapabilities&VERSION=1%2E0%2E0",
   "baseCurl": "curl -u admin:geoserver",
   "headers": {
-    "Authorization": "Basic YWRtaW46Z2Vvc2VydmVy",
-    "Content-Type": "application/json",
-    "Accept": "application/json"
+    "Authorization":"Basic YWRtaW46Z2Vvc2VydmVy",
+    "Content-Type":"application/json",
+    "Accept":"application/json"
   },
   "authorization": "Basic YWRtaW46Z2Vvc2VydmVy",
   "maxFileSize" : 20000000000,

@@ -3,7 +3,6 @@ const router = express.Router();
 const axios = require('axios');
 const formidable = require('express-formidable');
 const config = require('../config/configJson');
-const path = require('path');
 const zip = require('express-easy-zip');
 // const archiver = require('archiver');
 require('./fileMethods')();
@@ -12,7 +11,8 @@ require('./curlMethods')();
 const uploadDir = '/public/uploads/';
 const dirPath = __dirname.replace(/\\/g, "/");
 const uploadPath = `${dirPath}${uploadDir}`;
-const jsonPath = `${dirPath}/public/json/`;
+const authorization = config.headers.Authorization;
+const accept = config.headers.Accept;
 
 const opts = setOptions(uploadPath);
 router.use(formidable(opts));
@@ -93,41 +93,70 @@ router.post('/:worldName', (req, res) => {
         // 2. send a POST request to create a empty import with no store as the target
         axios.post(urlImports, importJSON, { headers: config.headers })
             .then((response) => {
-                // res.send(response.data);
+                console.log("post url: " + urlImports);
+                console.log("post importJSON: " + importJSON);
+                console.log("post header: " + JSON.stringify(req.headers));
                 // find the import id
                 const importId = response.data.import.id;
-                console.log("2. response: " + response.data);
+                console.log("2. response: " + JSON.stringify(response.data));
                 console.log("importId: " + importId);
 
                 // 3. POST the file to the tasks list, in order to create an import task for it
+                /*
+                const body = new FormData
+                body.append("name", "test")
+                body.append("filedata", "@box_gcp_fixed.tif")
+
+                fetch("http://localhost:8080/geoserver/rest/imports/0/tasks", {
+                    body,
+                    headers: {
+                        Authorization: "Basic YWRtaW46Z2Vvc2VydmVy",
+                        "Content-Type": "multipart/form-data"
+                    }
+                })*/
+
                 const fileData = {
                     name: filename,
-                    filedata: filePath
+                    filedata: `@${filePath}`
                 };
-                axios.post(`${urlImports}/${importId}/tasks`, fileData, { headers: config.headers.Authorization })
+                console.log("3. fileData: " + JSON.stringify(fileData));
+                axios.post(`${urlImports}/${importId}/tasks`, JSON.stringify(fileData), { headers: { authorization, accept,
+                                                                                     "Content-Type": "multipart/form-data"} })
                     .then ( tasks => {
-                        console.log("3. task response: " + tasks.data);
+                        console.log("3. task response: " + JSON.stringify(tasks.data));
                         // 4. execute the import task
-                        axios.post(`${urlImports}/${importId}`, { headers: config.headers.Authorization })
+                        axios.post(`${urlImports}/${importId}`, { headers: { authorization } })
                             .then ( result => {
-                                console.log("The execute is DONE!!!: " + result.data);
+                                console.log("The execute is DONE!!!: " + JSON.stringify(result.data));
+                                // 5. remove all the temporary files
+                                clearTempFiles();
                                 res.send(result.data);
                             })
+                            .catch((error) => {
+                                console.error("error 4!", error);
+                                res.status(404).send('Failed to execute the upload: ' + error);
+                            });
                     })
+                    .catch((error) => {
+                        console.error("error 3!", error);
+                        res.status(404).send('Failed to send the file to the tasks list: ' + error);
+                    });
             })
             .catch((error) => {
-                console.error("error!", error.response);
+                console.error("error 2!", error);
                 res.status(404).send('Failed to upload the file: ' + error);
             });
+    }
 
-        // 4. remove all the file from the local store + the zip file
+    function clearTempFiles() {
+        // remove all the file from the local store + the zip file
         if (reqFiles.length > 1) {
             reqFiles.map(file => removeFile(filePath));
         }
         // remove the zip file
         removeFile(filePath);
 
-        // 5. delete all the uncompleted tasks in the import queue
+        // delete all the uncompleted tasks in the import queue
         deleteUncompleteImports();
     }
 

@@ -14,7 +14,7 @@ module.exports = function() {
     this.createWorkspaceObject = (workspaceName) => {
         return {
             workspace: {
-                name: `"${workspaceName}"`
+                name: workspaceName
             }
         };
     };

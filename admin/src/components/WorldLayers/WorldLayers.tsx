@@ -33,11 +33,20 @@ class WorldLayers extends React.Component {
 
     // GET: get the world's layers on startUp
     componentWillMount() {
+       this.getAllLayersData();
+    };
+
+    getAllLayersData = () => {
         if (!this.props.world.layers.length)  {
+            console.log("getAllLayersData...");
             LayerService.getAllLayersData(this.props.world.name)
                 .then(layers => {
+                    console.log("getAllLayersData getInputData...");
                     // get the input Data for all the world's layers (from the App store)
-                    const layersInput = layers.map((layer: IWorldLayer) => this.getInputData(layer));
+                    const layersInput = layers.map((layer: IWorldLayer) => {
+                        return this.getInputData(layer);
+                    });
+                    console.log("getAllLayersData refreshing...");
                     this.refresh([...layersInput]);               // update the App store
                 })
                 .catch(error => this.refresh([]));
@@ -46,6 +55,7 @@ class WorldLayers extends React.Component {
 
     // get the input Data of the layer from the App store
     getInputData = (layer: IWorldLayer): IWorldLayer => {
+        console.log("getInputData...");
         return {
             ...layer,
             inputData: layer.inputData || {
@@ -73,7 +83,9 @@ class WorldLayers extends React.Component {
     render() {
         const { world, match } = this.props;
         return (
-            match.isExact ? <LayersDataTable worldName={world.name} layers={world.layers || []}/> : <Route path="/world/:worldName/layer/:layerName" component={Layer}/>
+            match.isExact ?
+                <LayersDataTable worldName={world.name} layers={world.layers || []} getAllLayersData={this.getAllLayersData}/>
+                : <Route path="/world/:worldName/layer/:layerName" component={Layer}/>
         );
     };
 }

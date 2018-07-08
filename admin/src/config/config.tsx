@@ -1,6 +1,7 @@
 const config = {
     baseUrl: {
        path: 'http://tb-server.webiks.com',
+       // path: `http://localhost:4000`,
        api: 'api',
        login: 'login'
     },

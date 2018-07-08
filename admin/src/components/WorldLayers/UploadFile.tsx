@@ -25,10 +25,10 @@ export interface IPropsUploadFiles {
 
 class UploadFile extends React.Component {
     props: IPropsUploadFiles;
-    url: string = `${config.baseUrlApi}/upload/${this.props.worldName}`;
+    url: string = `${config.baseUrl.path}/${config.baseUrl.api}/upload/${this.props.worldName}`;
 
     componentDidMount() {
-        this.url = `${config.baseUrlApi}/upload/${this.props.worldName}`;
+        this.url = `${config.baseUrl.path}/${config.baseUrl.api}/upload/${this.props.worldName}`;
         console.warn("upload file url: " + this.url);
     };
 

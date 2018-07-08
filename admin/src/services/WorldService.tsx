@@ -5,7 +5,7 @@ import { IWorld } from '../interfaces/IWorld';
 
 export class WorldService {
 
-    static baseUrl: string = `${config.baseUrlApi}/worlds`;
+    static baseUrl: string = `${config.baseUrl.path}/${config.baseUrl.api}/worlds`;
 
     // ==============
     //  GET Requests

@@ -73,7 +73,6 @@ module.exports = function() {
     //============
     // upload new layer to geoserver by the importer extension
     this.uploadFileToGeoserverStepOne = (importJson) => {
-    // this.uploadFileToGeoserverStepOne = (workspace) => {
         console.log("Upload File using the cURL...");
         // 1. create a empty import with no store as the target
         const curl_createEmptyImport = `${baseCurl} -XPOST ${curlContentTypeHeader} -d "${importJson}" ${reqImportCurl}`;

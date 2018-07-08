@@ -33,7 +33,7 @@ export interface IPropsLayer {
 export interface IStateDetails {
     worldLayer: IWorldLayer,
     worldName: string;
-    globalFilter?: any;
+    globalFilter: any;
 }
 
 class LayerEditor extends React.Component {
@@ -142,6 +142,8 @@ class LayerEditor extends React.Component {
         console.warn('layer (from layers) inputData: ' + JSON.stringify(layers[this.findSelectedLayerIndex()].inputData));
     };
 
+    setGlobalFilter = (e: any) => this.setState({globalFilter: e.target.value});
+
     render() {
         const editorFooter =
             <div className="ui-dialog-buttonpane ui-helper-clearfix">
@@ -156,7 +158,7 @@ class LayerEditor extends React.Component {
                     this.state.worldLayer && <div className="content-section implementation"
                                                   style={{ textAlign: 'left', width: '70%', margin: 'auto' }}>
                         <DataTable value={LayerPropertiesList} paginator={true} rows={10} responsive={false}
-                                   header={<DataTableHeader title={`File Editor`}/>}
+                                   header={<DataTableHeader title={'File Editor'} setGlobalFilter={this.setGlobalFilter}/>}
                                    globalFilter={this.state.globalFilter}
                                    footer={editorFooter} style={{ margin: '10px 20px' }}>
                             <Column field="label" header="Property" sortable={true}

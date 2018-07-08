@@ -38,7 +38,7 @@ router.post('/:worldName', (req, res) => {
         console.log("filePath: " + filePath);
         renameFile(reqFiles.path, filePath);     // renaming the files full path
         console.log("uploadToGeoserver single file");
-        loadToGeoserver();
+        uploadToGeoserver();
     }
     else {
         const splitName = (reqFiles[0].name).split('.');
@@ -74,11 +74,11 @@ router.post('/:worldName', (req, res) => {
             });
 
         console.log("loadToGeoserver zip file");
-        loadToGeoserver();
+        uploadToGeoserver();
     }
 
     // adding the GeoTiff file to the workspace in geoserver using the cURL command line:
-    function loadToGeoserver() {
+    function uploadToGeoserver() {
         // 0. create the JSON file with the desire workspace
         let importObj = {};
         if (fileType === 'raster') {
@@ -114,6 +114,9 @@ router.post('/:worldName', (req, res) => {
 
         // 5. delete all the uncompleted tasks in the import queue
         deleteUncompleteImports();
+
+        //6. send OK
+        res.send("the file was Successfully upload!!!");
     }
 
 });

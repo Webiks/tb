@@ -34,7 +34,8 @@ export interface IPropsLayers {
 export interface IStateTable {
     layers: IWorldLayer[],
     selectedLayer: any,
-    displayDialog: boolean
+    displayDialog: boolean,
+    globalFilter: any
 }
 
 class LayersDataTable extends React.Component {
@@ -44,7 +45,8 @@ class LayersDataTable extends React.Component {
     state: IStateTable = {
         layers: this.props.layers,
         selectedLayer: null,
-        displayDialog: false
+        displayDialog: false,
+        globalFilter: ''
     };
 
     // set state to initial state
@@ -82,6 +84,8 @@ class LayersDataTable extends React.Component {
         this.setInitialState();
     };
 
+    setGlobalFilter = (e: any) => this.setState({globalFilter: e.target.value});
+
     actionsButtons = (rowData: any, column: any) => {
         return (
             <div className="ui-button-icon ui-helper-clearfix">
@@ -108,12 +112,13 @@ class LayersDataTable extends React.Component {
                     this.props.layers && <div>
                         <DataTable  value={this.props.layers} paginator={true} rows={10} responsive={false}
                                     resizableColumns={true} autoLayout={true} style={{margin:'10px 20px'}}
-                                    header={<DataTableHeader title={`${this.props.worldName} World's Files List`}/>}
+                                    header={<DataTableHeader title={`${this.props.worldName} World's Files List`} setGlobalFilter={this.setGlobalFilter}/>}
                                     footer={<UploadFile worldName={this.props.worldName} getAllLayersData={this.props.getAllLayersData}/>}
+                                    globalFilter={this.state.globalFilter}
                                     selectionMode="single" selection={this.state.selectedLayer}
                                     onSelectionChange={(e: any)=>{this.setState({selectedLayer: e.data});}}>
                                 <Column field="layer.name" header="Name" sortable={true} style={{textAlign:'left', padding:'7px 20px'}}/>
-                                <Column field="store.type" header="Type" sortable={true} style={{width: '10%'}}/>
+                                <Column field="store.type" header="Type" sortable={true} style={{width: '10%'}} />
                                 <Column field="store.format" header="Format" sortable={true} style={{width: '10%'}}/>
                                 <Column field="layer.fileExtension" header="Extension" sortable={true} style={{width: '12%'}}/>
                                 <Column field="''"  header="Date Created" sortable={true} style={{width: '12%'}}/>

@@ -1,4 +1,5 @@
 import axios from 'axios';
+import GeoTIFF from 'geotiff';
 import config from "../config/config";
 import { IWorldLayer } from "../interfaces/IWorldLayer";
 import { ILayer } from '../interfaces/ILayer';
@@ -48,6 +49,12 @@ export class LayerService {
             .then( layerInfo =>  this.getLayerDetails(worldName, layerInfo))
             // 3. get the layer's store data according to the layer's type
             .then( layerData => this.getStoreData(worldName, layerData))
+            // 4. get the image data from the file using the Geotiff
+            // .then( layer => {
+            //     console.warn("service: File Path: " + layer.layer.filePath);
+            //     // this.getImageData(layer.layer.filePath)
+            //     this.getImageData(`file://C:/dev/Terrabiks/geoserver/rasters/SugarCane.tif`);
+            // })
             .catch(error => {
                 console.error("getLayer ERROR!" + error.message);
                 throw new Error(error)
@@ -130,6 +137,23 @@ export class LayerService {
             .catch(error => {
                 console.error("getStoreData ERROR!" + error.message);
                 throw new Error(error)
+            });
+    }
+
+    // 4. get the data of the image file
+    static getImageData(url: string): Promise<any> {
+        // console.log("geotiff url: " + url);
+        return GeoTIFF.fromUrl("file://C:/dev/Terrabiks/geoserver/rasters/SugarCane.tif")
+            .then( tiff => {
+                console.log("geotiff tiff: " + JSON.stringify(tiff));
+                tiff.getImage()
+                    .then( image => {
+                        console.log("geotiff image: " + JSON.stringify(image));
+                        image.readRasters()
+                    })
+                    .then ( raster => {
+                        console.log("geotiff raster: " + JSON.stringify(raster));
+                    })
             });
     }
 

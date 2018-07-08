@@ -12,7 +12,7 @@ import { InputText } from 'primereact/components/inputtext/InputText';
 
 export interface IPropsHeader {
     title: string,
-    // globalFilter: any
+    setGlobalFilter: (e:any) => void
 }
 
 export interface IStateDetails {
@@ -23,10 +23,6 @@ class DataTableHeader extends React.Component {
     props: IPropsHeader;
     state = {};
 
-    onInput = (e: any) => {
-        this.setState({globalFilter: e.target.value});
-    };
-
     render() {
         return (
             <header>
@@ -35,14 +31,16 @@ class DataTableHeader extends React.Component {
                 </h2>
                 <div style={{'textAlign':'center'}}>
                     <i className="fa fa-search" style={{margin:'4px 4px 0 0'}}/>
-                    <InputText id='search' type="search"  /*onInput={(e: any) => this.setState({globalFilter: e.target.value})}*/ placeholder="Global Search" size={30}/>
+                    <InputText id='search' type="search"  name="searchItem"
+                               onChange={this.props.setGlobalFilter} placeholder="Global Search" size={30}
+                               filter={true} filterMatchMode="contains"/>
                 </div>
             </header>
         );
     };
 }
 
-const mapStateToProps = (state: IState, { title }: any) => ({ title });
+const mapStateToProps = (state: IState, { title, setGlobalFilter }: any) => ({ title, setGlobalFilter });
 
 export default connect(mapStateToProps)(DataTableHeader);
 

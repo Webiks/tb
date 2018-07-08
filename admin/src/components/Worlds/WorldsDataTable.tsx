@@ -17,6 +17,7 @@ import 'font-awesome/css/font-awesome.css';
 import { DataTable } from 'primereact/components/datatable/DataTable';
 import { Column } from 'primereact/components/column/Column';
 import { Button } from 'primereact/components/button/Button';
+import { InputText } from 'primereact/components/inputtext/InputText';
 
 export interface IPropsWorldsTable {
     worldsList: IWorld[],
@@ -27,7 +28,8 @@ export interface IPropsWorldsTable {
 
 export interface IStateWorldsTable {
     selectedWorld: any,
-    displayDialog: boolean
+    displayDialog: boolean,
+    globalFilter: any
 }
 
 class WorldsDataTable extends React.Component {
@@ -35,14 +37,15 @@ class WorldsDataTable extends React.Component {
     props: IPropsWorldsTable;
     state: IStateWorldsTable = {
         selectedWorld: null,
-        displayDialog: false
+        displayDialog: false,
+        globalFilter: ''
     };
 
     // set state to initial state
     setInitState = () => {
         this.setState({
             selectedWorld: null,
-            displayDialog: false
+            displayDialog: false,
         });
     };
 
@@ -102,6 +105,8 @@ class WorldsDataTable extends React.Component {
         console.log("Worlds Home Page: REFRESH..." + JSON.stringify([...worlds]));
     };
 
+    setGlobalFilter = (e: any) => this.setState({globalFilter: e.target.value});
+
     actionsButtons = (rowData: any, column: any) => {
         return (
             <div className="ui-button-icon ui-helper-clearfix" onClick={($event) => $event.stopPropagation()}>
@@ -114,6 +119,7 @@ class WorldsDataTable extends React.Component {
     };
 
     render(){
+
         const footer = <div className="ui-helper-clearfix" style={{width:'100%'}}>
             <Button icon="fa fa-plus" label="Add" onClick={this.addNew} style={{margin:'auto'}}/>
         </div>;
@@ -123,13 +129,14 @@ class WorldsDataTable extends React.Component {
                 {this.props.worldsList && <div>
                     <DataTable  value={this.props.worldsList} paginator={true} rows={10} responsive={true}
                                 resizableColumns={true} autoLayout={true} style={{margin:'10px 20px'}}
-                                header={<DataTableHeader title={'Worlds List'}/>}
+                                header={<DataTableHeader title={'Worlds List'} setGlobalFilter={this.setGlobalFilter}/>}
                                 footer={footer}
+                                globalFilter={this.state.globalFilter}
                                 selectionMode="single" selection={this.state.selectedWorld}
                                 onSelectionChange={(e: any)=> this.setState({selectedLayer: e.data})}
                                 onRowSelect={this.goToSelectedWorld}>
                         <Column field="name" header="Name" sortable={true} style={{textAlign:'left', padding:'7px 20px', width: '20%'}}/>
-                        <Column field="country" header="Country" sortable={true} style={{width: '15%'}}/>
+                        <Column field="country" header="Country"  style={{width: '15%'}}/>
                         <Column field="desc" header="Description" sortable={false}/>
                         <Column header="Actions" body={this.actionsButtons} style={{width: '12%'}} />
                     </DataTable>
@@ -163,4 +170,4 @@ const mapDispatchToProps = (dispatch: any) => ({
 
 export default connect(mapStateToProps, mapDispatchToProps)(WorldsDataTable);
 
-
+// header={<DataTableHeader title={'Worlds List'}/>}

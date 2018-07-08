@@ -64,10 +64,8 @@ class DisplayMap extends React.Component {
 
     render() {
         return (
-            <div>
-                    <div className="ui-grid ui-grid-responsive ui-fluid">
-                        <div id="map" className="map" style={{height:'400px', width:'100%'}}/>
-                    </div>
+            <div className="ui-grid ui-grid-responsive ui-fluid">
+                <div id="map" className="map" style={{height:'400px', width:'100%'}}/>
             </div>
         )
     }

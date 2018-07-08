@@ -29,6 +29,7 @@ router.post('/:worldName', (req, res) => {
 
     console.log("req files: " + JSON.stringify(reqFiles));
     console.log("req length: " + reqFiles.length);
+    console.log("uploadPath: " + uploadPath);
 
     if (!reqFiles.length){
         fileType = findFileType(reqFiles.type);             // find the file type
@@ -87,13 +88,9 @@ router.post('/:worldName', (req, res) => {
             importObj = createImportObjectWithData(workspaceName, filePath);
         }
         console.log("importJSON: " + JSON.stringify(importObj));
-        console.log("writeFile..." );
-        const importJsonPath = `${jsonPath}/import.json`;
-        writeFile(importJsonPath, JSON.stringify(importObj));
-        console.log('complete to write the import JSON file!');
 
         // 1. create a empty import with no store as the target
-        const curl_stepOne = uploadFileToGeoserverStepOne(importJsonPath);
+        const curl_stepOne = uploadFileToGeoserverStepOne(JSON.stringify(importObj));
         console.log("stepOne: " + curl_stepOne.toString());
 
         // find the import id

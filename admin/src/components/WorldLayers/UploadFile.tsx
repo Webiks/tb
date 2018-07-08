@@ -27,11 +27,6 @@ class UploadFile extends React.Component {
     props: IPropsUploadFiles;
     url: string = `${config.baseUrl.path}/${config.baseUrl.api}/upload/${this.props.worldName}`;
 
-    componentDidMount() {
-        this.url = `${config.baseUrl.path}/${config.baseUrl.api}/upload/${this.props.worldName}`;
-        console.warn("upload file url: " + this.url);
-    };
-
     // get all the world's layer again after adding the new layer
     onUpload = (e: any) => {
         console.log("On Upload...");

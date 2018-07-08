@@ -1,9 +1,0 @@
-{
-  "import": {
-    "targetWorkspace": {
-      "workspace": {
-        "name": "tb"
-      }
-    }
-  }
-}

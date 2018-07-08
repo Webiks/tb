@@ -1,6 +1,6 @@
 import { routerMiddleware, routerReducer as router, RouterState } from 'react-router-redux';
 import { applyMiddleware, combineReducers, createStore, Reducer } from 'redux';
-import createHistory from 'history/createBrowserHistory';
+import createHistory from 'history/createHashHistory';
 import worlds, { IWorldsState } from './reducers/worlds.reducer';
 import login, { ILoginState } from './reducers/login.reducer';
 

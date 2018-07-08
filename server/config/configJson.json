@@ -1,8 +1,5 @@
 {
-  "ipAddress": "localhost:",
-  "appPort": 3000,
   "serverPort": 4000,
-  "geoserverPort": 8080,
   "baseUrlGeoserver": {
     "baseUrl": "http://localhost:8080/geoserver",
     "restUrl": "http://localhost:8080/geoserver/rest",

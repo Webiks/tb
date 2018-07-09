@@ -5,12 +5,11 @@ const login = require('./login');
 const bodyParser = require('body-parser');
 const session = require('express-session');
 const checkAuth = require('./login/check-auth');
-
-const { serverPort } = require('./config/configJson');
+const { serverPort, allowOrigin } = require('./config/configJson');
 
 const app = express();
 
-app.use(cors({ credentials: true, origin: 'http://localhost:3000' }));
+app.use(cors({ credentials: true, origin: allowOrigin }));
 app.use(bodyParser.json());
 
 app.use(session({

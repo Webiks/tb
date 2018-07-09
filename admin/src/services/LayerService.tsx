@@ -189,21 +189,21 @@ export class LayerService {
 
     // 1. delete the layer from the store by using the resource url (raster or vector)
     static deleteLayerFromStroe(worldName: string, layerName: string): Promise<any> {
-        return axios.delete(`${this.baseUrl}/${worldName}/${layerName}`)
+        return axios.delete(`${this.baseUrl}/delete/${worldName}/${layerName}`)
             .then(res => res.data)
             .catch(error => { throw new Error(error) });
     }
 
     // 2. delete the store
     static deleteStroe(worldName: string, storeName: string, storeType: string): Promise<any> {
-        return axios.delete(`${this.baseUrl}/store/${worldName}/${storeName}/${storeType}`)
+        return axios.delete(`${this.baseUrl}/delete/store/${worldName}/${storeName}/${storeType}`)
             .then(res => res.data)
             .catch(error => { throw new Error(error) });
     }
 
     // 3. delete the layer from the layers' list
     static deleteLayer(layerId: string): Promise<any> {
-        return axios.delete(`${this.baseUrl}/${layerId}`)
+        return axios.delete(`${this.baseUrl}/delete/${layerId}`)
             .then(res => res.data)
             .catch(error => { throw new Error(error) });
     }

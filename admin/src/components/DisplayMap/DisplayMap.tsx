@@ -3,7 +3,6 @@ import * as React from 'react';
 import { LayerService } from '../../services/LayerService';
 import { IWorldLayer } from '../../interfaces/IWorldLayer';
 import ol from 'openlayers';
-import { connect } from 'react-redux';
 
 export interface IDisplayMapProps  {
     layer: IWorldLayer,
@@ -12,7 +11,7 @@ export interface IDisplayMapProps  {
 
 class DisplayMap extends React.Component {
 
-    props: any ;
+    props: IDisplayMapProps ;
 
     center: number[] = this.props.layer.data.center;
     parser = new ol.format.WMTSCapabilities();
@@ -39,7 +38,7 @@ class DisplayMap extends React.Component {
                 console.log("3. finished to define the options");
 
                 // draw the map
-                console.error("4. start new OL Map...");
+                console.log("4. draw the OL Map...");
                 this.map = new ol.Map({
                     layers: [
                         new ol.layer.Tile({

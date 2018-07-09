@@ -80,7 +80,7 @@ router.get('/wmts/:worldName/:layerName', (req, res) => {
 // DELETE Requests
 // ===============
 // delete layer from the geoserver layers's list
-router.delete('/:layerId', (req, res) => {
+router.delete('/delete/:layerId', (req, res) => {
     console.log("TB SERVER: DELETE LAYER = " + req.params.layerId);
     axios.delete(`${baseRestUrlGeoserver}/layers/${req.params.layerId}.json?recurse=true`,
         { headers: { authorization } })
@@ -92,7 +92,7 @@ router.delete('/:layerId', (req, res) => {
 });
 
 // delete layer from geoserver store - using the resource URL
-router.delete('/:worldName/:layerName', (req, res) => {
+router.delete('/delete/:worldName/:layerName', (req, res) => {
     // get the resource URL
     console.log(`DELETE: find the url:${config.baseUrlAppGetLayer}/${req.params.worldName}/${req.params.layerName}` );
     axios.get(`${config.baseUrlAppGetLayer}/${req.params.worldName}/${req.params.layerName}`)
@@ -112,7 +112,7 @@ router.delete('/:worldName/:layerName', (req, res) => {
         });
 });
 
-router.delete('/store/:worldName/:storeName/:storeType', (req, res) => {
+router.delete('/delete/store/:worldName/:storeName/:storeType', (req, res) => {
     const storeType = (getTypeData(req.params.storeType)).storeType;
     const storeUrl =
         `${baseRestUrlGeoserver}/workspaces/${req.params.worldName}/${storeType}/${req.params.storeName}.json?recurse=true`;

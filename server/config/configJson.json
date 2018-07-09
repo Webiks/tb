@@ -19,10 +19,6 @@
   "login": {
     "usernameKey": "TB_USERNAME",
     "passwordKey": "TB_PASSWORD"
-  },
-  "allowOrigin": [
-    "http://localhost:3000",
-    "http://tb-admin.webiks.com/"
-  ]
+  }
 }
 

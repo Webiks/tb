@@ -65,8 +65,8 @@ router.post('/:worldName', (req, res) => {
             })
             .then( success => {
                 console.log(`succeed to zip the files to ${filename}`);
-                // loadToGeoserver();
-                // console.log("loadToGeoserver zip file");
+                // uploadToGeoserver();
+                // console.log("uploadToGeoserver zip file");
             })
             .catch(function(err){
                 console.log(err);	//if zip failed
@@ -78,43 +78,49 @@ router.post('/:worldName', (req, res) => {
 
     // adding the GeoTiff file to the workspace in geoserver using the cURL command line:
     function uploadToGeoserver() {
-        // 0. create the JSON file with the desire workspace
-        let importObj = {};
+        // 1. create the JSON file with the desire workspace
+        let importJSON = {};
         if (fileType === 'raster') {
-            importObj = createImportObject(workspaceName);
+            importJSON = createImportObject(workspaceName);
+        } else{
+            importJSON = createImportObjectWithData(workspaceName, filePath);
         }
-        else{
-            importObj = createImportObjectWithData(workspaceName, filePath);
+        console.log("importJSON: " + JSON.stringify(importJSON));
+
+        // 2. create an empty import with no store as the target
+        const importObj = getImportObj(JSON.stringify(importJSON));
+        console.log("import: " + JSON.stringify(importObj));
+        console.log("file type + importId: " + fileType + ", " + importObj.id);
+
+        // 3. POST the file to the tasks list, in order to create an import task for it
+        const task = sendToTask(filePath, filename, importObj.id);
+        console.log("task: " + JSON.stringify(task));
+
+        // 4. Vector single file - check if the projection exists
+        console.log("reqFiles length: " + reqFiles.length);
+        if (fileType === 'vector' && !reqFiles.length){
+            console.log("task state: " + task.state);
+            if (task.state === 'NO_CRS') {
+                // create the update SRS Json file and update the task
+                updateSrsJson = JSON.stringify(createLayerSrsUpdate());
+                updateSrs(updateSrsJson, importObj.id, task.id);
+            }
         }
-        console.log("importJSON: " + JSON.stringify(importObj));
 
-        // 1. create a empty import with no store as the target
-        const curl_stepOne = uploadFileToGeoserverStepOne(JSON.stringify(importObj));
-        console.log("stepOne: " + curl_stepOne.toString());
+        // 5. execute the import task
+        executeFileToGeoserver(importObj.id);
 
-        // find the import id
-        const importId = findImportId(curl_stepOne);
-        console.log("importId: " + importId);
-
-        // 2. POST the file to the tasks list, in order to create an import task for it
-        if (fileType === 'raster' || reqFiles.length > 1){
-            sendToTask(filePath, filename, importId);
-        }
-
-        // 3. execute the import task
-        executeFileToGeoserver(importId);
-
-        // 4. remove all the file from the local store + the zip file
+        // 6. remove all the file from the local store + the zip file
         if (reqFiles.length > 1) {
             reqFiles.map(file => removeFile(filePath));
         }
         // remove the zip file
         removeFile(filePath);
 
-        // 5. delete all the uncompleted tasks in the import queue
-        deleteUncompleteImports();
+        // 7. delete all the uncompleted tasks in the import queue
+        // deleteUncompleteImports();
 
-        //6. send OK
+        // 8. send OK
         res.send("the file was Successfully upload!!!");
     }
 

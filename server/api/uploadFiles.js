@@ -1,7 +1,6 @@
 const express = require('express');
 const router = express.Router();
 const formidable = require('express-formidable');
-const config = require('../config/configJson');
 const fs = require('fs-extra');
 const { execSync } = require('child_process');          // for using the cURL command line
 const path = require('path');

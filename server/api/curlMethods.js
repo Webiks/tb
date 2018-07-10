@@ -1,13 +1,13 @@
-const express = require('express');
 const config = require('../config/configJson');
 const { execSync } = require('child_process');          // for using the cURL command line
+require('../config/config')();
 
-// setting the cURL commands line (name and password, headers, request url)
+const configUrl = configBaseUrl(config.remote).configUrl;
+
+// // setting the cURL commands line (name and password, headers, request url)
 const baseCurl = config.baseCurl;
 const curlContentTypeHeader = '-H "Content-type:application/json"';
 const curlAcceptHeader = '-H  "accept:application/json"';
-const reqImportCurl = config.baseUrlGeoserver.restImports;
-const reqWorkspaceCurl = config.baseUrlGeoserver.restWorkspaces;
 
 module.exports = function() {
 
@@ -47,7 +47,7 @@ module.exports = function() {
     // CREATE a new workspace in geoserver
     this.createNewWorkspaceInGeoserver = (workspaceJsonFile) => {
         console.log("Creating a new Workspace using the cURL...");
-        const curl_createWorkspace = `${baseCurl} -XPOST ${curlContentTypeHeader} -d "${workspaceJsonFile}" ${reqWorkspaceCurl}`;
+        const curl_createWorkspace = `${baseCurl} -XPOST ${curlContentTypeHeader} -d "${workspaceJsonFile}" ${configUrl.baseWorkspacesUrlGeoserver}`;
         console.log("succeed to create a new workspace in geoserver..." + curl_createWorkspace);
         return execSync(curl_createWorkspace);
     };
@@ -55,7 +55,7 @@ module.exports = function() {
     // UPDATE the workspace's name in geoserver
     this.updateWorkspaceInGeoserver = (workspaceName, newName) => {
         console.log("Updateing Workspace's name using the cURL...");
-        const curl_updateWorkspace = `${baseCurl} -XPUT ${reqWorkspaceCurl}/${workspaceName} ${curlAcceptHeader} ${curlContentTypeHeader} -d "{ \"name\": \"${newName}\" }"`;
+        const curl_updateWorkspace = `${baseCurl} -XPUT ${configUrl.baseWorkspacesUrlGeoserver}/${workspaceName} ${curlAcceptHeader} ${curlContentTypeHeader} -d "{ \"name\": \"${newName}\" }"`;
         console.log(`succeed to update ${workspaceName} workspace to ${newName} ... ${curl_updateWorkspace}`);
         return execSync(curl_updateWorkspace);
     };
@@ -63,7 +63,7 @@ module.exports = function() {
     // DELETE a workspace from geoserver
     this.deleteWorkspaceFromGeoserver = (workspaceName) => {
         console.log(`Deleting ${workspaceName} Workspace using the cURL...`);
-        const curl_deleteWorkspace = `${baseCurl} -XDELETE ${reqWorkspaceCurl}/${workspaceName}?recurse=true ${curlAcceptHeader} ${curlContentTypeHeader}`;
+        const curl_deleteWorkspace = `${baseCurl} -XDELETE ${configUrl.baseWorkspacesUrlGeoserver}/${workspaceName}?recurse=true ${curlAcceptHeader} ${curlContentTypeHeader}`;
         console.log("succeed to delete workspace " + curl_deleteWorkspace + " from geoserver");
         return execSync(curl_deleteWorkspace);
     };
@@ -76,7 +76,7 @@ module.exports = function() {
     // this.uploadFileToGeoserverStepOne = (workspace) => {
         console.log("Upload File using the cURL...");
         // 1. create a empty import with no store as the target
-        const curl_createEmptyImport = `${baseCurl} -XPOST ${curlContentTypeHeader} -d "${importJson}" ${reqImportCurl}`;
+        const curl_createEmptyImport = `${baseCurl} -XPOST ${curlContentTypeHeader} -d "${importJson}" ${configUrl.reqImportCurl}`;
         console.log("step 1 is DONE..." + curlContentTypeHeader);
         return execSync(curl_createEmptyImport);
     };
@@ -94,14 +94,14 @@ module.exports = function() {
         const curlFileData = `-F name=${filename} -F filedata=@${filepath}`;
         console.log("sendToTask: curlFileData: " + curlFileData);
 
-        const curl_postToTaskList = `${baseCurl} ${curlFileData} ${reqImportCurl}/${importId}/tasks`;
+        const curl_postToTaskList = `${baseCurl} ${curlFileData} ${configUrl.reqImportCurl}/${importId}/tasks`;
         const curl = execSync(curl_postToTaskList);
         console.log("sent to the Tasks Queue..." + curl);
     };
 
     this.executeFileToGeoserver = (importId) => {
         // execute the import task
-        const curl_execute = `${baseCurl} -XPOST ${reqImportCurl}/${importId}`;
+        const curl_execute = `${baseCurl} -XPOST ${configUrl.reqImportCurl}/${importId}`;
         const execute = execSync(curl_execute);
         console.log("The execute is DONE..." + execute);
         console.log("DONE!");
@@ -109,7 +109,7 @@ module.exports = function() {
 
     this.deleteUncompleteImports = () => {
         // delete the task from the importer queue
-        const curl_deletsTasks = `${baseCurl} -XDELETE ${curlAcceptHeader} ${curlContentTypeHeader} ${reqImportCurl}`;
+        const curl_deletsTasks = `${baseCurl} -XDELETE ${curlAcceptHeader} ${curlContentTypeHeader} ${configUrl.reqImportCurl}`;
         const deleteTasks = execSync(curl_deletsTasks);
         console.log("Delete task from the Importer..." + deleteTasks);
         console.log("DONE!");

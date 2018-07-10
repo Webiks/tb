@@ -4,7 +4,7 @@ const axios = require('axios');
 const config = require('../config/configJson');
 require('../config/config')();
 
-const configUrl = configBaseUrl(config.remote).configUrl;
+const configUrl = configBaseUrl().configUrl;
 const authorization = config.headers.Authorization;
 
 // ==============

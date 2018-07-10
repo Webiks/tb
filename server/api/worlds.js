@@ -5,7 +5,7 @@ const config = require('../config/configJson');
 require('../config/config')();
 require('./curlMethods')();
 
-const configUrl = configBaseUrl(config.remote).configUrl;
+const configUrl = configBaseUrl().configUrl;
 const authorization = config.headers.Authorization;
 
 // ==============

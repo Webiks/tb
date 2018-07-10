@@ -1,5 +1,4 @@
 {
-  "remote": false,
   "serverPort": 4000,
   "geoServerPort": 8080,
   "baseUrlLocal": "http://localhost",

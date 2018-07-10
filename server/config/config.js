@@ -2,7 +2,7 @@ const config = require('./configJson');
 
 module.exports = function(){
 
-    this.configBaseUrl = (remote) => {
+    this.configBaseUrl = () => {
         // set the urls
         const baseGeoserverUrl = `${config.geoServerPort}/${config.baseUrlGeoserver.baseUrl}`;
         const baseGeoserverRestUrl = `${config.geoServerPort}/${config.baseUrlGeoserver.restUrl}`;
@@ -11,7 +11,7 @@ module.exports = function(){
 
         let baseUrl = '';
 
-        if (remote) {
+        if (process.env.NODE_ENV === 'production') {
             baseUrl = config.baseUrlRemote;
         } else {
             baseUrl = config.baseUrlLocal;

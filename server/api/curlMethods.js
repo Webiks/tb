@@ -2,7 +2,7 @@ const config = require('../config/configJson');
 const { execSync } = require('child_process');          // for using the cURL command line
 require('../config/config')();
 
-const configUrl = configBaseUrl(config.remote).configUrl;
+const configUrl = configBaseUrl().configUrl;
 
 // // setting the cURL commands line (name and password, headers, request url)
 const baseCurl = config.baseCurl;

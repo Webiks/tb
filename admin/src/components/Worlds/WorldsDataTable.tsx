@@ -17,7 +17,6 @@ import 'font-awesome/css/font-awesome.css';
 import { DataTable } from 'primereact/components/datatable/DataTable';
 import { Column } from 'primereact/components/column/Column';
 import { Button } from 'primereact/components/button/Button';
-import { InputText } from 'primereact/components/inputtext/InputText';
 
 export interface IPropsWorldsTable {
     worldsList: IWorld[],

@@ -15,6 +15,7 @@ import 'primereact/resources/themes/omega/theme.css';
 import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
 import 'font-awesome/css/font-awesome.css';
+import { ProgressSpinner } from 'primereact/components/progressspinner/ProgressSpinner';
 
 export interface IPropsWorlds {
     match: any,
@@ -52,17 +53,24 @@ class Worlds extends React.Component {
 
     render() {
         return (
-
             <div>
                 <Route path="/world/:worldName" component={World}/>
                 {
                     this.props.match.isExact
-                        ? this.props.worldsList &&
-                        <div style={{ width: '70%', margin: 'auto' }}><WorldsDataTable/></div>
+                        ? this.props.worldsList
+                            ?
+                            <div>
+                                <div style={{ width: '70%', margin: 'auto' }}>
+                                    <WorldsDataTable/>
+                                </div>
+                            </div>
+                            :
+                            <div>
+                                <ProgressSpinner style={{width: '50px', height: '50px'}} strokeWidth="8" fill="#EEEEEE" animationDuration=".5s"/>
+                            </div>
                         : null
                 }
             </div>
-
         );
     };
 }

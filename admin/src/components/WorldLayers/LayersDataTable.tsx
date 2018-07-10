@@ -109,7 +109,8 @@ class LayersDataTable extends React.Component {
         return  (
             <div className="content-section implementation">
                 {
-                    this.props.layers && <div>
+                    this.props.layers &&
+                    <div>
                         <DataTable  value={this.props.layers} paginator={true} rows={10} responsive={false}
                                     resizableColumns={true} autoLayout={true} style={{margin:'10px 20px'}}
                                     header={<DataTableHeader title={`${this.props.worldName} World's Files List`} setGlobalFilter={this.setGlobalFilter}/>}
@@ -130,7 +131,8 @@ class LayersDataTable extends React.Component {
                 }
 
                 {
-                    this.state.selectedLayer && <div>
+                    this.state.selectedLayer &&
+                    <div>
                         <Dialog visible={this.state.displayDialog} modal={true}
                                 header={`Layer '${this.state.selectedLayer.layer.name}' map preview`}
                                 onHide={() => this.refresh(this.props.world.layers)}>

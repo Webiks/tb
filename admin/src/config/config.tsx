@@ -1,7 +1,15 @@
+
+let path: string = '';
+
+if (process.env.NODE_ENV === 'production') {
+    path = 'http://tb-server.webiks.com';
+} else {
+    path = 'http://localhost:4000';
+}
+
 const config = {
     baseUrl: {
-       path: 'http://tb-server.webiks.com',
-       // path: `http://localhost:4000`,
+       path,
        api: 'api',
        login: 'login'
     },

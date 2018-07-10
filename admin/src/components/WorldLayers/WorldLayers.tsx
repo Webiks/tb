@@ -2,22 +2,23 @@ import * as React from 'react';
 
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+import { Route } from 'react-router';
 import { IState } from '../../store';
 import { IWorld } from '../../interfaces/IWorld';
 import { IWorldLayer } from '../../interfaces/IWorldLayer';
 import { LayerService } from '../../services/LayerService';
 import { WorldsActions } from '../../actions/world.actions';
+import Layer from '../Layer/Layer';
 import LayersDataTable from './LayersDataTable';
 import { AFFILIATION_TYPES } from '../../consts/layer-types';
+
 /* Prime React components */
 import 'primereact/resources/themes/omega/theme.css';
 import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
 import 'font-awesome/css/font-awesome.css';
 import { ITBAction } from '../../consts/action-types';
-import { WorldService } from '../../services/WorldService';
-import { Route } from 'react-router';
-import Layer from '../Layer/Layer';
+import { ProgressSpinner } from 'primereact/components/progressspinner/ProgressSpinner';
 
 export interface IPropsLayers {
     world: IWorld,
@@ -84,7 +85,16 @@ class WorldLayers extends React.Component {
         const { world, match } = this.props;
         return (
             match.isExact ?
-                <LayersDataTable worldName={world.name} layers={world.layers || []} getAllLayersData={this.getAllLayersData}/>
+                <div>
+                    <div>
+                        <LayersDataTable worldName={world.name} layers={world.layers || []} getAllLayersData={this.getAllLayersData}/>
+                    </div>
+                    { !this.props.world.layers &&
+                    <div>
+                        <ProgressSpinner style={{width: '50px', height: '50px'}} strokeWidth="8" fill="#EEEEEE" animationDuration=".5s"/>
+                    </div>
+                    }
+                </div>
                 : <Route path="/world/:worldName/layer/:layerName" component={Layer}/>
         );
     };

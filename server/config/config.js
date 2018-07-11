@@ -10,19 +10,14 @@ module.exports = function(){
         const baseGeoserverImportsUrl = `${config.geoServerPort}/${config.baseUrlGeoserver.restImports}`;
 
         let baseUrl = '';
-        let prod = '';
 
-        if (process.env.NODE_ENV){
-            prod = (process.env.NODE_ENV).trim();
-        }
-
-        if (prod === "production") {
+        if (process.env.NODE_ENV === "production") {
             baseUrl = config.baseUrlRemote;
         } else {
             baseUrl = config.baseUrlLocal;
         }
 
-        console.log("Base URL: " + baseUrl);
+        console.log("Config Base URL: " + baseUrl);
 
         return {
             configUrl: {

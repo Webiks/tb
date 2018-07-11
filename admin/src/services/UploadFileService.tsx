@@ -3,7 +3,8 @@ import config from "../config/config";
 
 export class UploadFileService {
 
-    static baseUrl: string = `${config.baseUrl.path}/${config.baseUrl.api}/upload/`;
+    // static baseUrl: string = `${config.baseUrl.path}/${config.baseUrl.api}/upload/`;
+    static baseUrl: string = 'api/upload';
 
     // ==============
     //  UPLOAD files
@@ -12,7 +13,7 @@ export class UploadFileService {
     static upload(worldName: string, file: File): Promise<any> {
         console.log("start the upload file service...");
         return axios
-            .post(`${this.baseUrl}${worldName}`, file)
+            .post(`${this.baseUrl}/${worldName}`, file)
             .then(res => console.log("the upload succeed!"))
             .catch(error => console.log(error));
     }

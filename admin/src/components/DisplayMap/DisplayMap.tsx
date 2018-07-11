@@ -26,14 +26,14 @@ class DisplayMap extends React.Component {
         LayerService.getCapabilities(this.props.worldName, this.props.layer.layer.name)
             .then( xml => {
                 console.log("1. get capabilities XML");
-                // 2. convert the xml data to json
+                // 2. convert the xml data to jso
                 let json = this.parser.read(xml);
-                if (config.baseUrl.path.includes('localhost')){
-                    const jsonString = json.toString().replace('localhost', config.baseUrl.path);
-                    console.log("DisplayMap - replace path: " + jsonString);
+                if (!(config.baseUrl.path.includes('localhost'))){
+                    const jsonString = JSON.stringify(json).replace('localhost', config.baseUrl.path);
                     json = JSON.parse(jsonString);
+                    console.log("json file after REPLACE");
                 }
-                console.log("2. convert to JSON" + JSON.stringify(json));
+                console.log("2. convert to JSON: " + JSON.stringify(json));
                 // 3. define the map options
                 const options = ol.source.WMTS.optionsFromCapabilities(json,
                     {

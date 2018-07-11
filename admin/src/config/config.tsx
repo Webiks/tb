@@ -1,6 +1,7 @@
 
 let path: string = '';
 console.log(process.env.NODE_ENV);
+
 if (process.env.NODE_ENV === 'production') {
     path = 'http://tb-server.webiks.com';
 } else {

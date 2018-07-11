@@ -3,8 +3,8 @@ import config from "../config/config";
 
 export class UploadFileService {
 
-    // static baseUrl: string = `${config.baseUrl.path}/${config.baseUrl.api}/upload/`;
-    static baseUrl: string = 'api/upload';
+    static baseUrl: string = `${config.baseUrl.path}/${config.baseUrl.api}/upload/`;
+    // static baseUrl: string = 'api/upload';
 
     // ==============
     //  UPLOAD files

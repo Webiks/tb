@@ -28,10 +28,13 @@ class DisplayMap extends React.Component {
                 console.log("1. get capabilities XML");
                 // 2. convert the xml data to jso
                 let json = this.parser.read(xml);
-                if (!(config.baseUrl.path.includes('localhost'))){
-                    const jsonString = JSON.stringify(json).replace('localhost', config.baseUrl.path);
+                if (!(config.baseUrl.path.includes('localhost'))) {
+                    const newPath = config.baseUrl.path.substr(config.baseUrl.path.indexOf('//') + 2);
+                    console.log("newPath: " + newPath);
+                    const oldPath = /localhost/gi;
+                    const jsonString = JSON.stringify(json).replace(oldPath, newPath);
+                    console.log("json file after REPLACE: " + jsonString.includes('localhost'));
                     json = JSON.parse(jsonString);
-                    console.log("json file after REPLACE");
                 }
                 console.log("2. convert to JSON: " + JSON.stringify(json));
                 // 3. define the map options

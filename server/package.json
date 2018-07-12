@@ -22,7 +22,6 @@
     "connect-multiparty": "^2.1.0",
     "cors": "^2.8.4",
     "express": "^4.16.3",
-    "express-easy-zip": "^1.1.4",
     "express-fileupload": "^0.4.0",
     "express-formidable": "^1.0.0",
     "express-session": "^1.15.6",

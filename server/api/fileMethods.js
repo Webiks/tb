@@ -23,15 +23,7 @@ module.exports = function() {
         }
     };
 
-    this.renameFile = (temp_path, new_path) => {
-        fs.rename(temp_path, new_path, function (err) {
-            if (err) {
-                console.error(err);
-            } else {
-                console.log(`success to save the '${new_path}'!`);
-            }
-        });
-    };
+    this.renameFile = (temp_path, new_path) => fs.renameSync(temp_path, new_path);
 
     this.removeFile = (filePath) => {
         fs.remove(filePath, err => {

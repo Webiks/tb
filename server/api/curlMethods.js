@@ -97,12 +97,6 @@ module.exports = function() {
         return importObj.import;
     };
 
-    // this.findImportId = (curl) => {
-    //     // find the import ID
-    //     const importFromJson = JSON.parse(curl);
-    //     return importFromJson.import.id;
-    // };
-
     this.sendToTask = (filepath, filename, importId) => {
         //POST the GeoTiff file to the tasks list, in order to create an import task for it
         console.log("sendToTask: filepath: " + filepath);
@@ -111,6 +105,7 @@ module.exports = function() {
 
         const curl_postToTaskList = `${baseCurl} ${curlFileData} ${configUrl.reqImportCurl}/${importId}/tasks`;
         const taskJson = execSync(curl_postToTaskList);
+        console.log("taskJSON: " + taskJson);
         const task = JSON.parse(taskJson);
         console.log("sent to the Tasks Queue..." + JSON.stringify(task));
         return task.task;

@@ -1,11 +1,11 @@
-const config = require('../config/configJson');
 const { execSync } = require('child_process');          // for using the cURL command line
-require('../config/config')();
+require('../config/serverConfig')();
 
+const configParams = config().configParams;
 const configUrl = configBaseUrl().configUrl;
 
 // // setting the cURL commands line (name and password, headers, request url)
-const baseCurl = config.baseCurl;
+const baseCurl = configParams.baseCurl;
 const curlContentTypeHeader = '-H "Content-type:application/json"';
 const curlAcceptHeader = '-H  "accept:application/json"';
 

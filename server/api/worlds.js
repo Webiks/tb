@@ -1,12 +1,15 @@
 const express = require('express');
 const router = express.Router();
 const axios = require('axios');
-const config = require('../config/configJson');
-require('../config/config')();
+
+require('../config/serverConfig')();
 require('./curlMethods')();
 
+const configParams = config().configParams;
 const configUrl = configBaseUrl().configUrl;
-const authorization = config.headers.Authorization;
+const headers = configParams.headers;
+console.log("headers: " + JSON.stringify(headers));
+const authorization = headers.authorization;
 
 // ==============
 //  GET Requests
@@ -44,7 +47,7 @@ router.post('/:worldName', (req, res) => {
     const workspaceJSON = JSON.stringify(createWorkspaceObject(req.params.worldName));
 
     // 2. send a POST request to create the new workspace
-    axios.post(`${configUrl.baseWorkspacesUrlGeoserver}`, workspaceJSON, { headers: config.headers })
+    axios.post(`${configUrl.baseWorkspacesUrlGeoserver}`, workspaceJSON, { headers: headers })
         .then((response) => res.send(response.data))
         .catch((error) => {
             console.error("error!", error.response);
@@ -58,7 +61,7 @@ router.post('/:worldName', (req, res) => {
 // update the name of a world (workspace) in geoserver by REST api
 router.put('/:worldName', (req, res) => {
     console.log("PUT data:" + JSON.stringify(req.body));
-    axios.put(`${configUrl.baseWorkspacesUrlGeoserver}/${req.params.worldName}`, req.body, { headers: config.headers })
+    axios.put(`${configUrl.baseWorkspacesUrlGeoserver}/${req.params.worldName}`, req.body, { headers: headers })
         .then((response) => res.send(response.data))
         .catch((error) => {
             console.error("error!", error.response);
@@ -73,7 +76,7 @@ router.put('/:worldName', (req, res) => {
 // =================
 // delete a world (workspace) from geoserver by REST api
 router.delete('/:worldName', (req, res) => {
-    axios.delete(`${configUrl.baseWorkspacesUrlGeoserver}/${req.params.worldName}?recurse=true`, { headers: config.headers })
+    axios.delete(`${configUrl.baseWorkspacesUrlGeoserver}/${req.params.worldName}?recurse=true`, { headers: headers })
         .then((response) => res.send(response.data))
         .catch((error) => {
             console.error("error!", error.response);

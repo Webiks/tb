@@ -1,12 +1,14 @@
 const express = require('express');
-const config = require('../config/configJson');
 const fs = require('fs-extra');
+
+require('../config/serverConfig')();
+const configParams = config().configParams;
 
 module.exports = function() {
     this.setOptions = (uploadDir) => {
         return {
             encoding: 'utf-8',
-            maxFileSize: config.maxFileSize,
+            maxFileSize: configParams.maxFileSize,
             uploadDir: uploadDir,
             multiples: true, // req.files to be arrays of files
             keepExtensions: true

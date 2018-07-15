@@ -18,21 +18,32 @@ router.use(formidable(opts));
 
 router.post('/:worldName', (req, res) => {
     const workspaceName = req.params.worldName;
-    const reqFiles = req.files.uploads;
+    let reqFiles = req.files.uploads;
+    let fileType;
+    let isZipped;
 
     console.log("req files: " + JSON.stringify(reqFiles));
     console.log("req length: " + reqFiles.length);
     console.log("uploadPath: " + uploadPath);
 
-    if (!reqFiles.length){
+    // check if need to do a ZIP file
+    if (!reqFiles.length && (reqFiles.name.includes('.zip') || reqFiles.size < 5000000)){
+        isZipped = false;
+        fileType = findFileType(reqFiles.type);
+    } else {
+        isZipped = true;
+        fileType = 'zip';
+        reqFiles = [reqFiles];              // define the file as an array
+        console.log("req files Single Array: " + JSON.stringify(reqFiles));
+    }
+
+    console.log("isZipped: " + isZipped);
+
+    if (!isZipped){
         // upload single file
-        const fileType = findFileType(reqFiles.type);             // find the file type
-        const filename = reqFiles.name;
-        const filePath = uploadPath + filename;
-        console.log("filePath: " + filePath);
-        renameFile(reqFiles.path, filePath);                     // renaming the file full path
+        const file = beforeUpload(reqFiles);
         console.log("uploadToGeoserver single file");
-        uploadToGeoserver(fileType, filename, filePath);
+        uploadToGeoserver(fileType, file.filename, file.filePath);
 
     } else {
         // upload multiple files - creating a ZIP file
@@ -41,7 +52,6 @@ router.post('/:worldName', (req, res) => {
         const zipFilename = `${splitName[0]}.zip`;
         const zipFilePath = uploadPath + zipFilename;
         console.log("zipFilePath: " + zipFilePath);
-        const zipFileType = 'zip';
 
         // creating archives
         let zip = new AdmZip();
@@ -49,15 +59,13 @@ router.post('/:worldName', (req, res) => {
         // define the names of the files to be zipped (in Sync opperation)
         reqFiles.map( file => {
             console.log("req file: " + JSON.stringify(file));
-            const filePath = uploadPath + file.name;
-            renameFile(file.path, filePath);
+            const newFile = beforeUpload(file);
 
             // add local file to the zip file
-            console.log("add to zip file: " + filePath);
-            zip.addLocalFile(filePath);
+            zip.addLocalFile(newFile.filePath);
 
             // remove the original file that was added to the zip file
-            removeFile(filePath);
+            removeFile(newFile.filePath);
         });
 
         // write everything to disk
@@ -65,8 +73,23 @@ router.post('/:worldName', (req, res) => {
         zip.writeZip(zipFilePath);
 
         // upload the zip file to GeoServer
-        uploadToGeoserver(zipFileType, zipFilename, zipFilePath);
+        uploadToGeoserver(fileType, zipFilename, zipFilePath);
 
+    }
+
+    // prepare the file before uploading it to the geoserver
+    function beforeUpload(file) {
+        const filename = file.name;
+        const filePath = uploadPath + filename;
+        console.log("filePath: " + filePath);
+
+        // renaming the file full path
+        renameFile(file.path, filePath);
+
+        return {
+            filename,
+            filePath
+        };
     }
 
     // adding the GeoTiff file to the workspace in geoserver using the cURL command line:

@@ -17,7 +17,7 @@
     "Content-Type":"application/json",
     "Accept":"application/json"
   },
-  "maxFileSize" : 20000000000,
+  "maxFileSize" : 50000000000,
   "login": {
     "usernameKey": "TB_USERNAME",
     "passwordKey": "TB_PASSWORD"

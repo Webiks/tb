@@ -11,6 +11,10 @@ const curlAcceptHeader = '-H  "accept:application/json"';
 
 module.exports = function() {
 
+    //====================
+    //  create JSON Files
+    //====================
+    // create the Workspace Json file for creating a new workspace
     this.createWorkspaceObject = (workspaceName) => {
         return {
             workspace: {
@@ -19,6 +23,7 @@ module.exports = function() {
         };
     };
 
+    // create the import Json file for uploading files (Rasters or Vectors)
     this.createImportObject = (workspaceName) => {
         return {
             import: {
@@ -31,14 +36,24 @@ module.exports = function() {
         };
     };
 
+    // adding the data inside the import Json file for uploading Vectors
     this.createImportObjectWithData = (workspaceName, filePath) => {
         const importObject = this.createImportObject(workspaceName);
         const data = {
-            type: 'file',
-            file: filePath
+            type: `"file"`,
+            file: `"${filePath}"`
         };
         console.log("import object with data");
         return { ...importObject, data};
+    };
+
+    // update the missing projection when uploading a .SHP file
+    this.createLayerSrsUpdate = () => {
+        return {
+            layer: {
+                srs: `"EPSG:4326"`
+            }
+        }
     };
 
     //============
@@ -72,21 +87,21 @@ module.exports = function() {
     //   LAYERS
     //============
     // upload new layer to geoserver by the importer extension
-    this.uploadFileToGeoserverStepOne = (importJson) => {
-    // this.uploadFileToGeoserverStepOne = (workspace) => {
+    this.getImportObj = (importJson) => {
         console.log("Upload File using the cURL...");
         // 1. create a empty import with no store as the target
         const curl_createEmptyImport = `${baseCurl} -XPOST ${curlContentTypeHeader} -d "${importJson}" ${configUrl.reqImportCurl}`;
         console.log("step 1 is DONE..." + curlContentTypeHeader);
-        return execSync(curl_createEmptyImport);
+        const importJSON = execSync(curl_createEmptyImport);
+        const importObj = JSON.parse(importJSON);
+        return importObj.import;
     };
 
-    this.findImportId = (curl) => {
-        // find the import ID
-        const importFromJson = JSON.parse(curl);
-        console.log("importFromJson: " + JSON.stringify(importFromJson));
-        return importFromJson.import.id;
-    };
+    // this.findImportId = (curl) => {
+    //     // find the import ID
+    //     const importFromJson = JSON.parse(curl);
+    //     return importFromJson.import.id;
+    // };
 
     this.sendToTask = (filepath, filename, importId) => {
         //POST the GeoTiff file to the tasks list, in order to create an import task for it
@@ -95,8 +110,17 @@ module.exports = function() {
         console.log("sendToTask: curlFileData: " + curlFileData);
 
         const curl_postToTaskList = `${baseCurl} ${curlFileData} ${configUrl.reqImportCurl}/${importId}/tasks`;
-        const curl = execSync(curl_postToTaskList);
-        console.log("sent to the Tasks Queue..." + curl);
+        const taskJson = execSync(curl_postToTaskList);
+        const task = JSON.parse(taskJson);
+        console.log("sent to the Tasks Queue..." + JSON.stringify(task));
+        return task.task;
+    };
+
+    this.updateSrs = (updateSrsJson, importId, taskId) => {
+        // update the import Json file with a default projection
+        const curl_updateSrs = `${baseCurl} -XPUT ${curlContentTypeHeader} -d "${updateSrsJson}" ${configUrl.reqImportCurl}/${importId}/tasks/${taskId}/layer/`;
+        console.log("updateSrs: " + curl_updateSrs);
+        return execSync(curl_updateSrs);
     };
 
     this.executeFileToGeoserver = (importId) => {

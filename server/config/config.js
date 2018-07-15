@@ -11,11 +11,13 @@ module.exports = function(){
 
         let baseUrl = '';
 
-        if (process.env.NODE_ENV === 'production') {
+        if (process.env.NODE_ENV === "production") {
             baseUrl = config.baseUrlRemote;
         } else {
             baseUrl = config.baseUrlLocal;
         }
+
+        console.log("Config Base URL: " + baseUrl);
 
         return {
             configUrl: {

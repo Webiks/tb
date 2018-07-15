@@ -26,14 +26,16 @@ export interface IPropsLayers {
 }
 
 export interface IStateWorld {
-    layers: IWorldLayer[]
+    hideSpinner: boolean
 }
 
 class WorldLayers extends React.Component {
     props: IPropsLayers | any;
+    state: IStateWorld = { hideSpinner: false };
 
     // GET: get the world's layers on startUp
     componentWillMount() {
+       this.setState({ hideSpinner: false } );
        this.getAllLayersData();
     };
 
@@ -79,21 +81,22 @@ class WorldLayers extends React.Component {
         console.log('World Home Page: REFRESH...');
         const name = this.props.world.name;
         this.props.updateWorld({ name, layers });
+        this.setState({ hideSpinner: true } );
     };
 
     render() {
         const { world, match } = this.props;
+
         return (
-            match.isExact ?
+            match.isExact
+                ? this.props.world.layers &&
                 <div>
                     <div>
                         <LayersDataTable worldName={world.name} layers={world.layers || []} getAllLayersData={this.getAllLayersData}/>
                     </div>
-                    { !this.props.world.layers &&
-                    <div>
+                    <div hidden={this.state.hideSpinner}>
                         <ProgressSpinner style={{width: '50px', height: '50px'}} strokeWidth="8" fill="#EEEEEE" animationDuration=".5s"/>
                     </div>
-                    }
                 </div>
                 : <Route path="/world/:worldName/layer/:layerName" component={Layer}/>
         );

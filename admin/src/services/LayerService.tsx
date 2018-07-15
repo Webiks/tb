@@ -7,7 +7,6 @@ import { ILayer } from '../interfaces/ILayer';
 export class LayerService {
 
     static baseUrl: string = `${config.baseUrl.path}/${config.baseUrl.api}/layers`;
-    // static baseUrl: string = 'api/layers';
 
     // ==============
     //  GET Requests

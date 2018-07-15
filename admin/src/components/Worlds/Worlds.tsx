@@ -29,7 +29,7 @@ export interface IStateWorld {
 
 class Worlds extends React.Component {
     props: IPropsWorlds;
-    state: IStateWorld = { hideSpinner: false };
+    state: IStateWorld = { hideSpinner: true };
 
     // GET: get all worlds on startUp
     componentDidMount() {
@@ -91,25 +91,3 @@ const mapDispatchToProps = (dispatch: any) => bindActionCreators({ setWorlds: Wo
 
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(Worlds) as any);
 
-// render() {
-//     return (
-//         <div>
-//             <Route path="/world/:worldName" component={World}/>
-//             {
-//                 this.props.match.isExact
-//                     ? this.props.worldsList
-//                     ?
-//                     <div>
-//                         <div style={{ width: '70%', margin: 'auto' }}>
-//                             <WorldsDataTable/>
-//                         </div>
-//                     </div>
-//                     :
-//                     <div hidden={this.state.hideSpinner}>
-//                         <ProgressSpinner style={{width: '50px', height: '50px'}} strokeWidth="8" fill="#EEEEEE" animationDuration=".5s"/>
-//                     </div>
-//                     : null
-//             }
-//         </div>
-//     );
-// };

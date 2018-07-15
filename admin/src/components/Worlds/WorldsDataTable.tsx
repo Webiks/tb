@@ -17,6 +17,7 @@ import 'font-awesome/css/font-awesome.css';
 import { DataTable } from 'primereact/components/datatable/DataTable';
 import { Column } from 'primereact/components/column/Column';
 import { Button } from 'primereact/components/button/Button';
+import { Dialog } from 'primereact/components/dialog/Dialog';
 
 export interface IPropsWorldsTable {
     worldsList: IWorld[],
@@ -27,7 +28,8 @@ export interface IPropsWorldsTable {
 
 export interface IStateWorldsTable {
     selectedWorld: any,
-    displayDialog: boolean,
+    displayEditor: boolean,
+    displayAlert: boolean,
     globalFilter: any
 }
 
@@ -36,7 +38,8 @@ class WorldsDataTable extends React.Component {
     props: IPropsWorldsTable;
     state: IStateWorldsTable = {
         selectedWorld: null,
-        displayDialog: false,
+        displayEditor: false,
+        displayAlert: false,
         globalFilter: ''
     };
 
@@ -44,36 +47,46 @@ class WorldsDataTable extends React.Component {
     setInitState = () => {
         this.setState({
             selectedWorld: null,
-            displayDialog: false,
+            displayEditor: false,
+            displayAlert: false
         });
     };
 
-    setDisplayDialog = (value) => this.setState({ displayDialog: value });
+    setDisplayEditor = (value) => this.setState({ displayEditor: value });
+
+    setGlobalFilter = (e: any) => this.setState({globalFilter: e.target.value});
 
     goToSelectedWorld = (e) => {
-        this.setState({ selectedWorld: e.data,
-                              displayDialog: false });
+    this.setState({  selectedWorld: e.data,
+                           displayEditor: false,
+                           displayAlert: false});
         this.props.navigateTo(`${e.data.name}`);
     };
 
     editWorld = (rowData) => {
         this.setState({
             selectedWorld: {...rowData},
-            displayDialog: true });
+            displayEditor: true,
+            displayAlert: false });
         console.log("edit world...");
     };
 
     deleteWorld = (rowData) => {
-        const confirmation = confirm(`Are sure you want to DELETE ${rowData.name}?`);
-        if (confirmation){
-            const index = this.findSelectedWorldIndex(rowData);
-            console.warn("deleteWorld index: " + index);
-            WorldService.deleteWorldByName(rowData.name)
-                .then(res => {
-                    const worlds = this.props.worldsList.filter( world => world.name !== rowData.name);
-                    this.refresh(worlds);
-                });
-        }
+        this.setState({
+            selectedWorld: {...rowData},
+            displayEditor: false,
+            displayAlert: true });
+        console.log("delete world...");
+    };
+
+    delete = () => {
+        const index = this.findSelectedWorldIndex(this.state.selectedWorld);
+        WorldService.deleteWorldByName(this.state.selectedWorld.name)
+            .then(res => {
+                const worlds =
+                    this.props.worldsList.filter( world => world.name !== this.state.selectedWorld.name);
+                this.refresh(worlds);
+            });
     };
 
     addNew = () => {
@@ -81,7 +94,7 @@ class WorldsDataTable extends React.Component {
             selectedWorld: {
                 name: 'new'
             },
-            displayDialog: true
+            displayEditor: true
         });
     };
 
@@ -104,8 +117,6 @@ class WorldsDataTable extends React.Component {
         console.log("Worlds Home Page: REFRESH..." + JSON.stringify([...worlds]));
     };
 
-    setGlobalFilter = (e: any) => this.setState({globalFilter: e.target.value});
-
     actionsButtons = (rowData: any, column: any) => {
         return (
             <div className="ui-button-icon ui-helper-clearfix" onClick={($event) => $event.stopPropagation()}>
@@ -113,6 +124,7 @@ class WorldsDataTable extends React.Component {
                         onClick={() => this.editWorld(rowData)}/>
                 <Button type="button" icon="fa fa-close" style={{margin: '3px 7px'}}
                         onClick={() => this.deleteWorld(rowData)}/>
+
             </div>
         );
     };
@@ -123,9 +135,18 @@ class WorldsDataTable extends React.Component {
             <Button icon="fa fa-plus" label="Add" onClick={this.addNew} style={{margin:'auto'}}/>
         </div>;
 
+        const alertFooter = (
+            <div>
+                <Button label="Yes" icon="pi pi-check" onClick={() => this.delete()} />
+                <Button label="No"  icon="pi pi-times" onClick={() => this.refresh(this.props.worldsList) } />
+            </div>
+        );
+
         return  (
             <div className="content-section implementation">
-                {this.props.worldsList && <div>
+                {
+                this.props.worldsList &&
+                <div>
                     <DataTable  value={this.props.worldsList} paginator={true} rows={10} responsive={true}
                                 resizableColumns={true} autoLayout={true} style={{margin:'10px 20px'}}
                                 header={<DataTableHeader title={'Worlds List'} setGlobalFilter={this.setGlobalFilter}/>}
@@ -139,16 +160,31 @@ class WorldsDataTable extends React.Component {
                         <Column field="desc" header="Description" sortable={false}/>
                         <Column header="Actions" body={this.actionsButtons} style={{width: '12%'}} />
                     </DataTable>
-                </div>}
+                </div>
+                }
 
-                    {this.state.selectedWorld && this.state.displayDialog && <div>
-                        <div className="ui-grid ui-grid-responsive ui-fluid" >
-                            <WorldEditor worldName={ this.state.selectedWorld.name }
-                                         setDisplayDialog={this.setDisplayDialog}
-                                         displayDialog={true}
-                                         refresh={this.refresh}/>
-                        </div>
-                    </div>}
+                {
+                this.state.selectedWorld && this.state.displayEditor &&
+                <div>
+                    <div className="ui-grid ui-grid-responsive ui-fluid" >
+                        <WorldEditor worldName={ this.state.selectedWorld.name }
+                                     setDisplayEditor={this.setDisplayEditor}
+                                     displayDialog={true}
+                                     refresh={this.refresh}/>
+                    </div>
+                </div>
+                }
+
+                {
+                this.state.selectedWorld && this.state.displayAlert &&
+                <div>
+                    <Dialog header="DELETE Confirmation" visible={this.state.displayAlert}
+                            width="350px" modal={true} footer={alertFooter} minY={70}
+                            onHide={() => this.refresh(this.props.worldsList) }>
+                            DELETE world {this.state.selectedWorld.name} ?
+                    </Dialog>
+                </div>
+                }
 
             </div>
         );

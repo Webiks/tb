@@ -21,6 +21,7 @@ import { DataTable } from 'primereact/components/datatable/DataTable';
 import { Column } from 'primereact/components/column/Column';
 import { Button } from 'primereact/components/button/Button';
 import { Dialog } from 'primereact/components/dialog/Dialog';
+import { WorldService } from '../../services/WorldService';
 
 export interface IPropsLayers {
     worldName: string,
@@ -34,7 +35,8 @@ export interface IPropsLayers {
 export interface IStateTable {
     layers: IWorldLayer[],
     selectedLayer: any,
-    displayDialog: boolean,
+    displayMapWindow: boolean,
+    displayAlert: boolean,
     globalFilter: any
 }
 
@@ -45,7 +47,8 @@ class LayersDataTable extends React.Component {
     state: IStateTable = {
         layers: this.props.layers,
         selectedLayer: null,
-        displayDialog: false,
+        displayMapWindow: false,
+        displayAlert: false,
         globalFilter: ''
     };
 
@@ -53,25 +56,33 @@ class LayersDataTable extends React.Component {
     setInitialState = () =>
         this.setState({
             selectedLayer: null,
-            displayDialog: false
+            displayMapWindow: false,
+            displayAlert: false
     });
 
     editLayer = (layer: IWorldLayer) => {
         this.props.navigateTo(`/world/${this.props.worldName}/layer/${layer.layer.name}`);
     };
 
-    deleteLayer = (layer: ILayer) => {
-        const confirmation = confirm(`Are sure you want to DELETE ${layer.name}?`);
-        if (confirmation){
-            LayerService.deleteLayerById(this.props.worldName, layer)
-                .then(response => {
-                    console.log("LAYER DATA TABLE: delete layer...");
-                    // update the layers' list
-                    const layers = this.props.world.layers.filter( worldLayer => worldLayer.layer.name !== layer.name);
-                    this.refresh(layers);
-                })
-                .catch(error => this.refresh([]));
-        }
+    deleteLayer = (rowData) => {
+        this.setState({
+            selectedLayer: {...rowData},
+            displayMapWindow: false,
+            displayAlert: true });
+        console.log("delete layer...");
+    };
+
+    delete = () => {
+        console.log("selected layer: " + this.state.selectedLayer.layer.name);
+        LayerService.deleteLayerById(this.props.worldName, this.state.selectedLayer.layer)
+            .then(response => {
+                console.log("LAYER DATA TABLE: delete layer...");
+                // update the layers' list
+                const layers =
+                    this.props.world.layers.filter( worldLayer => worldLayer.layer.name !== this.state.selectedLayer.layer.name);
+                this.refresh(layers);
+            })
+            .catch(error => this.refresh([]));
     };
 
     // update the App store and refresh the page
@@ -90,15 +101,15 @@ class LayersDataTable extends React.Component {
         return (
             <div className="ui-button-icon ui-helper-clearfix">
                 <Button type="button" icon="fa fa-search" className="ui-button-success" style={{margin: '3px 7px'}}
-                        onClick={() => this.setState({selectedLayer: rowData, displayDialog: true})}/>
+                        onClick={() => this.setState({selectedLayer: rowData, displayMapWindow: true})}/>
                 <Button type="button" icon="fa fa-edit" className="ui-button-warning" style={{margin: '3px 7px'}}
                         onClick={() => {
-                            this.setState({selectedLayer: rowData, displayDialog: false});
+                            this.setState({selectedLayer: rowData, displayMapWindow: false});
                             this.editLayer(rowData)
                         }}/>
                 <Button type="button" icon="fa fa-close" style={{margin: '3px 7px'}}
                         onClick={() => {
-                            this.setState({selectedLayer: rowData, displayDialog: false});
+                            this.setState({selectedLayer: rowData, displayMapWindow: false});
                             this.deleteLayer(rowData.layer)
                         }}/>
             </div>
@@ -106,39 +117,58 @@ class LayersDataTable extends React.Component {
     };
 
     render(){
+
+        const alertFooter = (
+            <div>
+                <Button label="Yes" icon="pi pi-check" onClick={() => this.delete()} />
+                <Button label="No"  icon="pi pi-times" onClick={() => this.refresh(this.props.layers) } />
+            </div>
+        );
+
         return  (
             <div className="content-section implementation">
                 {
-                    this.props.layers &&
-                    <div>
-                        <DataTable  value={this.props.layers} paginator={true} rows={10} responsive={false}
-                                    resizableColumns={true} autoLayout={true} style={{margin:'10px 20px'}}
-                                    header={<DataTableHeader title={`${this.props.worldName} World's Files List`} setGlobalFilter={this.setGlobalFilter}/>}
-                                    footer={<UploadFile worldName={this.props.worldName} getAllLayersData={this.props.getAllLayersData}/>}
-                                    globalFilter={this.state.globalFilter}
-                                    selectionMode="single" selection={this.state.selectedLayer}
-                                    onSelectionChange={(e: any)=>{this.setState({selectedLayer: e.data});}}>
-                                <Column field="layer.name" header="Name" sortable={true} style={{textAlign:'left', padding:'7px 20px'}}/>
-                                <Column field="store.type" header="Type" sortable={true} style={{width: '10%'}} />
-                                <Column field="store.format" header="Format" sortable={true} style={{width: '10%'}}/>
-                                <Column field="layer.fileExtension" header="Extension" sortable={true} style={{width: '12%'}}/>
-                                <Column field="''"  header="Date Created" sortable={true} style={{width: '12%'}}/>
-                                <Column field="''" header="Last Modified" sortable={true} style={{width: '12%'}}/>
-                                <Column field="inputData.affiliation" header="File Affiliation" sortable={true} style={{width: '10%'}}/>
-                                <Column header="Actions" body={this.actionsButtons} style={{width: '12%'}}/>
-                        </DataTable>
-                    </div>
+                this.props.layers &&
+                <div>
+                    <DataTable  value={this.props.layers} paginator={true} rows={10} responsive={false}
+                                resizableColumns={true} autoLayout={true} style={{margin:'10px 20px'}}
+                                header={<DataTableHeader title={`${this.props.worldName} World's Files List`} setGlobalFilter={this.setGlobalFilter}/>}
+                                footer={<UploadFile worldName={this.props.worldName} getAllLayersData={this.props.getAllLayersData}/>}
+                                globalFilter={this.state.globalFilter}
+                                selectionMode="single" selection={this.state.selectedLayer}
+                                onSelectionChange={(e: any)=>{this.setState({selectedLayer: e.data});}}>
+                            <Column field="layer.name" header="Name" sortable={true} style={{textAlign:'left', padding:'7px 20px'}}/>
+                            <Column field="store.type" header="Type" sortable={true} style={{width: '10%'}} />
+                            <Column field="store.format" header="Format" sortable={true} style={{width: '10%'}}/>
+                            <Column field="layer.fileExtension" header="Extension" sortable={true} style={{width: '12%'}}/>
+                            <Column field="''"  header="Date Created" sortable={true} style={{width: '12%'}}/>
+                            <Column field="''" header="Last Modified" sortable={true} style={{width: '12%'}}/>
+                            <Column field="inputData.affiliation" header="File Affiliation" sortable={true} style={{width: '10%'}}/>
+                            <Column header="Actions" body={this.actionsButtons} style={{width: '12%'}}/>
+                    </DataTable>
+                </div>
                 }
 
                 {
-                    this.state.selectedLayer &&
-                    <div>
-                        <Dialog visible={this.state.displayDialog} modal={true}
-                                header={`Layer '${this.state.selectedLayer.layer.name}' map preview`}
-                                onHide={() => this.refresh(this.props.world.layers)}>
-                            <DisplayMap worldName={this.props.worldName} layer={this.state.selectedLayer}/>
-                        </Dialog>
-                    </div>
+                this.state.selectedLayer &&
+                <div>
+                    <Dialog visible={this.state.displayMapWindow} modal={true}
+                            header={`Layer '${this.state.selectedLayer.layer.name}' map preview`}
+                            onHide={() => this.refresh(this.props.world.layers)}>
+                        <DisplayMap worldName={this.props.worldName} layer={this.state.selectedLayer}/>
+                    </Dialog>
+                </div>
+                }
+
+                {
+                this.state.selectedLayer && this.state.displayAlert &&
+                <div>
+                    <Dialog header="DELETE Confirmation" visible={this.state.displayAlert}
+                            width="350px" modal={true} footer={alertFooter} minY={70}
+                            onHide={() => this.refresh(this.props.layers) }>
+                        DELETE layer {this.state.selectedLayer.layer.name} ?
+                    </Dialog>
+                </div>
                 }
 
             </div>

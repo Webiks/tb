@@ -39,7 +39,6 @@ router.get('/layer/:worldName/:layerName', (req, res) => {
 // using the resource href that we got from the "layer's info" request
 router.get('/details/:worldName/:layerName', (req, res) => {
     // get the resource URL
-    console.log("getLayerDetails: " + `${configUrl.baseUrlAppGetLayer}/${req.params.worldName}/${req.params.layerName}`);
     axios.get(`${configUrl.baseUrlAppGetLayer}/${req.params.worldName}/${req.params.layerName}`)
         .then(response => {
             // get the resource URL

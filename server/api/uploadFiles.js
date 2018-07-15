@@ -33,7 +33,10 @@ router.post('/:worldName', (req, res) => {
     } else {
         isZipped = true;
         fileType = 'zip';
-        reqFiles = [reqFiles];              // define the file as an array
+        if (!reqFiles.length) {
+            // define the file as an array
+            reqFiles = [reqFiles];
+        }
         console.log("req files Single Array: " + JSON.stringify(reqFiles));
     }
 

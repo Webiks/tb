@@ -163,10 +163,10 @@ class LayersDataTable extends React.Component {
                 {
                 this.state.selectedLayer && this.state.displayAlert &&
                 <div>
-                    <Dialog header="DELETE Confirmation" visible={this.state.displayAlert}
+                    <Dialog visible={this.state.displayAlert}
                             width="350px" modal={true} footer={alertFooter} minY={70}
                             onHide={() => this.refresh(this.props.layers) }>
-                        DELETE layer {this.state.selectedLayer.layer.name} ?
+                        <b>DELETE</b> layer <b>{this.state.selectedLayer.layer.name}</b> ?
                     </Dialog>
                 </div>
                 }

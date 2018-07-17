@@ -42,6 +42,7 @@ class WorldsDataTable extends React.Component {
         displayAlert: false,
         globalFilter: ''
     };
+    newWorld: boolean = false;
 
     // set state to initial state
     setInitState = () => {
@@ -64,6 +65,7 @@ class WorldsDataTable extends React.Component {
     };
 
     editWorld = (rowData) => {
+        this.newWorld = false;
         this.setState({
             selectedWorld: {...rowData},
             displayEditor: true,
@@ -90,9 +92,10 @@ class WorldsDataTable extends React.Component {
     };
 
     addNew = () => {
+        this.newWorld = true;
         this.setState({
             selectedWorld: {
-                name: 'new'
+                name: ''
             },
             displayEditor: true
         });
@@ -170,6 +173,7 @@ class WorldsDataTable extends React.Component {
                         <WorldEditor worldName={ this.state.selectedWorld.name }
                                      setDisplayEditor={this.setDisplayEditor}
                                      displayDialog={true}
+                                     newWorld={this.newWorld}
                                      refresh={this.refresh}/>
                     </div>
                 </div>
@@ -178,10 +182,10 @@ class WorldsDataTable extends React.Component {
                 {
                 this.state.selectedWorld && this.state.displayAlert &&
                 <div>
-                    <Dialog header="DELETE Confirmation" visible={this.state.displayAlert}
+                    <Dialog visible={this.state.displayAlert}
                             width="350px" modal={true} footer={alertFooter} minY={70}
                             onHide={() => this.refresh(this.props.worldsList) }>
-                            DELETE world {this.state.selectedWorld.name} ?
+                        <b>DELETE</b> world <b>{this.state.selectedWorld.name}</b> ?
                     </Dialog>
                 </div>
                 }

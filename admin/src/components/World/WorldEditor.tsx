@@ -22,6 +22,7 @@ export interface IPropsWorld {
     worldsList: IWorld[],
     worldName: string,
     world: IWorld,
+    newWorld: boolean,
     refresh: (worlds: IWorld[]) => void,
     setDisplayEditor: (value: boolean) => void,
     updateWorld: (worlds: Partial<IWorld>) => ITBAction
@@ -35,15 +36,13 @@ export interface IStateDetails {
 class WorldEditor extends React.Component {
     props: IPropsWorld;
     state: IStateDetails;
-    newWorld: boolean;
 
     componentWillMount() {
-        if (this.props.worldName === 'new'){
-            this.newWorld = true;
+        if (this.props.newWorld){
             this.setState({
                 displayDialog: true,
                 world: {
-                    name: 'new',
+                    name: '',
                     desc: '',
                     country: '',
                     directory: '',
@@ -51,7 +50,6 @@ class WorldEditor extends React.Component {
                 }
             });
         } else {
-            this.newWorld = false;
             this.setState({
                 displayDialog: true,
                 world: cloneDeep(this.props.world),
@@ -74,7 +72,7 @@ class WorldEditor extends React.Component {
     // save the changes in the App store
     save = () => {
         const worlds = [...this.props.worldsList];
-        if (this.newWorld){
+        if (this.props.newWorld){
             WorldService.createWorld(this.state.world.name)
                 .then (res => {
                     worlds.push(this.state.world);
@@ -152,9 +150,9 @@ class WorldEditor extends React.Component {
 
 }
 
-const mapStateToProps = (state: IState, { worldName, ...rest }: any) => {
+const mapStateToProps = (state: IState, { worldName, ...props }: any) => {
     return {
-        ...rest, worldName,
+        ...props, worldName,
         worldsList: state.worlds.list,
         world: state.worlds.list.find(({ name, layers }: IWorld) => worldName === name),
     }

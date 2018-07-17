@@ -5,9 +5,11 @@ const login = require('./login');
 const bodyParser = require('body-parser');
 const session = require('express-session');
 const checkAuth = require('./login/check-auth');
-const { serverPort } = require('./config/configJson');
 
 const app = express();
+
+require('./config/serverConfig')();
+const configParams = config().configParams;
 
 app.use(cors({ credentials: true, origin: true }));
 app.use(bodyParser.json());
@@ -24,4 +26,4 @@ app.use('/login', login);
 // app.use('/api', checkAuth);
 app.use('/api', api);
 
-app.listen(serverPort, () => console.log('listen to ', serverPort));
+app.listen(configParams.serverPort, () => console.log('listen to ', configParams.serverPort));

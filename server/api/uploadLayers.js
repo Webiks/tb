@@ -2,17 +2,18 @@ const express = require('express');
 const router = express.Router();
 const axios = require('axios');
 const formidable = require('express-formidable');
-const config = require('../config/configJson');
 const zip = require('express-easy-zip');
-// const archiver = require('archiver');
+
+require('../config/serverConfig')();
 require('./fileMethods')();
 require('./curlMethods')();
 
+const configParams = config().configParams;
 const uploadDir = '/public/uploads/';
 const dirPath = __dirname.replace(/\\/g, "/");
 const uploadPath = `${dirPath}${uploadDir}`;
-const authorization = config.headers.Authorization;
-const accept = config.headers.Accept;
+const authorization = configParams.headers.Authorization;
+const accept = configParams.headers.Accept;
 
 const opts = setOptions(uploadPath);
 router.use(formidable(opts));
@@ -21,7 +22,7 @@ router.use(zip());
 router.post('/:worldName', (req, res) => {
     const workspaceName = req.params.worldName;
     const reqFiles = req.files.uploads;
-    const urlImports = config.baseUrlGeoserver.restImports;
+    const urlImports = configParams.baseUrlGeoserver.restImports;
     let fileType = '';
     const filesToZip = [];
     let filePath = '';
@@ -91,7 +92,7 @@ router.post('/:worldName', (req, res) => {
         const importJSON = JSON.stringify(importObj);
 
         // 2. send a POST request to create a empty import with no store as the target
-        axios.post(urlImports, importJSON, { headers: config.headers })
+        axios.post(urlImports, importJSON, { headers: configParams.headers })
             .then((response) => {
                 console.log("post url: " + urlImports);
                 console.log("post importJSON: " + importJSON);

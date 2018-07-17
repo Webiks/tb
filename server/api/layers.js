@@ -1,11 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const axios = require('axios');
-const config = require('../config/configJson');
-require('../config/config')();
 
+require('../config/serverConfig')();
+
+const configParams = config().configParams;
 const configUrl = configBaseUrl().configUrl;
-const authorization = config.headers.Authorization;
+const authorization = configParams.headers.authorization;
 
 // ==============
 //  GET Requests
@@ -17,7 +18,7 @@ router.get('/:worldName', (req, res) => {
     axios.get(urlGetLayers, { headers: { authorization } })
         .then( response => res.send(response.data))
         .catch( error => {
-            console.error(`getLayers ERROR! ${urlGetLayers}: ${error.response}`);
+            console.error(`getLayers ERROR! ${urlGetLayers}: ${error}`);
             res.status(404).send(`world ${req.params.worldName}'s layers can't be found!`);
         });
 
@@ -30,7 +31,7 @@ router.get('/layer/:worldName/:layerName', (req, res) => {
     axios.get(urlGetLayer, { headers: { authorization } })
         .then( response => res.send(response.data))
         .catch( error => {
-            console.error(`getLayerInfo ERROR! ${urlGetLayer}: ${error.response}`);
+            console.error(`getLayerInfo ERROR! ${urlGetLayer}: ${error}`);
             res.status(404).send(`layer ${req.params.layerName} can't be found!`);
         });
 });
@@ -46,7 +47,7 @@ router.get('/details/:worldName/:layerName', (req, res) => {
         })
         .then( response => res.send(response.data))
         .catch( error => {
-            console.error(`getLayerDetails ERROR!: ${error.response}`);
+            console.error(`getLayerDetails ERROR!: ${error}`);
             res.status(404).send(`layer ${req.params.layerName}'s details can't be found!`);
         });
 
@@ -60,19 +61,19 @@ router.get('/store/:worldName/:storeName/:storeType', (req, res) => {
     axios.get(urlGetStore, { headers: { authorization } })
         .then( response => res.send(response.data))
         .catch( error => {
-            console.error(`getStoreData ERROR! ${urlGetStore}: ${error.response}`);
+            console.error(`getStoreData ERROR! ${urlGetStore}: ${error}`);
             res.status(404).send(`layer ${req.params.storeName}'s store can't be found!`);
         });
 });
 
 // get Capabilities XML file - WMTS Request for display the selected layer
 router.get('/wmts/:worldName/:layerName', (req, res) => {
-    const capabilitiesUrl = `${configUrl.baseUrlGeoserver}/${req.params.worldName}/${req.params.layerName}/${config.wmtsServiceUrl}`;
+    const capabilitiesUrl = `${configUrl.baseUrlGeoserver}/${req.params.worldName}/${req.params.layerName}/${configParams.wmtsServiceUrl}`;
     console.log("TB SERVER: start getCapabilities url = " + capabilitiesUrl);
     axios.get(capabilitiesUrl, { headers: { authorization } })
         .then( response => res.send(response.data))
         .catch( error => {
-            console.error(`getCapabilities ERROR! ${capabilitiesUrl}: ${error.response}`);
+            console.error(`getCapabilities ERROR! ${capabilitiesUrl}: ${error}`);
             res.status(404).send(`Capabilities XML file of ${req.params.layerName} can't be found!`);
         });
 });

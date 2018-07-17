@@ -75,7 +75,7 @@ class UploadFile extends React.Component {
         return (
             <div className="content-section implementation">
                 <FileUpload mode="advanced" name="uploads" multiple={true} url={this.url}
-                            accept="image/tiff, .shp,.shx, .dbf,.prj, .qix, .xml, .sbn, .sbx, .zip"
+                            accept="image/tiff, .shp, .shx, .dbf, .prj, .qix, .fix, .xml, .sbn, .sbx, .cpg, .zip"
                             maxFileSize={config.maxFileSize} auto={false}
                             chooseLabel="add"
                             onUpload={this.onUpload}/>

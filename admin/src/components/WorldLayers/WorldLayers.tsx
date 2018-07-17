@@ -26,19 +26,21 @@ export interface IPropsLayers {
 }
 
 export interface IStateWorld {
-    layers: IWorldLayer[]
+    hideSpinner: boolean
 }
 
 class WorldLayers extends React.Component {
     props: IPropsLayers | any;
+    state: IStateWorld = { hideSpinner: true };
 
     // GET: get the world's layers on startUp
-    componentWillMount() {
+    componentDidMount() {
        this.getAllLayersData();
     };
 
     getAllLayersData = () => {
-        if (!this.props.world.layers.length)  {
+        // if (!this.props.world.layers.length)  {
+            this.setState({ hideSpinner: false } );
             console.log("getAllLayersData...");
             LayerService.getAllLayersData(this.props.world.name)
                 .then(layers => {
@@ -51,7 +53,7 @@ class WorldLayers extends React.Component {
                     this.refresh([...layersInput]);               // update the App store
                 })
                 .catch(error => this.refresh([]));
-        }
+        // }
     };
 
     // get the input Data of the layer from the App store
@@ -79,23 +81,31 @@ class WorldLayers extends React.Component {
         console.log('World Home Page: REFRESH...');
         const name = this.props.world.name;
         this.props.updateWorld({ name, layers });
+        this.setState({ hideSpinner: true } );
+        console.warn("WorldLayers - refresh: hide spinner: " + this.state.hideSpinner);
     };
 
     render() {
         const { world, match } = this.props;
+
         return (
-            match.isExact ?
+            <div>
+            {
+                match.isExact
+                ? this.props.world.layers &&
                 <div>
                     <div>
-                        <LayersDataTable worldName={world.name} layers={world.layers || []} getAllLayersData={this.getAllLayersData}/>
+                        <LayersDataTable worldName={world.name} layers={world.layers || []}
+                                         getAllLayersData={this.getAllLayersData}/>
                     </div>
-                    { !this.props.world.layers &&
-                    <div>
-                        <ProgressSpinner style={{width: '50px', height: '50px'}} strokeWidth="8" fill="#EEEEEE" animationDuration=".5s"/>
+                    <div hidden={this.state.hideSpinner}>
+                        <ProgressSpinner style={{ width: '50px', height: '50px' }} strokeWidth="8" fill="#EEEEEE"
+                                         animationDuration=".5s"/>
                     </div>
-                    }
                 </div>
                 : <Route path="/world/:worldName/layer/:layerName" component={Layer}/>
+            }
+            </div>
         );
     };
 }

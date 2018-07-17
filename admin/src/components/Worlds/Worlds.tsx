@@ -23,16 +23,23 @@ export interface IPropsWorlds {
     setWorlds: (worlds: IWorld[]) => ITBAction
 }
 
+export interface IStateWorld {
+    hideSpinner: boolean
+}
+
 class Worlds extends React.Component {
     props: IPropsWorlds;
+    state: IStateWorld = { hideSpinner: true };
 
     // GET: get all worlds on startUp
     componentDidMount() {
+        this.setState({ hideSpinner: false } );
         WorldService.getWorlds()
             .then((worlds: IWorld[]) => {
                 // get the input Data of all the worlds (from the App store)
                 const worldsInput = worlds.map((world: IWorld) => this.getInputData(worlds, world));
                 this.props.setWorlds([...worldsInput]);
+                this.setState({ hideSpinner: true } );
             })
             .catch(error => this.props.setWorlds([]));
     };
@@ -57,16 +64,16 @@ class Worlds extends React.Component {
                 <Route path="/world/:worldName" component={World}/>
                 {
                     this.props.match.isExact
-                        ? this.props.worldsList
-                            ?
+                        ? this.props.worldsList &&
                             <div>
-                                <div style={{ width: '70%', margin: 'auto' }}>
-                                    <WorldsDataTable/>
+                                <div>
+                                    <div style={{ width: '70%', margin: 'auto' }}>
+                                        <WorldsDataTable/>
+                                    </div>
                                 </div>
-                            </div>
-                            :
-                            <div>
-                                <ProgressSpinner style={{width: '50px', height: '50px'}} strokeWidth="8" fill="#EEEEEE" animationDuration=".5s"/>
+                                <div hidden={this.state.hideSpinner}>
+                                    <ProgressSpinner style={{width: '50px', height: '50px'}} strokeWidth="8" fill="#EEEEEE" animationDuration=".5s"/>
+                                </div>
                             </div>
                         : null
                 }
@@ -83,3 +90,4 @@ const mapStateToProps = (state: IState, { match }: any) => ({
 const mapDispatchToProps = (dispatch: any) => bindActionCreators({ setWorlds: WorldsActions.setWorldsAction }, dispatch);
 
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(Worlds) as any);
+

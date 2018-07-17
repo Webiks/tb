@@ -3,6 +3,7 @@ import * as React from 'react';
 import { LayerService } from '../../services/LayerService';
 import { IWorldLayer } from '../../interfaces/IWorldLayer';
 import ol from 'openlayers';
+import config from '../../config/config';
 
 export interface IDisplayMapProps  {
     layer: IWorldLayer,
@@ -26,8 +27,15 @@ class DisplayMap extends React.Component {
             .then( xml => {
                 console.log("1. get capabilities XML");
                 // 2. convert the xml data to json
-                const json = this.parser.read(xml);
-                console.log("2. convert to JSON");
+                let json = this.parser.read(xml);
+                // change the 'localhost' to the App domain (for the remote server)
+                if (!(config.baseUrl.path.includes('localhost'))) {
+                    const newPath = config.baseUrl.path.substr(config.baseUrl.path.indexOf('//') + 2);
+                    const oldPath = /localhost/gi;
+                    const jsonString = JSON.stringify(json).replace(oldPath, newPath);      // convert to JSON
+                    json = JSON.parse(jsonString);                                          // convert to Object
+                }
+                console.log("2. convert to JSON and to an Object");
                 // 3. define the map options
                 const options = ol.source.WMTS.optionsFromCapabilities(json,
                     {

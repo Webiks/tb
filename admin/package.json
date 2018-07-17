@@ -30,9 +30,10 @@
   },
   "scripts": {
     "predeploy": "npm run build && npm run CNAME",
-    "deploy": "gh-pages --repo https://$GITHUB_TOKEN@github.com/webiks/tb-admin-app.git -d build",
+    "deploy": "gh-pages --repo https://$GITHUB_TOKEN@github.com/webiks/tb.git -d build",
     "start": "react-scripts-ts start",
-    "build": "set NODE_ENV=production && react-scripts-ts build",
+    "start:prod": "set NODE_ENV=production&&react-scripts-ts start",
+    "build": "set NODE_ENV=production&&react-scripts-ts build",
     "CNAME": "echo https://tb-admin-app.webiks.com > build/CNAME",
     "test": "echo \"fix your tests\" ",
     "eject": "react-scripts-ts eject"
@@ -52,3 +53,4 @@
     "typescript": "^2.8.3"
   }
 }
+

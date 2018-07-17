@@ -23,7 +23,7 @@ export interface IPropsWorld {
     worldName: string,
     world: IWorld,
     refresh: (worlds: IWorld[]) => void,
-    setDisplayDialog: (value: boolean) => void,
+    setDisplayEditor: (value: boolean) => void,
     updateWorld: (worlds: Partial<IWorld>) => ITBAction
 }
 
@@ -100,7 +100,7 @@ class WorldEditor extends React.Component {
 
     // update the App store World's list and refresh the page
     refresh = (worlds: IWorld[]) => {
-        this.props.setDisplayDialog(false);
+        this.props.setDisplayEditor(false);
         this.props.refresh(worlds);
     };
 

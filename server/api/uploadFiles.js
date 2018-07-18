@@ -29,7 +29,11 @@ router.post('/:worldName', (req, res) => {
     // check if need to do a ZIP file
     if (!reqFiles.length && (reqFiles.name.includes('.zip') || reqFiles.size < 5000000)){
         isZipped = false;
-        fileType = findFileType(reqFiles.type);
+        if (reqFiles.name.includes('.zip')){
+            fileType = 'zip';
+        } else {
+            fileType = findFileType(reqFiles.type);
+        }
     } else {
         isZipped = true;
         fileType = 'zip';
@@ -97,6 +101,7 @@ router.post('/:worldName', (req, res) => {
 
     // adding the GeoTiff file to the workspace in geoserver using the cURL command line:
     function uploadToGeoserver(fileType, filename, filePath) {
+        console.log("file Type: " + fileType);
         // 1. create the JSON file with the desire workspace
         let importJSON = {};
         if (fileType === 'raster' || fileType === 'zip') {
@@ -136,7 +141,8 @@ router.post('/:worldName', (req, res) => {
         deleteUncompleteImports();
 
         // 8. send OK
-        res.send("the file was Successfully upload!!!");
+        // res.send("the file was Successfully upload!!!" + fileData);
+        res.send(reqFiles);
     }
 
 });

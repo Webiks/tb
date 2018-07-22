@@ -1,6 +1,7 @@
 const express = require('express');
 const checkAuth = require('./check-auth');
 const router = express.Router();
+const mongoose = require('mongoose');
 
 router.post('/checkAuth', checkAuth, (req, res) =>  res.send('o.k'));
 

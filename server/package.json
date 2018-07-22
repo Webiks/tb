@@ -31,6 +31,7 @@
     "fs-extra": "^6.0.1",
     "http": "0.0.0",
     "lodash": "^4.17.10",
+    "mongoose": "^5.2.4",
     "multiparty": "^4.1.4",
     "path": "^0.12.7",
     "stream-multipart-upload": "^0.4.6",

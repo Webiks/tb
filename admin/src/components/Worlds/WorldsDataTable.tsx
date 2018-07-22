@@ -209,4 +209,4 @@ const mapDispatchToProps = (dispatch: any) => ({
 
 export default connect(mapStateToProps, mapDispatchToProps)(WorldsDataTable);
 
-// header={<DataTableHeader title={'Worlds List'}/>}
+

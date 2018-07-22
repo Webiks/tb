@@ -1,11 +1,11 @@
 import {
     ICrs,
     ILatLonBoundingBox,
-    IMetaData,
     INameSpace,
     INativeBoundingBox,
     ILayerStore,
-    IStrings
+    IStrings,
+    IMetaData
 } from './ILayerDetails';
 
 export interface IVector {
@@ -13,16 +13,17 @@ export interface IVector {
     nativeName?: string,
     nameSpace?: INameSpace,
     title?: string,
+    keywords?: IStrings,
     description?: string,
     keyword?: IStrings,
-    nativeCRS?: string | ICrs
+    nativeCRS?: string | ICrs                   // define as a Map in the mongoDB
     srs: string,
     nativeBoundingBox: INativeBoundingBox,
     latLonBoundingBox: ILatLonBoundingBox,
     center: [ number, number],
     projectionPolicy?: string,
     enabled?: boolean,
-    metadata?: IMetaData,
+    metadata?: IMetaData,                       // define as a Map in the mongoDB
     store: ILayerStore,
     maxFeatures: number,
     numDecimals: number,
@@ -37,7 +38,6 @@ export interface IAttributes {
 }
 
 export interface IAttribute {
-
     name: string,
     minOccurs: number,
     maxOccurs: number,

@@ -7,7 +7,6 @@ import { WorldsActions } from '../../actions/world.actions';
 import { IWorldLayer } from '../../interfaces/IWorldLayer';
 import { ITBAction } from '../../consts/action-types';
 import { LayerService } from '../../services/LayerService';
-import { ILayer } from '../../interfaces/ILayer';
 import DataTableHeader from '../DataTable/DataTableHeader';
 import UploadFile from './UploadFile';
 import DisplayMap from '../DisplayMap/DisplayMap';
@@ -21,7 +20,7 @@ import { DataTable } from 'primereact/components/datatable/DataTable';
 import { Column } from 'primereact/components/column/Column';
 import { Button } from 'primereact/components/button/Button';
 import { Dialog } from 'primereact/components/dialog/Dialog';
-import { WorldService } from '../../services/WorldService';
+import { ILayer } from '../../interfaces/ILayer';
 
 export interface IPropsLayers {
     worldName: string,
@@ -61,10 +60,14 @@ class LayersDataTable extends React.Component {
     });
 
     editLayer = (layer: IWorldLayer) => {
+        this.setState({
+            selectedLayer: {...layer},
+            displayMapWindow: false,
+            displayAlert: false });
         this.props.navigateTo(`/world/${this.props.worldName}/layer/${layer.layer.name}`);
     };
 
-    deleteLayer = (rowData) => {
+    deleteLayer = (rowData: ILayer) => {
         this.setState({
             selectedLayer: {...rowData},
             displayMapWindow: false,
@@ -91,7 +94,6 @@ class LayersDataTable extends React.Component {
         console.log("Layer Data Table: updateLayers...");
         const name = this.props.worldName;
         this.props.updateWorld({ name, layers });
-        // this.props.setStateWorld();
         this.setInitialState();
     };
 
@@ -103,15 +105,9 @@ class LayersDataTable extends React.Component {
                 <Button type="button" icon="fa fa-search" className="ui-button-success" style={{margin: '3px 7px'}}
                         onClick={() => this.setState({selectedLayer: rowData, displayMapWindow: true})}/>
                 <Button type="button" icon="fa fa-edit" className="ui-button-warning" style={{margin: '3px 7px'}}
-                        onClick={() => {
-                            this.setState({selectedLayer: rowData, displayMapWindow: false});
-                            this.editLayer(rowData)
-                        }}/>
+                        onClick={() => this.editLayer(rowData)}/>
                 <Button type="button" icon="fa fa-close" style={{margin: '3px 7px'}}
-                        onClick={() => {
-                            this.setState({selectedLayer: rowData, displayMapWindow: false});
-                            this.deleteLayer(rowData.layer)
-                        }}/>
+                        onClick={() => this.deleteLayer(rowData.layer)}/>
             </div>
         );
     };
@@ -150,7 +146,7 @@ class LayersDataTable extends React.Component {
                 }
 
                 {
-                this.state.selectedLayer &&
+                this.state.selectedLayer && this.state.displayMapWindow &&
                 <div>
                     <Dialog visible={this.state.displayMapWindow} modal={true}
                             header={`Layer '${this.state.selectedLayer.layer.name}' map preview`}

@@ -7,6 +7,7 @@ export interface IInputdata {
     flightAltitude?: number,             // units: meters
     cloudCoveragePercentage?: number     // units: %  raster only)
     zoom: number
+    opacity?: number
 }
 
 export interface ISensor {

@@ -1,5 +1,5 @@
 import axios from 'axios';
-import GeoTIFF from 'geotiff';
+import { GeoTIFF } from 'geotiff';
 import config from "../config/config";
 import { IWorldLayer } from "../interfaces/IWorldLayer";
 import { ILayer } from '../interfaces/ILayer';
@@ -17,11 +17,7 @@ export class LayerService {
             // A. get an Array of all the world's layers
         return this.getWorldLayers(worldName)
             // B. get all the data of each layer:
-            .then(data => {
-                // get the data of each layer in the world
-                const promises = data.map((worldLayer: any) => this.getLayerByName(worldName, worldLayer.name));
-                return Promise.all(promises);
-            })
+            .then(layersList => this.getLayersDataByList(worldName, layersList))
             .catch(error => {
                 console.error("getAllLayersData ERROR!" + error.message);
                 throw new Error(error)
@@ -40,7 +36,14 @@ export class LayerService {
             });
     }
 
-    // B. get all layer's Data by name
+    // B. get the data of each layer in the world
+    static getLayersDataByList(worldName: string, list: IWorldLayer[]): Promise<any> {
+        // C. get the data of each layer in the world
+        const promises = list.map((worldLayer: any) => this.getLayerByName(worldName, worldLayer.name));
+        return Promise.all(promises);
+    }
+
+    // C. get all layer's Data by name
     static getLayerByName (worldName: string, layerName: string): Promise<any> {
         console.warn("start the GET LAYERS service..." + layerName);
         // 1. get the layer type & resource info
@@ -63,12 +66,13 @@ export class LayerService {
 
     // 1. get the layer type & resource info
     static getLayerInfo(worldName: string, layerName: string): Promise<any> {
-        console.log("start the GET LAYER INFO service..." + layerName);
+        console.log("start the GET LAYER INFO service..." + `${this.baseUrl}/layer/${worldName}/${layerName}`);
         return axios
             .get(`${this.baseUrl}/layer/${worldName}/${layerName}`)
             .then(layerInfo => {
                 const layer = layerInfo.data;
                 layer.layer.id = layerInfo.data.layer.resource.name;                   // set the layer id
+                layer.layer.type = layer.layer.type.toUpperCase();                     // set the layer type
                 return {...layer};
             })
             .catch(error => {
@@ -99,7 +103,7 @@ export class LayerService {
                             [layerDetails.data.featureType.latLonBoundingBox.minx, layerDetails.data.featureType.latLonBoundingBox.maxy] ;
                         break;
                 }
-                layer.layer.storeName = this.splitString(storeId,":")[1];            // set the store name
+                layer.layer.storeName = this.splitString(storeId,":")[1];                       // set the store name
                 return { ...layer};
             })
             .catch(error => {
@@ -118,12 +122,12 @@ export class LayerService {
                 switch (layer.layer.type) {
                     case ('RASTER'):
                         layer.store = store.data.coverageStore;
-                        layer.store.format = store.data.coverageStore.type;             // set the store format
-                        layer.layer.filePath = store.data.coverageStore.url;            // set the file path
+                        layer.store.format = store.data.coverageStore.type.toUpperCase();   // set the store format
+                        layer.layer.filePath = store.data.coverageStore.url;                // set the file path
                         break;
                     case ('VECTOR'):
                         layer.store = store.data.dataStore;
-                        layer.store.format = store.data.dataStore.type;                 // set the store format
+                        layer.store.format = store.data.dataStore.type.toUpperCase();       // set the store format
                         layer.layer.filePath = this.getVectorUrl(store.data.dataStore.connectionParameters.entry);    // set the file path
                         break;
                 }
@@ -142,7 +146,7 @@ export class LayerService {
 
     // 4. get the data of the image file
     static getImageData(url: string): Promise<any> {
-        // console.log("geotiff url: " + url);
+        console.log("geotiff: " + GeoTIFF);
         return GeoTIFF.fromUrl("file://C:/dev/Terrabiks/geoserver/rasters/SugarCane.tif")
             .then( tiff => {
                 console.log("geotiff tiff: " + JSON.stringify(tiff));
@@ -165,8 +169,6 @@ export class LayerService {
             .then(xml => xml.data )
             .catch(error => { throw new Error(error) });
     }
-
-// return convert.xmlDataToJSON(xml.data);
 
     // ==============
     // DELETE Request
@@ -230,7 +232,7 @@ export class LayerService {
             // 1. delete the layer from the store - using the resource url (raster or vector)
             this.deleteLayerFromStroe(worldName, layer.name),
             // 2. delete the store
-            this.deleteStroe(worldName, layer.storeName, layer.type),
+            this.deleteStroe(worldName, layer.storeId, layer.type),
             // 3. delete the layer from the layers' list
             this.deleteLayer(layer.id)
         ];

@@ -6,13 +6,12 @@ export interface IImageData {
 
 export interface IFile {
     name: string,
-    type: string                            // TIF or SHX
+    type: string,                            // TIF or SHX
     folderPath: string,
     dateCreated: Date,
     dateModified: Date,
     size: number,                           // MB or KB
-    attribute: string,
-
+    attribute: string
 }
 
 export interface IImage {

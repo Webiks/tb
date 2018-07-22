@@ -1,11 +1,11 @@
 import {
     ICrs,
     ILatLonBoundingBox,
-    IMetaData,
-    INameSpace,
     INativeBoundingBox,
     ILayerStore,
-    IStrings
+    IStrings,
+    IMetaData,
+    INameSpace
 } from './ILayerDetails';
 
 export interface IRaster {
@@ -13,16 +13,15 @@ export interface IRaster {
     nativeName?: string,
     nameSpace?: INameSpace,
     title?: string,
-    description?: string,
-    keyword?: IStrings,
-    nativeCRS?: string | ICrs
+    nativeCRS?: string | ICrs,                  // define as a Map in the mongoDB
+    keywords?: IStrings,
     srs: string,
     nativeBoundingBox: INativeBoundingBox,
     latLonBoundingBox: ILatLonBoundingBox,
     center: [ number, number],
     projectionPolicy?: string,
     enabled?: boolean,
-    metadata?: IMetaData,
+    metadata?: IMetaData,                       // define as a Map in the mongoDB
     store: ILayerStore,
     nativeFormat: string,
     grid?: IGrid,
@@ -63,6 +62,7 @@ export interface ICoverageDimension {
     name: string,
     description: string,
     range: ICoverageRange,
+    nullValues: INullValues,
     unit: string,
     dimensionType: IDimensionType
 }
@@ -70,6 +70,10 @@ export interface ICoverageDimension {
 export interface ICoverageRange {
     min: number | string,
     max: number | string
+}
+
+export interface INullValues {
+    double: number[]
 }
 
 export interface IDimensionType {

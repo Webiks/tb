@@ -10,7 +10,7 @@ export interface IWorldLayer {
     href?: string,
     layer: ILayer,                  // layer data from geoserver
     store: IStore                   // store store data from geoserver (coverStore or dataStore)
-    data:  IRaster | IVector            // raster or vector data from geoserver
+    data:  IRaster | IVector        // raster or vector data from geoserver
     imageData: IImageData           // data from the image file
     inputData: IInputdata          // data from the user
 }

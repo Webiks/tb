@@ -6,6 +6,9 @@ import { Route } from 'react-router';
 import { IState } from '../../store';
 import { IWorld } from '../../interfaces/IWorld';
 import { IWorldLayer } from '../../interfaces/IWorldLayer';
+import { ITBAction } from '../../consts/action-types';
+import { ILayer } from '../../interfaces/ILayer';
+import * as _ from 'lodash';
 import { LayerService } from '../../services/LayerService';
 import { WorldsActions } from '../../actions/world.actions';
 import Layer from '../Layer/Layer';
@@ -17,7 +20,6 @@ import 'primereact/resources/themes/omega/theme.css';
 import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
 import 'font-awesome/css/font-awesome.css';
-import { ITBAction } from '../../consts/action-types';
 import { ProgressSpinner } from 'primereact/components/progressspinner/ProgressSpinner';
 
 export interface IPropsLayers {
@@ -39,21 +41,33 @@ class WorldLayers extends React.Component {
     };
 
     getAllLayersData = () => {
-        // if (!this.props.world.layers.length)  {
-            this.setState({ hideSpinner: false } );
-            console.log("getAllLayersData...");
-            LayerService.getAllLayersData(this.props.world.name)
-                .then(layers => {
-                    console.log("getAllLayersData getInputData...");
-                    // get the input Data for all the world's layers (from the App store)
-                    const layersInput = layers.map((layer: IWorldLayer) => {
-                        return this.getInputData(layer);
-                    });
-                    console.log("getAllLayersData refreshing...");
-                    this.refresh([...layersInput]);               // update the App store
-                })
-                .catch(error => this.refresh([]));
-        // }
+        this.setState({ hideSpinner: false } );
+        console.log("getAllLayersData...");
+        // A. get an Array of all the world's layers
+        LayerService.getWorldLayers(this.props.world.name)
+            .then ( ( layersList: ILayer[]) => {
+                console.log("app layers: " + this.props.world.layers);
+                console.log("geo layers: " + layersList);
+                // check if there is a difference between the App Store layers's list to the GeoServer layers's list
+                return _.differenceWith(layersList, this.props.world.layers,
+                            (geoLayer: ILayer, appLayer: IWorldLayer) => geoLayer.name === appLayer.layer.name);
+            })
+            // B. get all the layers data (by a giving layers's list)
+            .then ( ( layersList : any) => {
+                console.log("new files list: " + JSON.stringify(layersList));
+                LayerService.getLayersDataByList(this.props.world.name, layersList)
+                    .then(layers => {
+                        console.log("getAllLayersData getInputData...");
+                        // get the input Data for all the world's layers (from the App store)
+                        const layersInput = layers.map((layer: IWorldLayer) => {
+                            return this.getInputData(layer);
+                        });
+                        console.log("getAllLayersData refreshing...");
+                        this.refresh([...this.props.world.layers, ...layersInput]);               // update the App store
+                    })
+                    .catch(error => console.error("UPLOAD: getLayerByName ERROR: " + error));
+            })
+            .catch(error => this.refresh([]));
     };
 
     // get the input Data of the layer from the App store

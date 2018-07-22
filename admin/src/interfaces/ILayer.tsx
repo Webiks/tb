@@ -1,9 +1,8 @@
-import { IStore } from './IStore';
-
 export interface ILayer {
     id: string,                     // 'worldname:layername'
     name: string,
     type: string,                   // 'RASTER' or 'VECTOR'
+    storeId: string,
     storeName: string,
     filePath: string,
     fileName: string,
@@ -28,3 +27,4 @@ export interface IAttribution {
     logoWidth: number,
     logoHeight: number
 }
+

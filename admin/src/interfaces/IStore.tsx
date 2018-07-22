@@ -3,15 +3,13 @@ import { IEntry } from './ILayerDetails';
 export interface IStore {
     name: string,
     type: string,
-    format: string,                         // type: 'GeoTiff' or 'Shapfile'
+    format: string,                             // type: 'GeoTiff' or 'Shapfile'
     enable: boolean,
-    workspace: IWorkspace,
     _default: boolean,
-    url?: string,                           // only in RASTERS
-    coverage?: string,                      // only in RASTERS
-    featureType?: string                    // only in VECTORS
-    connectionParameters?: IConnectParmas   // only in VECTORS
-
+    workspace: IWorkspace,
+    connectionParameters?: IConnectParmas,     // define as a Map in the mongoDB
+    href: string,                              // the 'coverages' field in RASTERS or the 'featureTypes' field in VECTORS
+    url?: string                               // only in RASTERS
 }
 
 export interface IWorkspace {
@@ -20,6 +18,10 @@ export interface IWorkspace {
 }
 
 export interface IConnectParmas {
-    entry: IEntry[]
+    entry: IEntry | IEntry[]
 }
+
+
+
+
 

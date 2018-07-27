@@ -1,19 +1,17 @@
 const express = require('express');
 const cors = require('cors');
-const api = require('./api/index');
-const login = require('./login');
+const http = require ('http');
+const api = require('./src/api/index');
+const login = require('./src/login/index');
 const bodyParser = require('body-parser');
 const session = require('express-session');
-const checkAuth = require('./login/check-auth');
-const DBManager = require('./database/DBManager');
-require("babel-register")({
-    ignore: false
-});
+const checkAuth = require('./src/login/check-auth');
+const DBManager = require('./src/database/DBManager');
 
 const app = express();
 const server = http.createServer(app);
 
-require('./config/serverConfig')();
+require('./src/config/serverConfig')();
 const configParams = config().configParams;
 const configUrl = configBaseUrl().configUrl;
 

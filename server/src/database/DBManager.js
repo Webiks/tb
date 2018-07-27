@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-export class DBManager {
+class DBManager {
 
     static connect(Url) {
 
@@ -22,3 +22,5 @@ export class DBManager {
         mongoose.disconnect(done);
     }
 }
+
+module.exports = DBManager;

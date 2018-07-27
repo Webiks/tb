@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const assert = require('assert');
-const WorldSchema = require('../schemas/WorldSchema');
-const WorldLayerSchema = require('../schemas/WorldLayersSchema');
+const { WorldSchema } = require('../schemas/WorldSchema');
+const { WorldLayerSchema } = require('../schemas/WorldLayersSchema');
 
 require('../../config/serverConfig')();
 const configUrl = configBaseUrl().configUrl;
@@ -24,30 +24,31 @@ db.on('error', console.error.bind(console, 'connection error:'));
 db.once('open', function() {
     console.log("Connected successfully to server");
 
-    // const worldCollection = getCollectionByType(db, 'world');
-    // const layerCollection = getCollectionByType(db, 'layer');
-
     // Define the MODELS of the world and the layers
     worldModel = db.model('World', WorldSchema);
     layerModel = db.model('WorldLayer', WorldLayerSchema);
 
+    console.log("world model: " + worldModel);
+
     const layer = {
-        worldName: 'tb',
-        worldLayerId: 'tb: new_layer',
+        worldName: 'db1',
+        worldLayerId: 'db1: new_layer',
         name: 'new_layer',
         layer: { type: 'vector' }
     };
 
     const layer1 = {
-        worldName: 'tb',
-        worldLayerId: 'tb: layer1',
+        worldName: 'db1',
+        worldLayerId: 'db1: layer1',
         name: 'layer1',
         layer: { type: 'raster' }
     };
 
     const world = {
-        name: 'tb',
-        country: 'Brazil',
+        name: 'db1',
+        country: 'Israel',
+        disc: 'test',
+        directory: 'local',
         layers: [layer, layer1]
     };
 
@@ -60,13 +61,13 @@ db.once('open', function() {
     const worldList = [world, world1];
     const layerList = [layer, layer1];
 
-    // createNewWorld(world);
+    createNewWorld(world);
     // createNewWorld(world1);
     // deleteWorldByName(world1.name);
     // addWorldList(worldList);
     // createNewLayer(layer1);
     // addLayerList(layerList);
-    deleteLayerByID(layer1);
+    // deleteLayerByID(layer1);
 
     // db.close();
 

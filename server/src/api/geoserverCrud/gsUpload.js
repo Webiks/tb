@@ -5,7 +5,7 @@ const fs = require('fs-extra');
 const { execSync } = require('child_process');          // for using the cURL command line
 const path = require('path');
 const AdmZip = require('adm-zip');
-const { UploadFilesToGS } = require('./UploadFileToGS');
+const UploadFilesToGS = require ('./UploadFilesToGS');
 require('../fileMethods')();
 
 const uploadDir = '/public/uploads/';

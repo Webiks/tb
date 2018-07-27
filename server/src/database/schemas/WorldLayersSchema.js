@@ -6,7 +6,7 @@ const Schema = mongoose.Schema;
 // WORLD LAYER: from GeoServer - world's Layers page
 const WorldLayerSchema = new Schema({
     worldName: String ,                             // one to many (many layers to one world)
-    worldLayerId: { type: String , unique : true }, // worldname: layername , unique : true
+    worldLayerId: String ,                          // worldname: layername , unique : true
     name: String ,
     href: String ,                                  // href to the Layer page
     // LAYER: from GeoServer - Layer page
@@ -218,7 +218,7 @@ const WorldLayerSchema = new Schema({
 });
 
 // create worldLyaer MODEL
-// const worldLayerModel = mongoose.model('WorldLayer', worldLayerSchema);
+const worldLayerModel = mongoose.model('WorldLayer', WorldLayerSchema);
 
-module.exports = WorldLayerSchema;
-// module.exports = worldLayerModel;
+module.exports = { WorldLayerSchema, worldLayerModel };
+

@@ -1,5 +1,5 @@
 const mongoose = require ('mongoose');
-const WorldLayerSchema = require ('./WorldLayersSchema');
+const { WorldLayerSchema } = require ('./WorldLayersSchema');
 
 const Schema = mongoose.Schema;
 

@@ -4,10 +4,11 @@ module.exports = function(){
         return {
             configParams: {
                 serverPort: 4000,
+                mongoPort: 27017,
                 geoServerPort: 8080,
                 baseUrlLocal: "://127.0.0.1",
                 baseUrlRemote: "://tb-server.webiks.com",
-                databaseName: 'tb_database',
+                dbName: 'tb_database',
                 baseUrlGeoserver:
                     {
                         baseUrl: "geoserver",
@@ -36,32 +37,37 @@ module.exports = function(){
 
     this.configBaseUrl = () => {
         // set the urls
-        const baseGeoserverUrl = `${this.config().configParams.baseUrlGeoserver.baseUrl}`;
-        const baseGeoserverRestUrl = `${this.config().configParams.baseUrlGeoserver.restUrl}`;
-        const baseGeoserverWorkspacesUrl = `${this.config().configParams.baseUrlGeoserver.restWorkspaces}`;
-        const baseGeoserverImportsUrl = `${this.config().configParams.baseUrlGeoserver.restImports}`;
+        const geoserverUrl = `${this.config().configParams.baseUrlGeoserver.baseUrl}`;
+        const geoserverRestUrl = `${this.config().configParams.baseUrlGeoserver.restUrl}`;
+        const geoserverWorkspacesUrl = `${this.config().configParams.baseUrlGeoserver.restWorkspaces}`;
+        const geoserverImportsUrl = `${this.config().configParams.baseUrlGeoserver.restImports}`;
 
         let baseUrl = '';
+        let serverBaseUrl = '';
 
         if (process.env.NODE_ENV === "production") {
             baseUrl = this.config().configParams.baseUrlRemote;
+            serverBaseUrl = `http${baseUrl}`;
         } else {
             baseUrl = this.config().configParams.baseUrlLocal;
+            serverBaseUrl = `http${baseUrl}:${this.config().configParams.serverPort}`
         }
 
-        const mongoBaseUrl = `mongodb${baseUrl}:${this.config().configParams.geoServerPort}`;
-        const httpBaseUrl = `http${baseUrl}:${this.config().configParams.geoServerPort}`;
+        // mongodb://localhost:27017
+        const mongoBaseUrl = `mongodb${baseUrl}:${this.config().configParams.mongoPort}`;
+        const geoserverBaseUrl = `http${baseUrl}:${this.config().configParams.geoServerPort}`;
 
         console.log("Config Base URL: " + baseUrl);
 
         return {
             configUrl: {
                 mongoBaseUrl,
-                baseUrlGeoserver: `${httpBaseUrl}/${baseGeoserverUrl}`,
-                baseRestUrlGeoserver: `${httpBaseUrl}/${baseGeoserverRestUrl}`,
-                baseWorkspacesUrlGeoserver: `${httpBaseUrl}/${baseGeoserverWorkspacesUrl}`,
-                reqImportCurl: `${httpBaseUrl}/${baseGeoserverImportsUrl}`,
-                baseUrlAppGetLayer: `${httpBaseUrl}/${this.config().configParams.baseUrlAppGetLayer}`
+                serverBaseUrl,
+                baseUrlGeoserver: `${geoserverBaseUrl}/${geoserverUrl}`,
+                baseRestUrlGeoserver: `${geoserverBaseUrl}/${geoserverRestUrl}`,
+                baseWorkspacesUrlGeoserver: `${geoserverBaseUrl}/${geoserverWorkspacesUrl}`,
+                reqImportCurl: `${geoserverBaseUrl}/${geoserverImportsUrl}`,
+                baseUrlAppGetLayer: `${geoserverBaseUrl}/${this.config().configParams.baseUrlAppGetLayer}`
             }
         };
 

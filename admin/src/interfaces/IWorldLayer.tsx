@@ -6,6 +6,7 @@ import { IRaster } from './IRaster';
 import { IVector } from './IVector';
 
 export interface IWorldLayer {
+    _id?: string,
     name: string,
     href?: string,
     layer: ILayer,                  // layer data from geoserver

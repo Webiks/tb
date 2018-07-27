@@ -30,6 +30,7 @@ class DeleteComponent extends React.Component {
     refresh = this.props.refresh.bind(this);
 
     delete = () => {
+        // delete a layer from a world
         if (this.props.layer){
             this.list = this.props.world.layers;
             console.log("delete layer: " + this.props.name);
@@ -42,10 +43,12 @@ class DeleteComponent extends React.Component {
                     this.refresh(layers);
                 })
                 .catch(error => this.props.refresh([]));
+
+        // delete a world
         } else {
             this.list = this.props.worlds;
-            console.log("delete world: " + this.props.name);
-            WorldService.deleteWorldByName(this.props.worldName)
+            console.log("delete world: " + this.props.world.name);
+            WorldService.deleteWorld(this.props.world)
                 .then(res => {
                     const worlds =
                         this.props.worlds.filter( world => world.name !== this.props.worldName);
@@ -56,7 +59,6 @@ class DeleteComponent extends React.Component {
     };
 
     render() {
-
 
         const alertFooter = (
             <div>

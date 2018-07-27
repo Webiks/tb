@@ -1,4 +1,6 @@
 import * as React from 'react';
+import { cloneDeep, get } from 'lodash';
+import { updatedDiff } from 'deep-object-diff';
 import { IWorld } from '../../interfaces/IWorld';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -6,7 +8,7 @@ import { IState } from '../../store';
 import { ITBAction } from '../../consts/action-types';
 import { WorldsActions } from '../../actions/world.actions';
 import { WorldService } from '../../services/WorldService';
-import { cloneDeep, get } from 'lodash';
+
 
 /* Prime React components */
 import 'primereact/resources/themes/omega/theme.css';
@@ -72,26 +74,40 @@ class WorldEditor extends React.Component {
     // save the changes in the App store
     save = () => {
         const worlds = [...this.props.worldsList];
+        // if new - create a new world
         if (this.props.newWorld){
-            WorldService.createWorld(this.state.world.name)
+            WorldService.createWorld(this.state.world)
                 .then (res => {
-                    worlds.push(this.state.world);
+                    console.log("create new world: " + JSON.stringify(res));
+                    worlds.push(res);
                     this.refresh(worlds);
                 });
+        // else - update an existing world
         } else {
             worlds[this.findSelectedWorldIndex()] = this.state.world;
-
-            // if the name was changed - update the workspace in geoserver
-            if (this.props.worldName !== this.state.world.name){
-                console.warn("SAVE: prev Name: " + this.props.worldName);
-                WorldService.updateWorld(this.props.worldName, this.state.world.name)
+            // compare the changes between the old world object to the new one
+            const updateWorld = updatedDiff(this.props.world, this.state.world);
+            // if more then one field has changed - update the whole world object
+            if ( Object.keys(updateWorld).length > 1 ){
+                console.warn("SAVE: update world : " + this.props.worldName);
+                WorldService.updateWorld(this.props.world, this.state.world)
                     .then ( res =>  {
-                        console.warn('Succeed to update worlds: ' + JSON.stringify(res));
+                        console.warn('Succeed to update the world: ' + JSON.stringify(res));
                         this.refresh(worlds);
                     })
-                    .catch( error => console.error('Failed to update worlds: ' + JSON.stringify(error.message)));
+                    .catch( error => console.error('Failed to update the world: ' + JSON.stringify(error.message)));
+            // else - update only the changed field
             } else {
-                this.refresh(worlds);
+                const fieldName = Object.keys(updateWorld)[0];
+                const fieldValue = updateWorld[fieldName];
+                console.warn("SAVE: update field: " + fieldName + ', value: ' + fieldValue);
+                console.warn('SAVE: update field - props world : ' + JSON.stringify(this.props.world));
+                WorldService.updateWorldField(this.props.world, fieldName, fieldValue)
+                    .then ( res =>  {
+                        console.warn('Succeed to update ' + fieldName + ' field: ' + JSON.stringify(res));
+                        this.refresh(worlds);
+                    })
+                    .catch( error => console.error('Failed to update the world: ' + JSON.stringify(error.message)));
             }
         }
     };

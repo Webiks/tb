@@ -5,7 +5,7 @@ const fs = require('fs-extra');
 const { execSync } = require('child_process');          // for using the cURL command line
 const path = require('path');
 const AdmZip = require('adm-zip');
-require('./fileMethods')();
+require('../fileMethods')();
 require('./curlMethods')();
 
 const uploadDir = '/public/uploads/';
@@ -95,7 +95,7 @@ router.post('/:worldName', (req, res) => {
         };
     }
 
-    // adding the GeoTiff file to the workspace in geoserver using the cURL command line:
+    // adding the file to the workspace in geoserver using the cURL command line:
     function uploadToGeoserver(fileType, filename, filePath) {
         // 1. create the JSON file with the desire workspace
         let importJSON = {};

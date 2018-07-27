@@ -22,7 +22,7 @@ import { IWorldLayer } from '../../interfaces/IWorldLayer';
 export interface IPropsUploadFiles {
     worldName: string,
     world: IWorld,
-    updateWorld: (worlds: IWorld) => ITBAction,
+    updateWorld:  (worlds: Partial<IWorld>) => ITBAction,
     getAllLayersData: () => void
 }
 

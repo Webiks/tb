@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const axios = require('axios');
 
-require('../config/serverConfig')();
+require('../../config/serverConfig')();
 
 const configParams = config().configParams;
 const configUrl = configBaseUrl().configUrl;

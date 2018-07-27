@@ -1,14 +1,13 @@
 const mongoose = require('mongoose');
 
-require('../config/serverConfig')();
+require('../../config/serverConfig')();
 const configParams = config().configParams;
 const configUrl = configBaseUrl().configUrl;
 
 // create CONNECTION with the mongo's database
-// mongodb://user:pass@localhost:port/database
-mongoose.connect(`${configUrl.mongoBaseUrl}/${configParams.databaseName}`);
+// mongodb://user:pass@localhost:27017/database
+const connection = mongoose.connect(`${configUrl.mongoBaseUrl}/${configParams.databaseName}`);
 
-const connection = mongoose.connection;
 connection.on('error', console.error.bind(console, 'connection error:'));
 connection.once('open', function() {
     // ======================
@@ -250,4 +249,6 @@ connection.once('open', function() {
 
 
 });
+
+module.exports = mongoose;
 

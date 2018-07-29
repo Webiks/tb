@@ -1,80 +1,65 @@
 const express = require('express');
-const router = express.Router();
 const axios = require('axios');
+const worldModel = require('../../database/schemas/WorldSchema');
+const worldLayerModel = require('../../database/schemas/WorldLayersSchema');
+const MongoCrud = require('../../database/MongoCrud');
+const GsWorlds  = require("../geoserverCrud/GsWorlds");
+const GsLayers  = require("../geoserverCrud/gsLayers");
 
 require('../../config/serverConfig')();
-
 const configParams = config().configParams;
 const configUrl = configBaseUrl().configUrl;
 const authorization = configParams.headers.authorization;
 
+const router = express.Router();
+
+const dbWorldCrud = new MongoCrud(worldModel);
+const dbLayerCrud = new MongoCrud(worldLayerModel);
+const geoserverBaseUrl = `${configUrl.serverBaseUrl}/api/gsLayers`;
+
 // ==============
-//  GET Requests
+//  CREATE (add)
 // ==============
-// get all layers of the world
-router.get('/:worldName', (req, res) => {
-    const urlGetLayers = `${configUrl.baseWorkspacesUrlGeoserver}/${req.params.worldName}/layers.json`;
-    console.log("TB SERVER: start getLayers url = " + urlGetLayers);
-    axios.get(urlGetLayers, { headers: { authorization } })
-        .then( response => res.send(response.data))
-        .catch( error => {
-            console.error(`getLayers ERROR! ${urlGetLayers}: ${error}`);
-            res.status(404).send(`world ${req.params.worldName}'s layers can't be found!`);
-        });
-
-});
-
-// get the layer type & resource info ("layer" field - type ILayerDetails)
-router.get('/layer/:worldName/:layerName', (req, res) => {
-    const urlGetLayer = `${configUrl.baseWorkspacesUrlGeoserver}/${req.params.worldName}/layers/${req.params.layerName}.json`;
-    console.log("TB SERVER: start getLayerInfo url = " + urlGetLayer);
-    axios.get(urlGetLayer, { headers: { authorization } })
-        .then( response => res.send(response.data))
-        .catch( error => {
-            console.error(`getLayerInfo ERROR! ${urlGetLayer}: ${error}`);
-            res.status(404).send(`layer ${req.params.layerName} can't be found!`);
-        });
-});
-
-// get layer's details ("data" field - type ILayerDetails)
-// using the resource href that we got from the "layer's info" request
-router.get('/details/:worldName/:layerName', (req, res) => {
-    // get the resource URL
-    axios.get(`${configUrl.baseUrlAppGetLayer}/${req.params.worldName}/${req.params.layerName}`)
-        .then(response => {
-            // get the resource URL
-            return axios.get(response.data.layer.resource.href, { headers: { authorization } })
+// create a new worldLayer (passing a new worldLayer object in the req.body)
+router.post('/:worldLayerId', (req, res) => {
+    console.log('db WORLD SERVER: start to CREATE new WorldLayer: ' + req.params.worldLayerId + ' in the DataBase');
+    console.log('db WORLD SERVER: req.body = ' + JSON.stringify(req.body));
+    console.log('db WORLD SERVER: dbLayerdCrud = ' + dbLayerCrud);
+    dbLayerCrud.add(req.body)
+        .then( response => {
+            console.log("dbWorld: create worldLyaer response: " + response);
+            res.send(response)
         })
-        .then( response => res.send(response.data))
         .catch( error => {
-            console.error(`getLayerDetails ERROR!: ${error}`);
-            res.status(404).send(`layer ${req.params.layerName}'s details can't be found!`);
-        });
-
-});
-
-// get the layer's store data ("store" field - type ILayerDetails)
-router.get('/store/:worldName/:storeName/:storeType', (req, res) => {
-    let storeType = (getTypeData(req.params.storeType)).storeType;
-    const urlGetStore = `${configUrl.baseWorkspacesUrlGeoserver}/${req.params.worldName}/${storeType}/${req.params.storeName}.json`;
-    console.log("TB SERVER: start getStoreData url = " + urlGetStore);
-    axios.get(urlGetStore, { headers: { authorization } })
-        .then( response => res.send(response.data))
-        .catch( error => {
-            console.error(`getStoreData ERROR! ${urlGetStore}: ${error}`);
-            res.status(404).send(`layer ${req.params.storeName}'s store can't be found!`);
+            console.error("create New WorldLayer in mongoDB error!", error);
+            res.status(500).send(`Failed to create ${req.params.worldLayerId} layer! :` + error);
         });
 });
 
-// get Capabilities XML file - WMTS Request for display the selected layer
-router.get('/wmts/:worldName/:layerName', (req, res) => {
-    const capabilitiesUrl = `${configUrl.baseUrlGeoserver}/${req.params.worldName}/${req.params.layerName}/${configParams.wmtsServiceUrl}`;
-    console.log("TB SERVER: start getCapabilities url = " + capabilitiesUrl);
-    axios.get(capabilitiesUrl, { headers: { authorization } })
-        .then( response => res.send(response.data))
+// ============
+//  GET (find)
+// ============
+// get all the World's Layers from the Database
+router.get('/:worldName', (req, res) => {
+    console.log(`db LAYER SERVER: start GET ALL ${req.params.worldName} World's Layers...`);
+    const query = { worldName: req.params.worldName };
+    dbLayerCrud.getListByQuery(query)
+        .then( response => res.send(response))
         .catch( error => {
-            console.error(`getCapabilities ERROR! ${capabilitiesUrl}: ${error}`);
-            res.status(404).send(`Capabilities XML file of ${req.params.layerName} can't be found!`);
+            console.error("db LAYER SERVER GET-ALL error!", error);
+            res.status(404).send(`there are no layers!`);
+        });
+});
+
+// get one Layer Data from GeoServer
+router.get('/:worldLayerId', (req, res) => {
+    console.log("db LAYER SERVER: start GET a layer: " + req.params.worldLayerId);
+    const query = { worldLayerId: req.params.worldLayerId };
+    dbLayerCrud.get(query)
+        .then( response => res.send(response))
+        .catch( error => {
+            console.error("db LAYER SERVER GET-ONE error!", error);
+            res.status(404).send(`layer ${req.params.worldLayerId} can't be found!`);
         });
 });
 
@@ -98,7 +83,7 @@ router.delete('/delete/:worldName/:layerName', (req, res) => {
     // get the resource URL
     console.log(`DELETE: find the url:${configUrl.baseUrlAppGetLayer}/${req.params.worldName}/${req.params.layerName}` );
     axios.get(`${configUrl.baseUrlAppGetLayer}/${req.params.worldName}/${req.params.layerName}`)
-        .then(response => {
+        .then( response => {
             console.log("TB SERVER: DELETE LAYER from STORE = " + response.data.layer.resource.href);
             // delete the layer from the store
             axios.delete(`${response.data.layer.resource.href}?recurse=true`, { headers: { authorization } })

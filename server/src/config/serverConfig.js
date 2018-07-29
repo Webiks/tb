@@ -16,7 +16,7 @@ module.exports = function(){
                         restWorkspaces: "geoserver/rest/workspaces",
                         restImports: "geoserver/rest/imports"
                     },
-                baseUrlAppGetLayer: "api/layers/layer",
+                baseUrlAppGetLayer: "api/gsLayers/layer",
                 wmtsServiceUrl: "gwc/service/wmts?SERVICE=wmts&REQUEST=getcapabilities&VERSION=1%2E0%2E0",
                 baseCurl: "curl -u admin:geoserver",
                 headers:
@@ -67,7 +67,7 @@ module.exports = function(){
                 baseRestUrlGeoserver: `${geoserverBaseUrl}/${geoserverRestUrl}`,
                 baseWorkspacesUrlGeoserver: `${geoserverBaseUrl}/${geoserverWorkspacesUrl}`,
                 reqImportCurl: `${geoserverBaseUrl}/${geoserverImportsUrl}`,
-                baseUrlAppGetLayer: `${geoserverBaseUrl}/${this.config().configParams.baseUrlAppGetLayer}`
+                baseUrlAppGetLayer: `${serverBaseUrl}/${this.config().configParams.baseUrlAppGetLayer}`
             }
         };
 

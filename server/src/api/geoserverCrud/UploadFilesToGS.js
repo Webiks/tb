@@ -43,7 +43,7 @@ class UploadFilesToGS {
         deleteUncompleteImports();
 
         // 8. return OK
-        return "the file was Successfully upload!!!";
+        return reqFiles;
     }
 }
 

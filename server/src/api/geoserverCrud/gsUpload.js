@@ -41,14 +41,13 @@ router.post('/:worldName', (req, res) => {
     }
 
     console.log("isZipped: " + isZipped);
+    let reqfiles;
 
     if (!isZipped){
         // upload a single file to GeoServer
         const file = beforeUpload(reqFiles);
         console.log("uploadToGeoserver single file");
-        UploadFilesToGS.uploadFile(workspaceName, reqFiles, fileType, file.filename, file.filePath)
-            .then ( response => res.send(reqFiles));
-
+        reqfiles = UploadFilesToGS.uploadFile(workspaceName, reqFiles, fileType, file.filename, file.filePath);
     } else {
         // upload multiple files - creating a ZIP file
         // set the ZIP name according to the first file name
@@ -77,9 +76,9 @@ router.post('/:worldName', (req, res) => {
         zip.writeZip(zipFilePath);
 
         // upload the zip file to GeoServer
-        UploadFilesToGS.uploadFile(workspaceName,reqFiles, fileType, zipFilename, zipFilePath)
-            .then ( response => res.send(reqFiles));
+        reqfiles = UploadFilesToGS.uploadFile(workspaceName,reqFiles, fileType, zipFilename, zipFilePath);
     }
+    res.send(reqfiles);
 
     // ======================
     //   F U N C T I O N S

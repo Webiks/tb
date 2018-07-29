@@ -3,7 +3,6 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 // create the World-Layer Schema
-// WORLD LAYER: from GeoServer - world's Layers page
 const WorldLayerSchema = new Schema({
     worldName: String ,                             // one to many (many layers to one world)
     worldLayerId: String ,                          // worldname: layername , unique : true
@@ -44,44 +43,33 @@ const WorldLayerSchema = new Schema({
             name: String ,                              // the name of the world
             href: String                                // href to the workspace page
         },
-        connectionParameters: {
-            entry: [                                    // RASTER: 1 entery , VECTORS: 2 entries
-                {
-                    type: Map ,                             // @key field: [0] 'namespace', [1] 'url'
-                    of: String                              // $ field: the value of the key
-                }
-            ]
+        connectionParameters: {                         // was translated from a map
+            namespace: String,
+            url: String                                 // VECTOR only
         },
         url: String ,                                   // RASTER only
         href: String                                    // get from the "coverages"  in RASTERS or "featureTypes" in VECTORS
     },
     // LAYER DETAILS: from GeoServer - RASTER (coverage object) / VECTOR (featureType object) page
     data: {
-        worldLayerId: { type: String, primaryKey: true },
         name: String ,
         nativeName: String ,
         namespace: {
             name: String ,
-            href: String                                // href to the namespace page
+            href: String                                 // href to the namespace page
         },
         title: String ,
         keywords: {
             string: [String]
         },
-        nativeCRS: {
-            type: Map,                                  // @class field (key)
-            of: String                                  // $ field (value)
-        },
+        nativeCRS: String,                              // was translated from a map
         srs: String ,
         nativeBoundingBox: {
             minx: Number ,
             maxx: Number ,
             miny: Number ,
-            maxy: Number ,
-            crs: {
-                type: Map,                               // @class field (key)
-                of: String                               // $ field (value)
-            }
+            maxy: Number,
+            crs: String                                 // was translated from a map
         },
         latLonBoundingBox: {
             minx: Number ,
@@ -90,13 +78,12 @@ const WorldLayerSchema = new Schema({
             maxy: Number ,
             crs: String
         },
+        center: [Number, Number],
         projectionPolicy: String ,
         enable: Boolean ,
-        metadata: {
-            entry: {
-                type: Map ,                             // @key field
-                of: String                              // $ field: the value of the key
-            }
+        metadata: {                                     // was translated from a map
+            dirName: String ,                           // RASTERS
+            recalculateBounds: String                   // VECTROS
         },
         store: {
             class: String,                              // @class field ('coverage' or 'datastore')

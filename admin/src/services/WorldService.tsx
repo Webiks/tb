@@ -4,7 +4,6 @@ import { IWorld } from '../interfaces/IWorld';
 
 export class WorldService {
 
-    // static baseUrl: string = `${config.baseUrl.path}/${config.baseUrl.api}/worlds`;
     static baseUrl: string = `${config.baseUrl.path}/${config.baseUrl.api}/dbWorlds`;
 
     // ==============
@@ -19,7 +18,8 @@ export class WorldService {
                 console.log("WorldService: get all worlds response: " + JSON.stringify(res.data));
                 return res.data;
             })
-            .then(data => data.map((world: any) => world));
+            .then(data => data.map((world: any) => world))
+            .catch(() => undefined);
     }
 
     static getWorld(name: string): Promise<any> {
@@ -68,7 +68,7 @@ export class WorldService {
         const data = {
             _id: id,
             layers,
-            value: fieldValue
+            newValue: fieldValue
         };
 
         console.log("start the UPDATE WORLD's FIELD service..." + world.name + ', ' + fieldName);

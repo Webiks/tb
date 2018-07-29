@@ -4,7 +4,7 @@ import {
     IMetaData,
     INameSpace,
     INativeBoundingBox,
-    ILayerStore,
+    IDataStore,
     IStrings
 } from './ILayerDetails';
 
@@ -23,7 +23,7 @@ export interface IRaster {
     projectionPolicy?: string,
     enabled?: boolean,
     metadata?: IMetaData,
-    store: ILayerStore,
+    store: IDataStore,
     nativeFormat: string,
     grid?: IGrid,
     supportedFormats?: string[],

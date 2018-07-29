@@ -46,21 +46,6 @@ class Worlds extends React.Component {
             .catch(error => this.props.setWorlds([]));
     };
 
-    // get the input Data of the world from the App store
-    // getInputData = (worlds: IWorld[], world: IWorld): IWorld => {
-    //     // find the world in the App store if exist
-    //     const worldsList = this.props.worldsList.length === 0 ? worlds : this.props.worldsList;
-    //     const appWorld = worldsList.find(({ name, layers }: IWorld) => world.name === name);
-    //     return {
-    //         _id: world._id,
-    //         name: world.name,
-    //         desc: appWorld.desc ? appWorld.desc : '',
-    //         country: appWorld.country ? appWorld.country : '',
-    //         directory: appWorld.directory ? appWorld.directory : '',
-    //         layers: appWorld.layers ? appWorld.layers : []
-    //     };
-    // };
-
     render() {
         return (
             <div>

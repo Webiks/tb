@@ -1,17 +1,16 @@
 import { IEntry } from './ILayerDetails';
 
 export interface IStore {
+    storeId: string,                        // get from the details page (RASTER/VECTOR) store's name field
     name: string,
-    type: string,
-    format: string,                         // type: 'GeoTiff' or 'Shapfile'
+    type: string,                           // RASTER or VECTOR: get from the Layer page's type
+    format: string,                         // get from the store type: 'GeoTiff' or 'Shapfile'
     enable: boolean,
     workspace: IWorkspace,
     _default: boolean,
+    connectionParameters?: IConnectParmas,  // only in VECTORS
     url?: string,                           // only in RASTERS
-    coverage?: string,                      // only in RASTERS
-    featureType?: string                    // only in VECTORS
-    connectionParameters?: IConnectParmas   // only in VECTORS
-
+    href: string                            // get from the "coverages"  in RASTERS or "featureTypes" in VECTORS
 }
 
 export interface IWorkspace {
@@ -20,6 +19,8 @@ export interface IWorkspace {
 }
 
 export interface IConnectParmas {
-    entry: IEntry[]
+    entry?: IEntry | IEntry[],
+    namespace?: string,
+    url?: string
 }
 

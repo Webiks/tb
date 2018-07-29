@@ -34,7 +34,7 @@ class DeleteComponent extends React.Component {
         if (this.props.layer){
             this.list = this.props.world.layers;
             console.log("delete layer: " + this.props.name);
-            LayerService.deleteLayerById(this.props.worldName, this.props.layer.layer)
+            LayerService.deleteLayerById(this.props.worldName, this.props.layer)
                 .then(response => {
                     console.log("LAYER DATA TABLE: delete layer...");
                     // update the layers' list

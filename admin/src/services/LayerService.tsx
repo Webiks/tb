@@ -3,6 +3,7 @@ import { GeoTIFF } from 'geotiff';
 import config from "../config/config";
 import { IWorldLayer } from "../interfaces/IWorldLayer";
 import { ILayer } from '../interfaces/ILayer';
+import { IWorld } from '../interfaces/IWorld';
 
 export class LayerService {
 
@@ -42,6 +43,7 @@ export class LayerService {
     // ==========================
     //  CREATE a new World-Layer
     // ==========================
+    // create a bew world-Layer in  the Database (add to the 'layres' array-field inside the World Model)
     static createWorldLayer(newLayer: IWorldLayer): Promise<any> {
         console.log("start the CREATE WORLD-LAYER service..." + `${this.baseUrl}/${newLayer.worldLayerId}`);
         return axios
@@ -56,8 +58,17 @@ export class LayerService {
     // ==============
     // DELETE Request
     // ==============
-
-
+    // delete a layer from the Database (remove from the 'layres' array-field inside the World Model)
+    static deleteWorldLayer(worldLayer: IWorldLayer): Promise<any> {
+        console.warn("start the DELETE LAYER service for layer: " + worldLayer.name + ', ' + worldLayer._id);
+        return axios
+            .delete(`${this.baseUrl}/${worldLayer.name}/${worldLayer._id}`)
+            .then(res => {
+                console.log("LAYER SERVICE: SUCCEED to delete World: " + worldLayer.name);
+                return res.data;
+            })
+            .catch(error => console.error("LAYER SERVICE: FAILED to delete Layer: " + worldLayer.name + " error: " + error));
+    }
 
     // ===================
     //  GEOSERVER METHODS
@@ -65,7 +76,7 @@ export class LayerService {
     // ==============
     //  GET Requests
     // ==============
-    // get all layers of the world (including the ILayer's fields)
+    // get all layers of the world (including the ILayer's fields) from Geoserver
     static getAllLayersData(worldName: string): Promise<any> {
         console.warn("start the getAllLayersData service...");
         // A. get an Array of all the world's layers (IWorldLayer: name + href)
@@ -78,7 +89,7 @@ export class LayerService {
             });
     }
 
-    // A. get an Array of all the world's layers (IWorldLayer: name + href)
+    // A. get an Array of all the world's layers (IWorldLayer: name + href) from Geoserver
     static getWorldLayers(worldName: string): Promise<any> {
         console.log("start the GET LAYERS service..." + worldName);
         return axios
@@ -90,14 +101,14 @@ export class LayerService {
             });
     }
 
-    // B. get the data of each layer in the world
+    // B. get the data of each layer in the world from Geoserver
     static getLayersDataByList(worldName: string, list: IWorldLayer[]): Promise<any> {
         // C. get the data of each layer in the world
         const promises = list.map((worldLayer: IWorldLayer) => this.getLayerByName(worldName, worldLayer));
         return Promise.all(promises);
     }
 
-    // C. get all layer's Data by name
+    // C. get all layer's Data by name from Geoserver
     static getLayerByName (worldName: string, worldLayer: IWorldLayer): Promise<any> {
         console.warn("start the GET LAYERS service..." + worldLayer.name);
         const layer = worldLayer;
@@ -127,7 +138,7 @@ export class LayerService {
             });
     };
 
-    // 1. get the layer type & resource info
+    // 1. get the layer type & resource info (from Geoserver)
     static getLayerInfo(worldName: string, worldLayer: IWorldLayer): Promise<any> {
         console.log("start the GET LAYER INFO service..." + `${this.baseGeoUrl}/layer/${worldName}/${worldLayer.name}`);
         return axios
@@ -144,7 +155,7 @@ export class LayerService {
             });
     }
 
-    // 2. get layer's details ("data" field - type IRaster or IVector)
+    // 2. get layer's details from Geoserver ("data" field - type IRaster or IVector)
     static getLayerDetails(worldName: string, layer: IWorldLayer): Promise<any> {
         console.warn("start the GET LAYER DETAILS service..." + layer.name + ', ' + layer.layer.type);
         return axios
@@ -190,29 +201,26 @@ export class LayerService {
             });
     }
 
-    // 3. get the layer's store data (for the format) according to the layer's type and the layer title (in the layer's details)
+    // 3. get the layer's store data from Geoserver(for the format) according to the layer's type and the layer title (in the layer's details)
     static getStoreData(worldName: string, layer: IWorldLayer): Promise<any> {
         console.warn("start the GET STORE DATA service..." + layer.layer.storeName);
         return axios
             .get(`${this.baseGeoUrl}/store/${worldName}/${layer.layer.storeName}/${layer.layer.type}`)
             .then(store => {
-                console.log("getStoreData: store: " + store.data.dataStore);
-                console.warn("getStoreData: connectionParameters.entry: " + store.data.dataStore.connectionParameters.entry);
                 // get the store data according to the layer's type
                 switch (layer.layer.type) {
                     case ('RASTER'):
                         layer.store = store.data.coverageStore;
                         layer.store.format = store.data.coverageStore.type.toUpperCase();   // set the store format
                         layer.layer.filePath = store.data.coverageStore.url;                // set the file path
-                        layer.store.connectionParameters.namespace = store.data.coverageStore.connectionParameters.entry[0].$;  // translate the map to an object
+                        layer.store.connectionParameters.namespace = store.data.coverageStore.connectionParameters.entry.$;  // translate the map to an object
                         break;
                     case ('VECTOR'):
                         layer.store = store.data.dataStore;
                         layer.store.format = store.data.dataStore.type.toUpperCase();       // set the store format
                         layer.store.connectionParameters.namespace = store.data.dataStore.connectionParameters.entry[0].$;  // translate the map to an object
                         layer.store.connectionParameters.url = store.data.dataStore.connectionParameters.entry[1].$;        // translate the map to an object
-                        layer.layer.filePath = layer.store.connectionParameters.url                                         // set the file path
-                        // layer.layer.filePath = this.getVectorUrl(store.data.dataStore.connectionParameters.entry);       // set the file path
+                        layer.layer.filePath = layer.store.connectionParameters.url;                                        // set the file path
                         break;
                 }
                 layer.store.storeId = layer.layer.storeId;
@@ -245,7 +253,7 @@ export class LayerService {
             });
     }
 
-    // get Capabilities
+    // get Capabilities (from Geoserver)
     static getCapabilities (worldName: string, layerName: string): Promise<any> {
         console.log("start the GET CAPABILITIES service..." + layerName);
         return axios
@@ -258,7 +266,7 @@ export class LayerService {
     // DELETE Request
     // ==============
     // delete layer from geoserver
-    static deleteLayerById(worldName: string, layer: IWorldLayer): Promise<any> {
+    static deleteLayerfromGeoserver(worldName: string, layer: IWorldLayer): Promise<any> {
         console.warn("start the DELETE LAYER service for layer: " + layer.worldLayerId);
         // 1. delete the layer from the store - using the resource url (raster or vector)
         return this.deleteLayerFromStroe(worldName, layer.name)
@@ -294,9 +302,6 @@ export class LayerService {
     }
 
     // ====================================== Private Functions ==============================================
-    // get the url from a Vector file
-    private static getVectorUrl = (entries) : string => (entries.find( entry => ( entry["@key"] === 'url')).$);
-
     // split String into array
     private static splitString = (id: string, splitSign: string): string[] => id.split(splitSign);
 

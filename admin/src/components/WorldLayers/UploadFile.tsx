@@ -36,78 +36,36 @@ export interface IFileData {
 }
 
 export interface IStateWorld {
-    // layers: IWorldLayer[],
     hideSpinner: boolean
 }
 
 class UploadFile extends React.Component {
     props: IPropsUploadFiles;
-    state: IStateWorld =
-        {
-            // layers: this.props.world.layers,
-            hideSpinner: true
-        };
+    state: IStateWorld = { hideSpinner: true };
     url: string = `${config.baseUrl.path}/${config.baseUrl.api}/upload/${this.props.worldName}`;
 
     onUpload = (e: any) => {
         console.log("On Upload...");
-        // this.setState({ hideSpinner: false } );
         this.getNewLayersData();
-        // get the list of upload files
-        // let reqFiles: IFileData[] | any  = JSON.parse(e.xhr.response);
-        // if (!reqFiles.length){
-        //     reqFiles = [reqFiles];
-        // }
-        // get all the data of the new files
-        // const promises = reqFiles.map( file => {
-        //     const name = (file.name).split('.')[0];
-        //     // get all the data of the new files from GeoServer
-        //     LayerService.getLayerByName(this.props.worldName, name)
-        //         .then ( layer => {
-        //             layer.name = name;
-        //             layer.worldName = this.props.worldName;
-        //             layer.worldLayerId = `${this.props.worldName}:${name}`;
-        //             const layers = [...this.state.layers, layer];
-        //             // update the State layers
-        //             this.setState({ layers });
-        //             return layers;
-        //         })
-        //         .catch(error => {
-        //             console.error ('Upload file: getLayerByName ' + name + ' Error: ' + error);
-        //             return this.state.layers;
-        //         })
-        // });
-
-        // Promise.all(promises)
-        //     .then ( (layers: any) => {
-        //         console.log("upload file: promises(layers): " + JSON.stringify(layers));
-        //         // update the App Store
-        //         this.refresh(layers);
-        //         // update the world's layers in the Database
-        //         WorldService.updateWorldField(this.props.world, 'layers', layers)
-        //             .then ( res =>
-        //                                 console.warn('Succeed to update the layers: ' + JSON.stringify(res)))
-        //             .catch( error => console.error('Failed to update the world layers: ' + JSON.stringify(error)));
-        //     })
     };
 
     getNewLayersData = () => {
         this.setState({ hideSpinner: false } );
         console.log("getAllLayersData...");
-        // A. get an Array of all the world's layers
+        // A. get an Array of all the world's layers from the GeoServer
         LayerService.getWorldLayers(this.props.world.name)
-            .then ( ( layersList: IWorldLayer[]) => {
-                console.log("app layers: " + JSON.stringify(this.props.world.layers) + this.props.world.layers.length);
-                console.log("geo layers: " + JSON.stringify(layersList));
+            .then ( ( geolayers: IWorldLayer[]) => {
+                console.warn("app layers: " + JSON.stringify(this.props.world.layers) + ", length: "  + this.props.world.layers.length);
+                console.log("geo layers: " + JSON.stringify(geolayers) + ", length: "  + geolayers.length);
                 // check if there is a difference between the App Store layers's list to the GeoServer layers's list
                 const diffLayers = ( this.props.world.layers.length && this.props.world.layers[0] !== null )
-                    ? _.differenceWith(layersList, this.props.world.layers,
-                    (geoLayer: IWorldLayer, appLayer: IWorldLayer) => geoLayer.layer.name === appLayer.layer.name)
-                    : layersList;
+                    ? _.differenceWith(geolayers, this.props.world.layers,
+                    (geoLayer: IWorldLayer, appLayer: IWorldLayer) => geoLayer.name === appLayer.name)
+                    : geolayers;
                 console.log("diff layers: " + diffLayers);
                 return diffLayers;
             })
-            // B. get all the layers data (by a giving layers's list)
+            // B. get all the layers data from GeoServer (by a giving layers's list)
             .then ( ( layersList : any) => {
                 console.log("new files list: " + JSON.stringify(layersList));
                 LayerService.getLayersDataByList(this.props.world.name, layersList)
@@ -115,31 +73,16 @@ class UploadFile extends React.Component {
                         console.log("getAllLayersData getInputData..." + JSON.stringify(layers[0]));
                         // set the final layers list and save it in the DataBase
                         const layersList = layers.map((layer: IWorldLayer) => {
-                            // 1. set the inputData to be EMPTY for the new layer
+                            // set the inputData to be EMPTY for the new layer
                             layer.inputData = this.setInitInputData(layer);
                             console.warn("after getInputData: " + JSON.stringify(layer));
                             return layer;
-                            // 2. create and save the new worldLayer Model in the DataBase
-                            // LayerService.createWorldLayer(layer)
-                            //     .then( response => {
-                            //         // 3. update the new layer Model inside the World's layers field
-                            //         WorldService.updateWorldField(this.props.world, 'layers', layer)
-                            //             .then ( res => {
-                            //                 console.warn('Succeed to update the world layers field: ' + JSON.stringify(res));
-                            //                 return layer;
-                            //             })
-                            //             .catch( error => {
-                            //                 console.error('UPLOAD: Failed to update the world layers field: ' + JSON.stringify(error));
-                            //                 return error;
-                            //             });
-                                // })
-                                // .catch(error => console.error("UPLOAD: createWorldLayer ERROR: " + error));
                         });
                         // update the App store
                         const newLayers = [...this.props.world.layers, ...layersList];
                         console.log("getAllLayersData refreshing..." + newLayers);
                         this.refresh(newLayers);
-                        // update the World with the new layers in the Database
+                        // update the Database (the layers field inside the world Model)
                         WorldService.updateWorldField(this.props.world, 'layers', newLayers)
                             .then ( res =>
                                                 console.warn('Succeed to update the layers: ' + JSON.stringify(res)))

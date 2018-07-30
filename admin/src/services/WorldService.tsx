@@ -86,7 +86,7 @@ export class WorldService {
     // DELETE Request
     // ==============
     static deleteWorld(world: IWorld): Promise<any> {
-        console.warn("start the DELETE WORLD service for layer: " + world.name + ', ' + world._id);
+        console.warn("start the DELETE WORLD service for world: " + world.name + ', ' + world._id);
         return axios
             .delete(`${this.baseUrl}/${world.name}/${world._id}`)
             .then(res => {

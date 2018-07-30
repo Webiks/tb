@@ -77,15 +77,20 @@ class LayersDataTable extends React.Component {
 
     delete = () => {
         console.log("selected layer: " + this.state.selectedLayer.layer.name);
-        LayerService.deleteLayerById(this.props.worldName, this.state.selectedLayer.layer)
-            .then(response => {
-                console.log("LAYER DATA TABLE: delete layer...");
-                // update the layers' list
-                const layers =
-                    this.props.world.layers.filter( worldLayer => worldLayer.layer.name !== this.state.selectedLayer.layer.name);
-                this.refresh(layers);
-            })
-            .catch(error => this.refresh([]));
+        // 1. delete the layer from the Database
+        LayerService.deleteWorldLayer(this.state.selectedLayer.layer)
+            .then ( response => {
+                // 2. delete the layer from GeoServer
+                LayerService.deleteLayerfromGeoserver(this.props.worldName, this.state.selectedLayer.layer)
+                    .then(response => {
+                        console.log("LAYER DATA TABLE: delete layer...");
+                        // update the layers' list
+                        const layers =
+                            this.props.world.layers.filter( worldLayer => worldLayer.layer.name !== this.state.selectedLayer.layer.name);
+                        this.refresh(layers);
+                    })
+                    .catch(error => this.refresh([]));
+            });
     };
 
     // update the App store and refresh the page

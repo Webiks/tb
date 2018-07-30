@@ -63,12 +63,14 @@ router.get('/:worldLayerId', (req, res) => {
         });
 });
 
-// ===============
-// DELETE Requests
-// ===============
+// ========
+//  REMOVE
+// ========
 // delete layer from the geoserver layers's list
-router.delete('/delete/:layerId', (req, res) => {
-    console.log("TB SERVER: DELETE LAYER = " + req.params.layerId);
+router.delete('/delete/:worldName/:layerId', (req, res) => {
+    console.log(`db LAYER SERVER: start DELETE layer: ${req.params.layerId} from ${req.params.worldName}'s world`);
+    // 1. delete the layer from GeoServer:
+    GsLayers.deleteLayerFromGeoserver(req.params.worldName)
     axios.delete(`${configUrl.baseRestUrlGeoserver}/layers/${req.params.layerId}.json?recurse=true`,
         { headers: { authorization } })
         .then( response => {
@@ -78,55 +80,28 @@ router.delete('/delete/:layerId', (req, res) => {
         .catch( error => res.send('error'));
 });
 
-// delete layer from geoserver store - using the resource URL
-router.delete('/delete/:worldName/:layerName', (req, res) => {
-    // get the resource URL
-    console.log(`DELETE: find the url:${configUrl.baseUrlAppGetLayer}/${req.params.worldName}/${req.params.layerName}` );
-    axios.get(`${configUrl.baseUrlAppGetLayer}/${req.params.worldName}/${req.params.layerName}`)
-        .then( response => {
-            console.log("TB SERVER: DELETE LAYER from STORE = " + response.data.layer.resource.href);
-            // delete the layer from the store
-            axios.delete(`${response.data.layer.resource.href}?recurse=true`, { headers: { authorization } })
-                .then( response => {
-                    console.log(`success delete layer ${req.params.layerName} from store`);
-                    res.send(response);
-                })
-                .catch( error => res.send('error'));
-        })
-        .catch( error => {
-            console.error(`deleteLayerFromStore ERROR!: ${error}`);
-            res.status(404).send(`layer ${req.params.layerName}'s resource Href can't be found!`);
-        });
-});
-
-router.delete('/delete/store/:worldName/:storeName/:storeType', (req, res) => {
-    const storeType = (getTypeData(req.params.storeType)).storeType;
-    const storeUrl =
-        `${configUrl.baseWorkspacesUrlGeoserver}/${req.params.worldName}/${storeType}/${req.params.storeName}.json?recurse=true`;
-    console.log("TB SERVER: DELETE STORE = " + storeUrl);
-    axios.delete(storeUrl, { headers: { authorization } })
-        .then( response => {
-            console.log(`success delete store ${req.params.storeName}`);
-            res.send(response);
-        })
-        .catch( error => res.send('error'));
-});
-
-// =============================================== private  F U N C T I O N S ======================================================
-function getTypeData(storeType){
-    const typeData = {};
-    switch (storeType) {
-        case ('RASTER'):
-            typeData.storeType = 'coveragestores';
-            typeData.layerDetailsType = 'coverages';
-            break;
-        case ('VECTOR'):
-            typeData.storeType = 'datastores';
-            typeData.layerDetailsType = 'featuretypes';
-            break;
-    }
-    return typeData;
-}
+// // =========
+// //   REMOVE
+// // =========
+// // 1. delete the world(worlspace) from GeoServer:
+// router.delete('/:worldName/:worldId', (req, res) => {
+//     console.log("dbWorlds: delete world params: " + req.params.worldName, req.params.worldId);
+//     GsWorlds.deleteWorldFromGeoserver(req.params.worldName)
+//         .then( response => {
+//             // 2. delete the world from the DataBase (passing the world's id as a req.params)
+//             console.log('db WORLD SERVER: start to REMOVE a World from the DataBase: ' + req.params.worldId);
+//             dbWorldCrud.remove(req.params.worldId)
+//                 .then( response => res.send(response))
+//                 .catch( error => {
+//                     console.error("db SERVER: DELETE error!", error);
+//                     res.status(404).send(`Failed to delete ${req.params.worldName} world! :` + error);
+//                 });
+//         })
+//         .catch( error => {
+//             console.error("db WORLD SERVER: DELETE error!", error);
+//             res.status(404).send(`Failed to delete ${req.params.worldName} world! :` + error);
+//         });
+// });
 
 module.exports = router;
 

@@ -67,7 +67,7 @@ router.get('/:worldName', (req, res) => {
 });
 
 // =========
-//   UPDATE
+//  UPDATE
 // =========
 // update all the World's fields (passing a new world object in the req.body)
 router.put('/:worldName', (req, res) => {
@@ -115,9 +115,7 @@ router.put('/:worldName/:fieldName', (req, res) => {
         isArray = true;
         console.log("dbWorld: isArray? " + isArray);
     }
-    // if ( fieldName === 'layers'){
-    //     isArray = true;
-    // }
+
     dbWorldCrud.updateField(entityId, updatedField, isArray)
         .then( response => {
             // if the world's name was changed - update the new name in the geoserver
@@ -140,11 +138,12 @@ router.put('/:worldName/:fieldName', (req, res) => {
 });
 
 // =========
-//   REMOVE
+//  REMOVE
 // =========
-// 1. delete the world(worlspace) from GeoServer:
+// delete a world
 router.delete('/:worldName/:worldId', (req, res) => {
     console.log("dbWorlds: delete world params: " + req.params.worldName, req.params.worldId);
+    // 1. delete the world(worlspace) from GeoServer:
     GsWorlds.deleteWorldFromGeoserver(req.params.worldName)
         .then( response => {
             // 2. delete the world from the DataBase (passing the world's id as a req.params)

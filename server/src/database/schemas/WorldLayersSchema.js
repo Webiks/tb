@@ -4,7 +4,7 @@ const Schema = mongoose.Schema;
 
 // create the World-Layer Schema
 const WorldLayerSchema = new Schema({
-    worldName: String ,                             // one to many (many layers to one world)
+    workspaceName: String ,                         // the name of the geoserver workspace
     worldLayerId: String ,                          // worldname: layername , unique : true
     name: String ,
     href: String ,                                  // href to the Layer page

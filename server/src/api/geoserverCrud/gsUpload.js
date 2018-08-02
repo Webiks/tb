@@ -16,8 +16,8 @@ const jsonPath = `${dirPath}/public/json`;
 const opts = setOptions(uploadPath);
 router.use(formidable(opts));
 
-router.post('/:worldName', (req, res) => {
-    const workspaceName = req.params.worldName;
+router.post('/:workspaceName', (req, res) => {
+    const workspaceName = req.params.workspaceName;
     let reqFiles = req.files.uploads;
     let fileType;
     let isZipped;

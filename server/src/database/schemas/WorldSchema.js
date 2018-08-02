@@ -9,7 +9,8 @@ const WorldSchema = new Schema({
     desc: String ,                                  // from the user input
     country: String ,                               // from the user input
     directory: String ,                             // from the user input
-    layers: [WorldLayerSchema]                      // from GeoServer - Layers page: the layers' list of the world
+    layers: [WorldLayerSchema],                     // from GeoServer - Layers page: the layers' list of the world
+    workspaceName: { type: String , unique : true }
 });
 
 // create the world MODEL

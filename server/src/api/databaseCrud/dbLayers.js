@@ -37,9 +37,9 @@ router.get('/:worldName', (req, res) => {
 //  GET from GEOSERVER
 // ====================
 // get all the World's Layers list from GeoServer
-router.get('/geoserver/:worldName', (req, res) => {
-    console.log(`geo LAYER SERVER: start GET ALL ${req.params.worldName} World's Layers...`);
-    GsLayers.getWorldLayerListFromGeoserver(req.params.worldName)
+router.get('/geoserver/:workspaceName', (req, res) => {
+    console.log(`geo LAYER SERVER: start GET ALL ${req.params.workspaceName} World's Layers...`);
+    GsLayers.getWorldLayerListFromGeoserver(req.params.workspaceName)
         .then( response => res.send(response.layers.layer))
         .catch( error => {
             console.error("db LAYER SERVER GET-ALL ERROR!: " + error);
@@ -48,12 +48,12 @@ router.get('/geoserver/:worldName', (req, res) => {
 });
 
 // get World's Layer DATA from GeoServer
-router.get('/geoserver/:worldName/:layerName', (req, res) => {
+router.get('/geoserver/:workspaceName/:layerName', (req, res) => {
     const layerName = req.params.layerName;
     const worldLayer = { name: layerName };
     console.log(`geo LAYER SERVER: start GET ${layerName} layer DATA...`);
     // 1. get the layer's info
-    GsLayers.getLayerInfoFromGeoserver(req.params.worldName, layerName)
+    GsLayers.getLayerInfoFromGeoserver(req.params.workspaceName, layerName)
         .then( layerInfo => {
             worldLayer.layer = layerInfo.layer;
             worldLayer.worldLayerId = layerInfo.layer.resource.name;            // set the layer id
@@ -173,8 +173,8 @@ router.get('/geoserver/:worldName/:layerName', (req, res) => {
 });
 
 // get Capabilities XML file - WMTS Request for display the selected layer
-router.get('/geoserver/wmts/:worldName/:layerName', (req, res) => {
-    const capabilitiesUrl = `${configUrl.baseUrlGeoserver}/${req.params.worldName}/${req.params.layerName}/${configParams.wmtsServiceUrl}`;
+router.get('/geoserver/wmts/:workspaceName/:layerName', (req, res) => {
+    const capabilitiesUrl = `${configUrl.baseUrlGeoserver}/${req.params.workspaceName}/${req.params.layerName}/${configParams.wmtsServiceUrl}`;
     console.log("geo LAYER SERVER: start GetCapabilities url = " + capabilitiesUrl);
     GsLayers.getCapabilitiesFromGeoserver(capabilitiesUrl)
         .then( response => res.send(response))
@@ -197,7 +197,6 @@ router.delete('/delete/:worldName/:layerId', (req, res) => {
     const query = {
         name: worldName
     };
-
     const selector = {
         layers: {
             $elemMatch: { _id: layerId }

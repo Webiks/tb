@@ -36,9 +36,6 @@ class Worlds extends React.Component {
         this.setState({ hideSpinner: false } );
         WorldService.getWorlds()
             .then((worlds: IWorld[]) => {
-                // get the input Data of all the worlds (from the App store)
-                // const worldsInput = worlds.map((world: IWorld) => this.getInputData(worlds, world));
-                console.log("Worlds: get all worlds = " + JSON.stringify(worlds));
                 // update the App store with the worlds' list
                 this.props.setWorlds(worlds);
                 this.setState({ hideSpinner: true } );

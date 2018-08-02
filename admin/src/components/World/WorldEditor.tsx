@@ -54,7 +54,8 @@ class WorldEditor extends React.Component {
                     desc: '',
                     country: '',
                     directory: '',
-                    layers: []
+                    layers: [],
+                    workspaceName: ''
                 }
             });
         } else {
@@ -75,7 +76,8 @@ class WorldEditor extends React.Component {
     }
 
     isNameExist = (name: string): any => {
-        return this.props.worldsList.find( world => world.name === name);
+        // check if the name exists in the worldName list or in the workspaceName list
+        return (this.props.worldsList.find( world => world.name === name || world.workspaceName === name));
     };
 
     // save the changes in the App store and the DataBase

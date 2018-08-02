@@ -9,15 +9,12 @@ export class WorldService {
     // ==============
     //  GET Requests
     // ==============
-    // get all layers of the world (including the ILayer's fields)
+    // get all worlds from the Database
     static getWorlds(): Promise<any> {
         console.warn("start the getWorlds service..." + this.baseUrl);
         return axios
             .get(this.baseUrl)
-            .then(res => {
-                console.log("WorldService: get all worlds response: " + JSON.stringify(res.data));
-                return res.data;
-            })
+            .then(res => res.data)
             .then(data => data.map((world: any) => world))
             .catch(() => undefined);
     }
@@ -35,12 +32,10 @@ export class WorldService {
     // ====================
     static createWorld(newWorld: IWorld): Promise<any> {
         console.log("start the CREATE WORLD service..." + `${this.baseUrl}/${name}`);
+        newWorld.workspaceName = newWorld.name;
         return axios
             .post(`${this.baseUrl}/${newWorld.name}`, newWorld)
-            .then(res => {
-                console.log("WORLD SERVICE: SUCCEED to create new World: " + newWorld.name);
-                return res.data;
-            })
+            .then(res => res.data)
             .catch(error => console.error("WORLD SERVICE: FAILED to create new World: " + error));
     }
 
@@ -51,13 +46,9 @@ export class WorldService {
     static updateWorld(oldWorld: IWorld, newWorld: IWorld): Promise<any> {
         newWorld._id = oldWorld._id;
         console.log("start the UPDATE WORLD service..." + oldWorld.name);
-        console.warn("UPDATE WORLD data to be: " + JSON.stringify(newWorld));
         return axios
             .put(`${this.baseUrl}/${oldWorld.name}`, newWorld)
-            .then(res => {
-                console.log("WORLD SERVICE: SUCCEED to update World with the name: " + newWorld);
-                return res.data;
-            })
+            .then(res => res.data)
             .catch(error => console.error("WORLD SERVICE: FAILED to update the World: " + error));
     }
 
@@ -70,15 +61,10 @@ export class WorldService {
             layers,
             newValue: fieldValue
         };
-
         console.log("start the UPDATE WORLD's FIELD service..." + world.name + ', ' + fieldName);
-        console.warn("UPDATE WORLD data to be: " + JSON.stringify(data));
         return axios
             .put(`${this.baseUrl}/${world.name}/${fieldName}`, data)
-            .then(res => {
-                console.log("WORLD SERVICE: SUCCEED to update World's field : " + fieldName + ' to value: ' + fieldValue);
-                return res.data;
-            })
+            .then(res => res.data)
             .catch(error => console.error("WORLD SERVICE: FAILED to update the World: " + error));
     }
 
@@ -88,7 +74,7 @@ export class WorldService {
     static deleteWorld(world: IWorld): Promise<any> {
         console.warn("start the DELETE WORLD service for world: " + world.name + ', ' + world._id);
         return axios
-            .delete(`${this.baseUrl}/${world.name}/${world._id}`)
+            .delete(`${this.baseUrl}/delete/${world.workspaceName}/${world._id}`)
             .then(res => {
                 console.log("WORLD SERVICE: SUCCEED to delete World: " + world.name);
                 return res.data;

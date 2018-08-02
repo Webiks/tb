@@ -79,8 +79,9 @@ class LayersDataTable extends React.Component {
 
     delete = () => {
         console.log("selected layer: " + this.state.selectedLayer.name);
+        console.log("LAYER DATA TABLE: delete layer...");
         // 1. delete the layer from GeoServer
-        LayerService.deleteWorldLayer(this.state.selectedLayer)
+        LayerService.deleteWorldLayer(this.props.worldName, this.state.selectedLayer._id)
             .then ( response => {
                 // 2. update the layers' list to be without the deleted layer
                 const layers =
@@ -89,8 +90,7 @@ class LayersDataTable extends React.Component {
                 // 3. update the world in the DataBase with the new list of layers
                 WorldService.updateWorldField(this.props.world, 'layers', layers)
                     .then ( res => {
-                        console.warn(`Succeed to update ${this.props.worldName}'s layers: ${JSON.stringify(res)}`);
-                        console.log("LAYER DATA TABLE: delete layer...");
+                        console.log(`Succeed to update ${this.props.worldName}'s layers`);
                         // 4. update the changes in the App Store and refresh the page
                         this.refresh(layers);
                     })

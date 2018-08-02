@@ -62,7 +62,7 @@ class DisplayMap extends React.Component {
     componentDidMount(){
         this.getJsonCapabilities()
             .then ( jsonFile => this.createMap(jsonFile))
-            .catch(error => {
+            .catch( error => {
                 console.error("DisplayMap ERROR: " + error);
                 return error;
             });
@@ -70,7 +70,7 @@ class DisplayMap extends React.Component {
 
     // 1. get the Capabilities XML file
     getJsonCapabilities = () => {
-        return LayerService.getCapabilities(this.props.worldName, this.props.layer.name)
+        return LayerService.getCapabilities(this.props.world.workspaceName, this.props.layer.name)
             .then( xml => {
                 console.log("1. get capabilities XML");
                 // 2. convert the xml data to json
@@ -165,19 +165,15 @@ class DisplayMap extends React.Component {
     // save the changes in the App store and the DataBase
     save = () => {
         const layers = [...this.props.world.layers];
-        console.log('save: ' + this.state.selectedLayer.name);
-        console.log('save zoom: ' + this.state.selectedLayer.inputData.zoom);
-        console.log('save opacity: ' + this.state.selectedLayer.inputData.opacity);
-        console.log('save center: ' + this.state.selectedLayer.data.center);
         layers[this.layerIndex] = this.state.selectedLayer;
         // 1. update the changes in the database
         WorldService.updateWorldField(this.props.world, 'layers', layers)
             .then ( res =>  {
-                console.warn(`Succeed to update ${this.props.worldName}'s layers: ${JSON.stringify(res)}`);
+                console.warn(`Succeed to update ${this.props.worldName}'s layers`);
                 // 2. update the changes in the App Store and refresh the page
                 this.refresh(layers);
             })
-            .catch( error => console.error('Failed to update the world: ' + JSON.stringify(error.message)));
+            .catch( error => console.error('Failed to update the world: ' + error));
     };
 
     // update the App store and refresh the page

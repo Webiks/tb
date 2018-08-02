@@ -7,7 +7,7 @@ import { ILayerDetails } from './ILayerDetails';
 
 export interface IWorldLayer {
     _id?: string,
-    worldName: string,
+    workspaceName: string,
     worldLayerId: string,           // get from the resource.name from getInfo
     name: string,
     href?: string,

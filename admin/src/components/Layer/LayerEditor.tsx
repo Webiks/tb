@@ -133,7 +133,7 @@ class LayerEditor extends React.Component {
         // 1. update the changes in the database
         WorldService.updateWorldField(this.props.world, 'layers', layers)
             .then ( res =>  {
-                console.warn(`Succeed to update ${this.props.worldName}'s layers: ${JSON.stringify(res)}`);
+                console.log(`Succeed to update ${this.props.worldName}'s layers`);
                 // 2. update the changes in the App Store and refresh the page
                 this.refresh(layers);
                 // 3. close the editor page and go back to the layers table page
@@ -147,7 +147,6 @@ class LayerEditor extends React.Component {
         console.log('Layer Details: refresh...');
         const name = this.props.worldName;
         this.props.updateWorld({ name, layers });
-        console.warn('layer (from layers) inputData: ' + JSON.stringify(layers[this.layerIndex].inputData));
     };
 
     setGlobalFilter = (e: any) => this.setState({globalFilter: e.target.value});

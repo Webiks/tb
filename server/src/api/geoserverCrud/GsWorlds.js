@@ -24,7 +24,7 @@ class GsWorlds {
                 return response.data;
             })
             .catch( error => {
-                console.error(`GsWorlds: Failed to create ${name} world! :` + error);
+                console.error(`GsWorlds: Failed to create ${name} world!: ${error}`);
                 return error;
             });
     }
@@ -41,19 +41,29 @@ class GsWorlds {
             .then ( response => {
                 console.log("finished to create a new workspace in Geoserver..." + response);
                 // 2. copy the contents of the old workspace into the new workspace (upload the layers to the new workspace)
-                if(layers.length !== 0){
-                    layers.map( layer => UploadFilesToGS.uploadFile(newname, layer.layer.type, layer.layer.fileName, layer.layer.filePath))
-                }
+                // if(layers.length !== 0){
+                //     layers.map( layer => {
+                //         console.log("file name: " + layer.layer.fileName);
+                //         console.log("file Type: " + layer.layer.type.toLowerCase());
+                //
+                //         // find the layer path on geoserver data_dir
+                //         const endpath = (layer.layer.filePath).split(":")[1];
+                //         const geoPath = `${configParams.uploadFilesUrl}/${endpath}`;
+                //         console.log("geo path: " + geoPath);
+                //
+                //         return UploadFilesToGS.uploadFile(newname, layer, layer.layer.type, layer.layer.fileName, geoPath)
+                //     })
+                // }
                 // 3. remove the old workspace
                 GsWorlds.deleteWorldFromGeoserver(oldname)
-                    .then ( response => res.send(response.data))
+                    .then ( response => response.data)
                     .catch( error => {
-                        console.error(`GsWorlds: Failed to delete ${oldname} world! :` + error);
+                        console.error(`GsWorlds: Failed to delete ${oldname} world!: ${error}`);
                         return error;
                     });
             })
             .catch( error => {
-                console.error(`GsWorlds: Failed to update ${oldname} world! :` + error);
+                console.error(`GsWorlds: Failed to update ${oldname} world!: ${error}`);
                 return error;
             });
     }
@@ -70,7 +80,7 @@ class GsWorlds {
                 return response.data;
             })
             .catch( error => {
-                console.error(`GsWorlds: Failed to delete ${name} world! :` + error);
+                console.error(`GsWorlds: Failed to delete ${name} world!: ${error}`);
                 return error;
             });
     }

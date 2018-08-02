@@ -3,10 +3,10 @@ require('./curlMethods')();
 
 class UploadFilesToGS {
 
-    static uploadFile(workspaceName, reqFiles, fileType, filename, filePath) {
+    static uploadFile(workspaceName, file, fileType, filename, filePath) {
         // 1. create the JSON file with the desire workspace
         let importJSON = {};
-        if (fileType === 'raster' || fileType === 'zip') {
+        if (fileType.toLowerCase() === 'raster' || fileType === 'zip') {
             importJSON = createImportObject(workspaceName);
         } else {
             importJSON = createImportObjectWithData(workspaceName, filePath);
@@ -23,8 +23,7 @@ class UploadFilesToGS {
         console.log("task: " + JSON.stringify(task));
 
         // 4. Vector single file - check if the projection exists
-        console.log("reqFiles length: " + reqFiles.length);
-        if (fileType === 'vector' && !reqFiles.length){
+        if (fileType === 'vector' && !file.length){
             console.log("task state: " + task.state);
             if (task.state === 'NO_CRS') {
                 // create the update SRS Json file and update the task
@@ -43,7 +42,7 @@ class UploadFilesToGS {
         deleteUncompleteImports();
 
         // 8. return OK
-        return reqFiles;
+        return file;
     }
 }
 

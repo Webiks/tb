@@ -13,7 +13,7 @@ const dbName = 'mytestproject';
 const url = `${configUrl.mongoBaseUrl}/${dbName}`;
 
 // Use connect method to connect to the server
-mongoose.connect(url);
+mongoose.connect(url, { useNewUrlParser: true } );
 console.log("connect to: " + url);
 const db = mongoose.connection;
 
@@ -61,13 +61,13 @@ db.once('open', function() {
     const worldList = [world, world1];
     const layerList = [layer, layer1];
 
-    createNewWorld(world);
+    // createNewWorld(world);
     // createNewWorld(world1);
     // deleteWorldByName(world1.name);
     // addWorldList(worldList);
     // createNewLayer(layer1);
     // addLayerList(layerList);
-    // deleteLayerByID(layer1);
+    deleteLayerByID('tb', 'tb: new_layer');
 
     // db.close();
 
@@ -144,18 +144,15 @@ const deleteWorlds = function(filter){
 };
 
 // DELETE a layer by its ID (from the worldlayer collection and from the world's layers array)
-const deleteLayerByID = function(layer){
-    const worldName = layer.worldName;
-    const worldLayerId = layer.worldLayerId;
-    // 1. DELETE from the worldlayer collection
-    layerModel.deleteOne({ worldLayerId: worldLayerId }, function (err) {
-        if (err) return handleError(err);
-        console.log('Success to DELETE layer from the worldlayer collection: ' + worldLayerId);
-    });
+const deleteLayerByID = function(worldName, worldLayerId){
+    // // 1. DELETE from the worldlayer collection
+    // layerModel.deleteOne({ worldLayerId: worldLayerId }, function (err) {
+    //     if (err) return handleError(err);
+    //     console.log('Success to DELETE layer from the worldlayer collection: ' + worldLayerId);
+    // });
     // 2. DELETE from the world's layers array (UPDATE as an empty Layer)
     const query = {
-        name: worldName,
-        'layer.worldLayerId': worldLayerId
+        name: worldName
     };
 
     const selector = {
@@ -168,9 +165,14 @@ const deleteLayerByID = function(layer){
         layers: [{}]
     };
 
-    worldModel.findOneAndUpdate( query, {$unset : emptyLayers }, { projection: selector ,returnNewDocument: true }, function (err, result){
+    // worldModel.findOneAndUpdate( query, {$unset : emptyLayers }, { projection: selector ,returnNewDocument: true }, function (err, result){
+    //     if (err) return handleError(err);
+    //     console.log("TEST result(after): " + result);
+    // });
+
+    worldModel.findOne( query, selector , function (err, result){
         if (err) return handleError(err);
-        console.log("TEST result(after): " + result);
+        console.log("TEST result(after): " + JSON.stringify(result));
     });
 
     // worldModel.findOneAndUpdate( query, selector, emptyLayers, function (err, result){

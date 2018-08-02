@@ -40,6 +40,7 @@ router.get('/layer/:worldName/:layerName', (req, res) => {
 // using the resource href that we got from the "layer's info" request
 router.get('/details/:worldName/:layerName', (req, res) => {
     // get the resource URL
+    console.log("gsLayers get details url: " + `${configUrl.baseUrlAppGetLayer}/${req.params.worldName}/${req.params.layerName}`);
     axios.get(`${configUrl.baseUrlAppGetLayer}/${req.params.worldName}/${req.params.layerName}`)
         .then(response => {
             // get the resource URL
@@ -81,19 +82,7 @@ router.get('/wmts/:worldName/:layerName', (req, res) => {
 // ===============
 // DELETE Requests
 // ===============
-// delete layer from the geoserver layers's list
-router.delete('/delete/:layerId', (req, res) => {
-    console.log("TB SERVER: DELETE LAYER = " + req.params.layerId);
-    axios.delete(`${configUrl.baseRestUrlGeoserver}/layers/${req.params.layerId}.json?recurse=true`,
-        { headers: { authorization } })
-        .then( response => {
-            console.log(`success delete layer ${req.params.layerId}`);
-            res.send(response);
-        })
-        .catch( error => res.send('error'));
-});
-
-// delete layer from geoserver store - using the resource URL
+// 1. delete the layer from the store by using the resource url (raster or vector)
 router.delete('/delete/:worldName/:layerName', (req, res) => {
     // get the resource URL
     console.log(`DELETE: find the url:${configUrl.baseUrlAppGetLayer}/${req.params.worldName}/${req.params.layerName}` );
@@ -114,6 +103,7 @@ router.delete('/delete/:worldName/:layerName', (req, res) => {
         });
 });
 
+// 2. delete the store
 router.delete('/delete/store/:worldName/:storeName/:storeType', (req, res) => {
     const storeType = (getTypeData(req.params.storeType)).storeType;
     const storeUrl =
@@ -122,6 +112,18 @@ router.delete('/delete/store/:worldName/:storeName/:storeType', (req, res) => {
     axios.delete(storeUrl, { headers: { authorization } })
         .then( response => {
             console.log(`success delete store ${req.params.storeName}`);
+            res.send(response);
+        })
+        .catch( error => res.send('error'));
+});
+
+// 3. delete layer from the geoserver layers's list
+router.delete('/delete/:layerId', (req, res) => {
+    console.log("TB SERVER: DELETE LAYER = " + req.params.layerId);
+    axios.delete(`${configUrl.baseRestUrlGeoserver}/layers/${req.params.layerId}.json?recurse=true`,
+        { headers: { authorization } })
+        .then( response => {
+            console.log(`success delete layer ${req.params.layerId}`);
             res.send(response);
         })
         .catch( error => res.send('error'));

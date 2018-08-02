@@ -57,10 +57,38 @@ class MongoCrud {
         });
     }
 
-    getListByQuery (query) {
+    getByQuery(query, selector) {
         return new Promise((resolve, reject) => {
             try {
-                this.mongoModel.find(query).toArray((err, listReturn) => {
+                this.mongoModel.findOne(query, selector, (err, entityReturn) => {
+                    if (err) {
+                        console.error("MongoCrud FIND-ONE error: " + err);
+                        return reject(err);
+                    }
+                    else {
+                        if (entityReturn) {
+                            console.log("got entity: " + entityReturn.id);
+                            console.log("entityReturn: " + JSON.stringify(entityReturn));
+                        }
+                        else {
+                            console.error("can't find this entity!");
+                            entityReturn = {};
+                        }
+                        return resolve(entityReturn);
+                    }
+                });
+            }
+            catch (err) {
+                console.error("MongoCrud GET BY QUERY error: " + err);
+                return reject(err);
+            }
+        });
+    }
+
+    getListByQuery (query, selector) {
+        return new Promise((resolve, reject) => {
+            try {
+                this.mongoModel.find(query, selector).toArray((err, listReturn) => {
                     if (err) {
                         console.error("MongoCrud FIND(by query) error: " + err);
                         return reject(err);
@@ -127,17 +155,29 @@ class MongoCrud {
         });
     }
 
-    updateField(entityId, updatedField, isArray) {
+    updateField(entityId, updatedField, operation) {
         let updateOperation = {};
-        if (isArray) {
-            updateOperation = {"$push" : updatedField};
-        } else {
-            updateOperation = {"$set" : updatedField};
+        // if (isArray) {
+        //     updateOperation = {"$push" : updatedField};
+        // } else {
+        //     updateOperation = {"$set" : updatedField};
+        // }
+        switch (operation){
+            case ('update'):
+                updateOperation = {"$set" : updatedField};
+                break;
+            case ('updateArray'):
+                updateOperation = {"$push" : updatedField};
+                break;
+            case ('removeFromArray'):
+                updateOperation = {"$pull" : updatedField};
+                break;
+            default:
+                console.error("updateField Error: operation parameter is wrong!");
         }
 
         return new Promise((resolve, reject) => {
             try {
-                console.log("MongoCrud UPDATE-FIELD params: " + entityId + ', ' + JSON.stringify(updatedField));
                 this.mongoModel.findByIdAndUpdate(entityId, updateOperation, {new: true}, (err, entityReturn) => {
                     if (err) {
                         console.error("MongoCrud FIND-AND-UPDATE error: " + err);
@@ -156,54 +196,10 @@ class MongoCrud {
         });
     }
 
-    // updateEmbeddedField(entityId, arrayFieldName, updatedField) {
-    //     return new Promise((resolve, reject) => {
-    //         // User.collection.update(
-    //         //     { roles: role.oldName },
-    //         //     { $push: { roles: newRole._id } },
-    //         //     { runValidators: false, multi: true, strict: false, safe: false }
-    //         // );
-    //         try {
-    //             console.log("MongoCrud UPDATE-FIELD params: " + entityId + ', ' + JSON.stringify(updatedField));
-    //             this.mongoModel.findByIdAndUpdate({_id: entityId}, {"$push" : updatedField}, {new: true}, (err, entityReturn) => {
-    //                 if (err) {
-    //                     console.error("MongoCrud FIND-AND-UPDATE error: " + err);
-    //                     return reject(err);
-    //                 }
-    //                 else {
-    //                     console.log("update entity: " + entityReturn.id);
-    //                     return resolve(entityReturn);
-    //                 }
-    //             });
-    //             // this.get(entityId)
-    //             //     .then( entityReturn => {
-    //             //         console.log("updateEmbeddedField entityReturn: " + entityReturn);
-    //             //         const entityInstance = new this.mongoModel(entityReturn);
-    //             //         console.log("updateEmbeddedField entityInstance: " + entityInstance);
-    //             //         entityInstance[arrayFieldName].push(updatedField);
-    //             //         console.log("updateEmbeddedField entityInstance['layers']: " + entityInstance[arrayFieldName]);
-    //             //         entityInstance.save((err) => {
-    //             //             console.error("MongoCrud UPDATE-EMBEDDED-FIELD SAVE error: " + err);
-    //             //             return err;
-    //             //         });
-    //             //     })
-    //             //     .catch( err => {
-    //             //         console.error("MongoCrud UPDATE-EMBEDDED-FIELD GET error: " + err);
-    //             //         return err;
-    //             //     })
-    //
-    //         }
-    //         catch (err) {
-    //             console.error("MongoCrud UPDATE-EMBEDDED-FIELD error: " + err);
-    //             return reject(err);
-    //         }
-    //     });
-    //}
-
     remove(entityId) {
         return new Promise((resolve, reject) => {
             try {
-                this.mongoModel.remove({_id : entityId}, (err, entityReturn) => {
+                this.mongoModel.remove(entityId, (err, entityReturn) => {
                     if (err) {
                         console.error("MongoCrud REMOVE error: " + err);
                         return reject(err);

@@ -27,7 +27,7 @@ router.post('/:worldName', (req, res) => {
     console.log("uploadPath: " + uploadPath);
 
     // check if need to do a ZIP file
-    if (!reqFiles.length && (reqFiles.name.includes('.zip') || reqFiles.size < 5000000)){
+    if (!reqFiles.length && (reqFiles.name.includes('.zip') || reqFiles.size < 1000000000)){
         isZipped = false;
         fileType = findFileType(reqFiles.type);
     } else {

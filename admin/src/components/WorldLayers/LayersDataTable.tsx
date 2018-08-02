@@ -21,12 +21,12 @@ import { DataTable } from 'primereact/components/datatable/DataTable';
 import { Column } from 'primereact/components/column/Column';
 import { Button } from 'primereact/components/button/Button';
 import { Dialog } from 'primereact/components/dialog/Dialog';
+import { WorldService } from '../../services/WorldService';
 
 export interface IPropsLayers {
     worldName: string,
     layers: IWorldLayer[],
     world: IWorld,
-    getAllLayersData: () => void,
     updateWorld: (worlds: Partial<IWorld>) => ITBAction,
     navigateTo: (layerName: string) => void
 }
@@ -59,12 +59,14 @@ class LayersDataTable extends React.Component {
             displayAlert: false
         });
 
+    setDisplayMap = (value) => this.setState({ displayMapWindow: value });
+
     editLayer = (layer: IWorldLayer) => {
         this.setState({
             selectedLayer: {...layer},
             displayMapWindow: false,
             displayAlert: false });
-        this.props.navigateTo(`/world/${this.props.worldName}/layer/${layer.layer.name}`);
+        this.props.navigateTo(`/world/${this.props.worldName}/layer/${layer.name}`);
     };
 
     deleteLayer = (rowData: ILayer) => {
@@ -76,21 +78,25 @@ class LayersDataTable extends React.Component {
     };
 
     delete = () => {
-        console.log("selected layer: " + this.state.selectedLayer.layer.name);
-        // 1. delete the layer from the Database
-        LayerService.deleteWorldLayer(this.state.selectedLayer.layer)
+        console.log("selected layer: " + this.state.selectedLayer.name);
+        // 1. delete the layer from GeoServer
+        LayerService.deleteWorldLayer(this.state.selectedLayer)
             .then ( response => {
-                // 2. delete the layer from GeoServer
-                LayerService.deleteLayerfromGeoserver(this.props.worldName, this.state.selectedLayer.layer)
-                    .then(response => {
+                // 2. update the layers' list to be without the deleted layer
+                const layers =
+                    this.props.world.layers.filter( worldLayer => worldLayer.name !== this.state.selectedLayer.name);
+
+                // 3. update the world in the DataBase with the new list of layers
+                WorldService.updateWorldField(this.props.world, 'layers', layers)
+                    .then ( res => {
+                        console.warn(`Succeed to update ${this.props.worldName}'s layers: ${JSON.stringify(res)}`);
                         console.log("LAYER DATA TABLE: delete layer...");
-                        // update the layers' list
-                        const layers =
-                            this.props.world.layers.filter( worldLayer => worldLayer.layer.name !== this.state.selectedLayer.layer.name);
+                        // 4. update the changes in the App Store and refresh the page
                         this.refresh(layers);
                     })
-                    .catch(error => this.refresh([]));
-            });
+                    .catch(error => console.error('Failed to update the world layers: ' + error));
+            })
+            .catch(error => console.error('Failed to update the world layers: ' + error));
     };
 
     // update the App store and refresh the page
@@ -134,7 +140,7 @@ class LayersDataTable extends React.Component {
                         <DataTable  value={this.props.layers} paginator={true} rows={10} responsive={false}
                                     resizableColumns={true} autoLayout={true} style={{margin:'10px 20px'}}
                                     header={<DataTableHeader title={`${this.props.worldName} World's Files List`} setGlobalFilter={this.setGlobalFilter}/>}
-                                    footer={<UploadFile worldName={this.props.worldName} getAllLayersData={this.props.getAllLayersData}/>}
+                                    footer={<UploadFile worldName={this.props.worldName}/>}
                                     globalFilter={this.state.globalFilter}
                                     selectionMode="single" selection={this.state.selectedLayer}
                                     onSelectionChange={(e: any)=>{this.setState({selectedLayer: e.data});}}>
@@ -153,11 +159,11 @@ class LayersDataTable extends React.Component {
                 {
                     this.state.selectedLayer && this.state.displayMapWindow &&
                     <div>
-                        <Dialog visible={this.state.displayMapWindow} modal={true}
-                                header={`Layer '${this.state.selectedLayer.layer.name}' map preview`}
-                                onHide={() => this.refresh(this.props.world.layers)}>
-                            <DisplayMap worldName={this.props.worldName} layer={this.state.selectedLayer}/>
-                        </Dialog>
+                        <DisplayMap worldName={this.props.worldName}
+                                    layer={this.state.selectedLayer}
+                                    setDisplayMap={this.setDisplayMap}
+                                    displayMapWindow={true}
+                                    refresh={this.refresh}/>
                     </div>
                 }
 

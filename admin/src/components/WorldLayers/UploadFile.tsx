@@ -23,7 +23,6 @@ import { ProgressSpinner } from 'primereact/components/progressspinner/ProgressS
 export interface IPropsUploadFiles {
     worldName: string,
     world: IWorld,
-    getAllLayersData: () => void,
     updateWorld: (worlds: Partial<IWorld>) => ITBAction
 }
 
@@ -51,9 +50,9 @@ class UploadFile extends React.Component {
 
     getNewLayersData = () => {
         this.setState({ hideSpinner: false } );
-        console.log("getAllLayersData...");
-        // A. get an Array of all the world's layers from the GeoServer
-        LayerService.getWorldLayers(this.props.world.name)
+        console.log("getNewLayersData...");
+        // 1. get an Array of all the world's layers from the GeoServer
+        LayerService.getWorldLayersFromGeoserver(this.props.world.name)
             .then ( ( geolayers: IWorldLayer[]) => {
                 console.warn("app layers: " + JSON.stringify(this.props.world.layers) + ", length: "  + this.props.world.layers.length);
                 console.log("geo layers: " + JSON.stringify(geolayers) + ", length: "  + geolayers.length);
@@ -65,12 +64,12 @@ class UploadFile extends React.Component {
                 console.log("diff layers: " + diffLayers);
                 return diffLayers;
             })
-            // B. get all the layers data from GeoServer (by a giving layers's list)
-            .then ( ( layersList : any) => {
-                console.log("new files list: " + JSON.stringify(layersList));
-                LayerService.getLayersDataByList(this.props.world.name, layersList)
+            // 2. get all the layers data from GeoServer (by a giving layers's list)
+            .then ( ( diffLayers : IWorldLayer[]) => {
+                console.log("new files list: " + JSON.stringify(diffLayers));
+                LayerService.getAllLayersData(this.props.world.name, diffLayers)
                     .then(layers => {
-                        console.log("getAllLayersData getInputData..." + JSON.stringify(layers[0]));
+                        console.log("getLayersDataByList getInputData..." + JSON.stringify(layers[0]));
                         // set the final layers list and save it in the DataBase
                         const layersList = layers.map((layer: IWorldLayer) => {
                             // set the inputData to be EMPTY for the new layer
@@ -78,14 +77,15 @@ class UploadFile extends React.Component {
                             console.warn("after getInputData: " + JSON.stringify(layer));
                             return layer;
                         });
-                        // update the App store
+                        // 3. update the Database (the layers field inside the world Model)
                         const newLayers = [...this.props.world.layers, ...layersList];
-                        console.log("getAllLayersData refreshing..." + newLayers);
-                        this.refresh(newLayers);
-                        // update the Database (the layers field inside the world Model)
-                        WorldService.updateWorldField(this.props.world, 'layers', newLayers)
-                            .then ( res =>
-                                                console.warn('Succeed to update the layers: ' + JSON.stringify(res)))
+                        console.log("getLayersDataByList refreshing..." + newLayers);
+                        return WorldService.updateWorldField(this.props.world, 'layers', newLayers)
+                            .then ( world => {
+                                // 4. update the App Store with the return world from the Database
+                                console.warn('Succeed to update the layers: ' + JSON.stringify(world));
+                                return this.refresh(world.layers);
+                            })
                             .catch( error => console.error('Failed to update the world layers: ' + JSON.stringify(error)));
                     })
                     .catch(error => console.error("UPLOAD: getLayerByName ERROR: " + error));
@@ -143,9 +143,9 @@ class UploadFile extends React.Component {
     }
 }
 
-const mapStateToProps = (state: IState, { worldName, getAllLayersData }: any) => {
+const mapStateToProps = (state: IState, { worldName }: any) => {
     return {
-        getAllLayersData, worldName,
+        worldName,
         world: state.worlds.list.find(({ name, layers }: IWorld) => worldName === name)
     }
 };

@@ -5,7 +5,7 @@ class DBManager {
     static connect(Url) {
 
         return new Promise((resolve, reject) => {
-            mongoose.connect(Url);
+            mongoose.connect(Url, { useNewUrlParser: true });
             const db = mongoose.connection;
             db.on("error", (err) => {
                 console.error('connection error!: ' + err);

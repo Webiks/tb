@@ -19,7 +19,7 @@ app.use(cors({ credentials: true, origin: true }));
 app.use(bodyParser.json());
 
 // DB Connection URL
-const url = `${configUrl.mongoBaseUrl}/${configParams.dbName}`;
+const url = `${configParams.mongoBaseUrl}/${configParams.dbName}`;
 
 // start the connection to the mongo Database
 DBManager.connect(url);

@@ -23,7 +23,10 @@ class GsWorlds {
                 console.log("GsWorlds: create world response: " + response.data);
                 return response.data;
             })
-            .catch( error => this.handleError(error, `Failed to CREATE ${name} world!: ${error}`));
+            .catch( error => {
+                console.error(`gs WORLD: Failed to CREATE ${name} world!: ${error}`);
+                return error;
+            });
     }
 
     // =================
@@ -37,7 +40,10 @@ class GsWorlds {
                 console.log("GsWorld delete respone: " + response);
                 return response.data;
             })
-            .catch( error => this.handleError(error, `Failed to DELETE ${name} world!: ${error}`));
+            .catch( error => {
+                console.error(`gs WORLD: Failed to DELETE ${name} world!: ${error}`);
+                return error;
+            });
     }
 
     // ========================================= private  F U N C T I O N S ============================================

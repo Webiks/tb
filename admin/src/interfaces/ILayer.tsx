@@ -1,15 +1,14 @@
 export interface ILayer {
-    id: string,                     // 'worldname:layername'
     name: string,
     type: string,                   // 'RASTER' or 'VECTOR'
-    storeId: string,
-    storeName: string,
-    filePath: string,
-    fileName: string,
-    fileExtension: string,
     defaultStyle: IDefaultStyle,
     resource: IResource,
-    attribution: IAttribution
+    attribution: IAttribution,
+    storeId: string,                // get from the details page (RASTER/VECTOR) store's name field
+    storeName: string,              // get from the store's name field
+    filePath: string,               // get from the store's url field
+    fileName: string,               // get from the store's url field
+    fileExtension: string           // get from the store's url field
 }
 
 export interface IDefaultStyle {

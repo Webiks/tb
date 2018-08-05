@@ -5,120 +5,37 @@ import { bindActionCreators } from 'redux';
 import { Route } from 'react-router';
 import { IState } from '../../store';
 import { IWorld } from '../../interfaces/IWorld';
-import { IWorldLayer } from '../../interfaces/IWorldLayer';
-import { ITBAction } from '../../consts/action-types';
-import { ILayer } from '../../interfaces/ILayer';
-import * as _ from 'lodash';
-import { LayerService } from '../../services/LayerService';
-import { WorldsActions } from '../../actions/world.actions';
 import Layer from '../Layer/Layer';
 import LayersDataTable from './LayersDataTable';
-import { AFFILIATION_TYPES } from '../../consts/layer-types';
 
 /* Prime React components */
 import 'primereact/resources/themes/omega/theme.css';
 import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
 import 'font-awesome/css/font-awesome.css';
-import { ProgressSpinner } from 'primereact/components/progressspinner/ProgressSpinner';
 
 export interface IPropsLayers {
-    world: IWorld,
-    updateWorld: (worlds: IWorld) => ITBAction
-}
-
-export interface IStateWorld {
-    hideSpinner: boolean
+    world: IWorld
 }
 
 class WorldLayers extends React.Component {
     props: IPropsLayers | any;
-    state: IStateWorld = { hideSpinner: true };
-
-    // GET: get the world's layers on startUp
-    componentDidMount() {
-       this.getAllLayersData();
-    };
-
-    getAllLayersData = () => {
-        this.setState({ hideSpinner: false } );
-        console.log("getAllLayersData...");
-        // A. get an Array of all the world's layers
-        LayerService.getWorldLayers(this.props.world.name)
-            .then ( ( layersList: ILayer[]) => {
-                console.log("app layers: " + this.props.world.layers);
-                console.log("geo layers: " + layersList);
-                // check if there is a difference between the App Store layers's list to the GeoServer layers's list
-                return _.differenceWith(layersList, this.props.world.layers,
-                            (geoLayer: ILayer, appLayer: IWorldLayer) => geoLayer.name === appLayer.layer.name);
-            })
-            // B. get all the layers data (by a giving layers's list)
-            .then ( ( layersList : any) => {
-                console.log("new files list: " + JSON.stringify(layersList));
-                LayerService.getLayersDataByList(this.props.world.name, layersList)
-                    .then(layers => {
-                        console.log("getAllLayersData getInputData...");
-                        // get the input Data for all the world's layers (from the App store)
-                        const layersInput = layers.map((layer: IWorldLayer) => {
-                            return this.getInputData(layer);
-                        });
-                        console.log("getAllLayersData refreshing...");
-                        this.refresh([...this.props.world.layers, ...layersInput]);               // update the App store
-                    })
-                    .catch(error => console.error("UPLOAD: getLayerByName ERROR: " + error));
-            })
-            .catch(error => this.refresh([]));
-    };
-
-    // get the input Data of the layer from the App store
-    getInputData = (layer: IWorldLayer): IWorldLayer => {
-        console.log("getInputData...");
-        return {
-            ...layer,
-            inputData: layer.inputData || {
-                affiliation: AFFILIATION_TYPES.AFFILIATION_UNKNOWN,
-                GSD: 0,
-                sensor: {
-                    maker: '',
-                    name: '',
-                    bands: []
-                },
-                flightAltitude: 0,
-                cloudCoveragePercentage: 0,
-                zoom: 14
-            }
-        };
-    };
-
-    // update the App store and refresh the page
-    refresh = (layers: IWorldLayer[]) => {
-        console.log('World Home Page: REFRESH...');
-        const name = this.props.world.name;
-        this.props.updateWorld({ name, layers });
-        this.setState({ hideSpinner: true } );
-        console.warn("WorldLayers - refresh: hide spinner: " + this.state.hideSpinner);
-    };
 
     render() {
         const { world, match } = this.props;
 
         return (
             <div>
-            {
-                match.isExact
-                ? this.props.world.layers &&
-                <div>
-                    <div>
-                        <LayersDataTable worldName={world.name} layers={world.layers || []}
-                                         getAllLayersData={this.getAllLayersData}/>
-                    </div>
-                    <div hidden={this.state.hideSpinner}>
-                        <ProgressSpinner style={{ width: '50px', height: '50px' }} strokeWidth="8" fill="#EEEEEE"
-                                         animationDuration=".5s"/>
-                    </div>
-                </div>
-                : <Route path="/world/:worldName/layer/:layerName" component={Layer}/>
-            }
+                {
+                    match.isExact
+                        ? this.props.world.layers &&
+                        <div>
+                            <div>
+                                <LayersDataTable worldName={world.name} layers={world.layers || []}/>
+                            </div>
+                        </div>
+                        : <Route path="/world/:worldName/layer/:layerName" component={Layer}/>
+                }
             </div>
         );
     };
@@ -129,7 +46,5 @@ const mapStateToProps = (state: IState, { worldName, match }: any) => ({
     world: state.worlds.list.find(({ name, layers }: IWorld) => worldName === name)
 });
 
-const mapDispatchToProps = (dispatch: any) => bindActionCreators({ updateWorld: WorldsActions.updateWorldAction }, dispatch);
-
-export default connect(mapStateToProps, mapDispatchToProps)(WorldLayers);
+export default connect(mapStateToProps)(WorldLayers);
 

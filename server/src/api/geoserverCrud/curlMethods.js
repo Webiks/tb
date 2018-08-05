@@ -1,5 +1,5 @@
 const { execSync } = require('child_process');          // for using the cURL command line
-require('../config/serverConfig')();
+require('../../config/serverConfig')();
 
 const configParams = config().configParams;
 const configUrl = configBaseUrl().configUrl;
@@ -104,6 +104,7 @@ module.exports = function() {
         console.log("sendToTask: curlFileData: " + curlFileData);
 
         const curl_postToTaskList = `${baseCurl} ${curlFileData} ${configUrl.reqImportCurl}/${importId}/tasks`;
+        console.log("sendToTask: curl_postToTaskList: " + curl_postToTaskList);
         const taskJson = execSync(curl_postToTaskList);
         console.log("taskJSON: " + taskJson);
         const task = JSON.parse(taskJson);

@@ -22,6 +22,7 @@ import { DataTable } from 'primereact/components/datatable/DataTable';
 import { Column } from 'primereact/components/column/Column';
 import { InputText } from 'primereact/components/inputtext/InputText';
 import { Dropdown } from 'primereact/components/dropdown/Dropdown';
+import { WorldService } from '../../services/WorldService';
 
 export interface IPropsLayer {
     worldName: string,
@@ -40,6 +41,8 @@ class LayerEditor extends React.Component {
     props: IPropsLayer;
     state: IStateDetails;
 
+    layerIndex: number;
+
     layerAffiliationTypes = [
         { label: AFFILIATION_TYPES.AFFILIATION_INPUT, value: AFFILIATION_TYPES.AFFILIATION_INPUT },
         { label: AFFILIATION_TYPES.AFFILIATION_OUTPUT, value: AFFILIATION_TYPES.AFFILIATION_OUTPUT },
@@ -48,11 +51,8 @@ class LayerEditor extends React.Component {
 
     componentWillMount() {
         this.setState({ worldLayer: cloneDeep(this.props.layer), worldName: this.props.worldName });
+        this.layerIndex = this.props.world.layers.indexOf(this.props.layer);
     }
-
-    findSelectedLayerIndex() {
-        return this.props.world.layers.indexOf(this.props.layer);
-    };
 
     onEditorValueChange = (props, value) => {
         console.log('onEditorValueChange props: ' + JSON.stringify(props));
@@ -104,8 +104,8 @@ class LayerEditor extends React.Component {
 
     getFieldValue = (rowData) => {
         if (rowData.path === 'worldLayer.data.center') {
-            const value0 = (this.state.worldLayer.data.center[0]).toFixed(2);
-            const value1 = (this.state.worldLayer.data.center[1]).toFixed(2);
+            const value0 = (this.state.worldLayer.data.center[0]).toFixed(4);
+            const value1 = (this.state.worldLayer.data.center[1]).toFixed(4);
             return value0 + ', ' + value1;
         }
         else {
@@ -125,13 +125,21 @@ class LayerEditor extends React.Component {
         window.history.back();
     };
 
-    // save the changes in the App store
+    // save the changes in the App store and the DataBase
     save = () => {
         const layers = [...this.props.world.layers];
-        console.log('save: ' + this.state.worldLayer.layer.name);
-        layers[this.findSelectedLayerIndex()] = this.state.worldLayer;
-        this.refresh(layers);
-        this.backToWorldPage();
+        console.log('save: ' + this.state.worldLayer.name);
+        layers[this.layerIndex] = this.state.worldLayer;
+        // 1. update the changes in the database
+        WorldService.updateWorldField(this.props.world, 'layers', layers)
+            .then ( res =>  {
+                console.log(`Succeed to update ${this.props.worldName}'s layers`);
+                // 2. update the changes in the App Store and refresh the page
+                this.refresh(layers);
+                // 3. close the editor page and go back to the layers table page
+                this.backToWorldPage();
+            })
+            .catch( error => console.error('Failed to update the world: ' + JSON.stringify(error.message)));
     };
 
     // update the App store and refresh the page
@@ -139,7 +147,6 @@ class LayerEditor extends React.Component {
         console.log('Layer Details: refresh...');
         const name = this.props.worldName;
         this.props.updateWorld({ name, layers });
-        console.warn('layer (from layers) inputData: ' + JSON.stringify(layers[this.findSelectedLayerIndex()].inputData));
     };
 
     setGlobalFilter = (e: any) => this.setState({globalFilter: e.target.value});

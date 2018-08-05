@@ -1,15 +1,16 @@
 import { IEntry } from './ILayerDetails';
 
 export interface IStore {
+    storeId: string,                        // get from the details page (RASTER/VECTOR) store's name field
     name: string,
-    type: string,
-    format: string,                             // type: 'GeoTiff' or 'Shapfile'
+    type: string,                           // RASTER or VECTOR: get from the Layer page's type
+    format: string,                         // get from the store type: 'GeoTiff' or 'Shapfile'
     enable: boolean,
-    _default: boolean,
     workspace: IWorkspace,
-    connectionParameters?: IConnectParmas,     // define as a Map in the mongoDB
-    href: string,                              // the 'coverages' field in RASTERS or the 'featureTypes' field in VECTORS
-    url?: string                               // only in RASTERS
+    _default: boolean,
+    connectionParameters?: IConnectParmas,  // only in VECTORS
+    url?: string,                           // only in RASTERS
+    href: string                            // get from the "coverages"  in RASTERS or "featureTypes" in VECTORS
 }
 
 export interface IWorkspace {
@@ -18,10 +19,8 @@ export interface IWorkspace {
 }
 
 export interface IConnectParmas {
-    entry: IEntry | IEntry[]
+    entry?: IEntry | IEntry[],
+    namespace?: string,
+    url?: string
 }
-
-
-
-
 

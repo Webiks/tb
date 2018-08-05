@@ -31,31 +31,16 @@ class Worlds extends React.Component {
     props: IPropsWorlds;
     state: IStateWorld = { hideSpinner: true };
 
-    // GET: get all worlds on startUp
+    // GET: get all worlds on startUp (from mongo Database)
     componentDidMount() {
         this.setState({ hideSpinner: false } );
         WorldService.getWorlds()
             .then((worlds: IWorld[]) => {
-                // get the input Data of all the worlds (from the App store)
-                const worldsInput = worlds.map((world: IWorld) => this.getInputData(worlds, world));
-                this.props.setWorlds([...worldsInput]);
+                // update the App store with the worlds' list
+                this.props.setWorlds(worlds);
                 this.setState({ hideSpinner: true } );
             })
             .catch(error => this.props.setWorlds([]));
-    };
-
-    // get the input Data of the world from the App store
-    getInputData = (worlds: IWorld[], world: IWorld): IWorld => {
-        // find the world in the App store if exist
-        const worldsList = this.props.worldsList.length === 0 ? worlds : this.props.worldsList;
-        const appWorld = worldsList.find(({ name, layers }: IWorld) => world.name === name);
-        return {
-            name: world.name,
-            desc: appWorld.desc ? appWorld.desc : '',
-            country: appWorld.country ? appWorld.country : '',
-            directory: appWorld.directory ? appWorld.directory : '',
-            layers: appWorld.layers ? appWorld.layers : []
-        };
     };
 
     render() {

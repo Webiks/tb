@@ -82,13 +82,14 @@ class WorldsDataTable extends React.Component {
     };
 
     delete = () => {
-        const index = this.findSelectedWorldIndex(this.state.selectedWorld);
-        WorldService.deleteWorldByName(this.state.selectedWorld.name)
+        const index = this.props.worldsList.indexOf(this.state.selectedWorld);
+        WorldService.deleteWorld(this.state.selectedWorld)
             .then(res => {
                 const worlds =
                     this.props.worldsList.filter( world => world.name !== this.state.selectedWorld.name);
                 this.refresh(worlds);
-            });
+            })
+            .catch( error => this.handleError(`Error delete ${this.state.selectedWorld.name}'s world ${error}`));
     };
 
     addNew = () => {
@@ -101,23 +102,15 @@ class WorldsDataTable extends React.Component {
         });
     };
 
-    findSelectedWorldIndex = (rowData) => {
-        return this.props.worldsList.indexOf(rowData);
-    };
-
-    // update the state world's list
-    update = () => {
-        const worlds = [...this.props.worldsList];
-        worlds[this.findSelectedWorldIndex(this.state.selectedWorld)] = this.state.selectedWorld;
-        this.refresh(worlds);
-        console.log("Worlds Home Page: UPDATE..." + JSON.stringify(worlds));
-    };
-
     // update the App store and refresh the page
     refresh = (worlds) => {
         this.props.setWorlds([...worlds]);
         this.setInitState();
-        console.log("Worlds Home Page: REFRESH..." + JSON.stringify([...worlds]));
+    };
+
+    handleError = (message) => {
+        console.error(message);
+        return this.refresh(this.props.worldsList);
     };
 
     actionsButtons = (rowData: any, column: any) => {
@@ -208,5 +201,3 @@ const mapDispatchToProps = (dispatch: any) => ({
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(WorldsDataTable);
-
-

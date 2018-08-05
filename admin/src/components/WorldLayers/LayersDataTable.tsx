@@ -5,6 +5,7 @@ import { push } from 'react-router-redux';
 import { IState } from '../../store';
 import { WorldsActions } from '../../actions/world.actions';
 import { IWorldLayer } from '../../interfaces/IWorldLayer';
+import { ILayer } from '../../interfaces/ILayer';
 import { ITBAction } from '../../consts/action-types';
 import { LayerService } from '../../services/LayerService';
 import DataTableHeader from '../DataTable/DataTableHeader';
@@ -26,8 +27,7 @@ export interface IPropsLayers {
     worldName: string,
     layers: IWorldLayer[],
     world: IWorld,
-    getAllLayersData: () => void,
-    updateWorld: (worlds: IWorld) => ITBAction,
+    updateWorld: (worlds: Partial<IWorld>) => ITBAction,
     navigateTo: (layerName: string) => void
 }
 
@@ -57,14 +57,16 @@ class LayersDataTable extends React.Component {
             selectedLayer: null,
             displayMapWindow: false,
             displayAlert: false
-    });
+        });
+
+    setDisplayMap = (value) => this.setState({ displayMapWindow: value });
 
     editLayer = (layer: IWorldLayer) => {
         this.setState({
             selectedLayer: {...layer},
             displayMapWindow: false,
             displayAlert: false });
-        this.props.navigateTo(`/world/${this.props.worldName}/layer/${layer.layer.name}`);
+        this.props.navigateTo(`/world/${this.props.worldName}/layer/${layer.name}`);
     };
 
     deleteLayer = (rowData: ILayer) => {
@@ -76,16 +78,25 @@ class LayersDataTable extends React.Component {
     };
 
     delete = () => {
-        console.log("selected layer: " + this.state.selectedLayer.layer.name);
-        LayerService.deleteLayerById(this.props.worldName, this.state.selectedLayer.layer)
-            .then(response => {
-                console.log("LAYER DATA TABLE: delete layer...");
-                // update the layers' list
+        console.log("selected layer: " + this.state.selectedLayer.name);
+        console.log("LAYER DATA TABLE: delete layer...");
+        // 1. delete the layer from GeoServer
+        LayerService.deleteWorldLayer(this.props.worldName, this.state.selectedLayer._id)
+            .then ( response => {
+                // 2. update the layers' list to be without the deleted layer
                 const layers =
-                    this.props.world.layers.filter( worldLayer => worldLayer.layer.name !== this.state.selectedLayer.layer.name);
-                this.refresh(layers);
+                    this.props.world.layers.filter( worldLayer => worldLayer.name !== this.state.selectedLayer.name);
+
+                // 3. update the world in the DataBase with the new list of layers
+                WorldService.updateWorldField(this.props.world, 'layers', layers)
+                    .then ( res => {
+                        console.log(`Succeed to update ${this.props.worldName}'s layers`);
+                        // 4. update the changes in the App Store and refresh the page
+                        this.refresh(layers);
+                    })
+                    .catch(error => console.error('Failed to update the world layers: ' + error));
             })
-            .catch(error => this.refresh([]));
+            .catch(error => console.error('Failed to update the world layers: ' + error));
     };
 
     // update the App store and refresh the page
@@ -124,15 +135,15 @@ class LayersDataTable extends React.Component {
         return  (
             <div className="content-section implementation">
                 {
-                this.props.layers &&
-                <div>
-                    <DataTable  value={this.props.layers} paginator={true} rows={10} responsive={false}
-                                resizableColumns={true} autoLayout={true} style={{margin:'10px 20px'}}
-                                header={<DataTableHeader title={`${this.props.worldName} World's Files List`} setGlobalFilter={this.setGlobalFilter}/>}
-                                footer={<UploadFile worldName={this.props.worldName} getAllLayersData={this.props.getAllLayersData}/>}
-                                globalFilter={this.state.globalFilter}
-                                selectionMode="single" selection={this.state.selectedLayer}
-                                onSelectionChange={(e: any)=>{this.setState({selectedLayer: e.data});}}>
+                    this.props.layers &&
+                    <div>
+                        <DataTable  value={this.props.layers} paginator={true} rows={10} responsive={false}
+                                    resizableColumns={true} autoLayout={true} style={{margin:'10px 20px'}}
+                                    header={<DataTableHeader title={`${this.props.worldName} World's Files List`} setGlobalFilter={this.setGlobalFilter}/>}
+                                    footer={<UploadFile worldName={this.props.worldName}/>}
+                                    globalFilter={this.state.globalFilter}
+                                    selectionMode="single" selection={this.state.selectedLayer}
+                                    onSelectionChange={(e: any)=>{this.setState({selectedLayer: e.data});}}>
                             <Column field="layer.name" header="Name" sortable={true} style={{textAlign:'left', padding:'7px 20px'}}/>
                             <Column field="store.type" header="Type" sortable={true} style={{width: '10%'}} />
                             <Column field="store.format" header="Format" sortable={true} style={{width: '10%'}}/>
@@ -141,30 +152,30 @@ class LayersDataTable extends React.Component {
                             <Column field="''" header="Last Modified" sortable={true} style={{width: '12%'}}/>
                             <Column field="inputData.affiliation" header="File Affiliation" sortable={true} style={{width: '10%'}}/>
                             <Column header="Actions" body={this.actionsButtons} style={{width: '12%'}}/>
-                    </DataTable>
-                </div>
+                        </DataTable>
+                    </div>
                 }
 
                 {
-                this.state.selectedLayer && this.state.displayMapWindow &&
-                <div>
-                    <Dialog visible={this.state.displayMapWindow} modal={true}
-                            header={`Layer '${this.state.selectedLayer.layer.name}' map preview`}
-                            onHide={() => this.refresh(this.props.world.layers)}>
-                        <DisplayMap worldName={this.props.worldName} layer={this.state.selectedLayer}/>
-                    </Dialog>
-                </div>
+                    this.state.selectedLayer && this.state.displayMapWindow &&
+                    <div>
+                        <DisplayMap worldName={this.props.worldName}
+                                    layer={this.state.selectedLayer}
+                                    setDisplayMap={this.setDisplayMap}
+                                    displayMapWindow={true}
+                                    refresh={this.refresh}/>
+                    </div>
                 }
 
                 {
-                this.state.selectedLayer && this.state.displayAlert &&
-                <div>
-                    <Dialog visible={this.state.displayAlert}
-                            width="350px" modal={true} footer={alertFooter} minY={70}
-                            onHide={() => this.refresh(this.props.layers) }>
-                        <b>DELETE</b> layer <b>{this.state.selectedLayer.layer.name}</b> ?
-                    </Dialog>
-                </div>
+                    this.state.selectedLayer && this.state.displayAlert &&
+                    <div>
+                        <Dialog visible={this.state.displayAlert}
+                                width="350px" modal={true} footer={alertFooter} minY={70}
+                                onHide={() => this.refresh(this.props.layers) }>
+                            <b>DELETE</b> layer <b>{this.state.selectedLayer.layer.name}</b> ?
+                        </Dialog>
+                    </div>
                 }
 
             </div>
@@ -180,7 +191,7 @@ const mapStateToProps = (state: IState, { worldName, ...props }: any) => {
 };
 
 const mapDispatchToProps = (dispatch: any) => ({
-    updateWorld: (payload: IWorld) => dispatch(WorldsActions.updateWorldAction(payload)),
+    updateWorld: (payload: Partial<IWorld>) => dispatch(WorldsActions.updateWorldAction(payload)),
     navigateTo: (location: string) => dispatch(push(location))
 });
 

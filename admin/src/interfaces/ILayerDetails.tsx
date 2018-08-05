@@ -48,7 +48,7 @@ export interface INativeBoundingBox {
     maxx: number,
     miny: number,
     maxy: number,
-    crs?: string | ICrs
+    crs?: string | ICrs                     // define as a Map in the mongoDB
 }
 
 export interface ILatLonBoundingBox {
@@ -59,17 +59,20 @@ export interface ILatLonBoundingBox {
     crs: string
 }
 
+// define as a Map in the mongoDB
 export interface ICrs {
     class: string,
     value: string
 }
 
+// define as a Map in the mongoDB
 export interface IMetaData {
     entry?: IEntry,
     dirName?: string,                   // Rasters
     recalculateBounds?: string         // Vectors
 }
 
+// define as a Map in the mongoDB
 export interface IEntry {
     key: string,
     value: any

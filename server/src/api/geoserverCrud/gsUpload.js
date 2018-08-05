@@ -29,7 +29,11 @@ router.post('/:workspaceName', (req, res) => {
     // check if need to do a ZIP file
     if (!reqFiles.length && (reqFiles.name.includes('.zip') || reqFiles.size < 1000000000)){
         isZipped = false;
-        fileType = findFileType(reqFiles.type);
+        if (reqFiles.name.includes('.zip')){
+            fileType = 'zip';
+        } else {
+            fileType = findFileType(reqFiles.type);
+        }
     } else {
         isZipped = true;
         fileType = 'zip';

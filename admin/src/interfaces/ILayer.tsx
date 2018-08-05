@@ -26,3 +26,4 @@ export interface IAttribution {
     logoWidth: number,
     logoHeight: number
 }
+

@@ -1,4 +1,5 @@
 const express = require('express');
+
 const worldModel = require('../../database/schemas/WorldSchema');
 const worldLayerModel = require('../../database/schemas/WorldLayersSchema');
 const MongoCrud = require('../../database/MongoCrud');
@@ -100,7 +101,7 @@ router.get('/geoserver/:workspaceName/:layerName', (req, res) => {
                         res.status(500).send('ERROR: unknown layer TYPE!');
                     }
                     // set the store's name
-                    worldLayer.layer.storeName = (worldLayer.layer.storeId).split(':')[1];
+                    worldLayer.layer.storeName = (worldLayer.layer.storeId).split(':')[1];                    
                     return worldLayer.data.store.href;
                 })
                 .then ( storeUrl => {

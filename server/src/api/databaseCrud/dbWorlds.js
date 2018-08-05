@@ -53,8 +53,7 @@ router.get('/:worldName', (req, res) => {
         .catch( error => {
             console.error(`db WORLD: GET World ERROR!: ${error}`);
             res.status(404).send(`world ${req.params.worldName} can't be found!`);
-        });
-});
+        });});
 
 // =========
 //  UPDATE

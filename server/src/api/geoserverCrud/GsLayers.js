@@ -18,7 +18,7 @@ class GsLayers {
         console.log("GsLayers: start GET-ALL world's layers from Geoserver..." + urlGetLayers);
         return axios.get(urlGetLayers, { headers: { authorization } })
             .then( response => response.data)
-            .catch( error => error );
+            .catch( error => this.handleError(error, `GET-ALL world's layers from Geoserver ERROR!: ${error}`));
     }
 
     // get the layer type & resource info ("layer" field - type ILayerDetails) from geoserver by REST api
@@ -27,11 +27,7 @@ class GsLayers {
         console.log("GsLayers: start GET LAYER INFO url = " + urlGetLayer);
         return axios.get(urlGetLayer, { headers: { authorization } })
             .then( response => response.data)
-            .catch( error => {
-                console.error(`GsLayers: getLayerInfoFromGeoserver ERROR: layer ${layerName} can't be found!: 
-                ${error}`);
-                return error;
-            });
+            .catch( error => this.handleError(error, `Get Layer Info From Geoserver ERROR! layer ${layerName} can't be found!: ${error}`));
     }
 
     // get layer's details ("data" field - type ILayerDetails) from geoserver by REST api
@@ -40,10 +36,7 @@ class GsLayers {
         console.log("GsLayers: GET LAYER DETAILS url: " + resourceUrl);
         return axios.get(resourceUrl, { headers: { authorization } })
             .then( response => response.data)
-            .catch( error => {
-                console.error(`GsLayers: getLayerDetailsFromGeoserver ERROR: ${error}`);
-                return error;
-            });
+            .catch( error => this.handleError(error, `Get Layer Details From Geoserver ERROR!: ${error}`));
     }
 
     // get the layer's store data ("store" field - type ILayerDetails) from geoserver by REST api
@@ -52,10 +45,7 @@ class GsLayers {
         console.log("GsLayers: start GET STORE DATA url = " + storeUrl);
         return axios.get(storeUrl, { headers: { authorization } })
             .then( response => response.data )
-            .catch( error => {
-                console.error(`GsLayers: getStoreDataFromGeoserver ERROR! ${error}`);
-                return error;
-            });
+            .catch( error => this.handleError(error, `Get Store Data From Geoserver ERROR!: ${error}`));
     }
 
     // get Capabilities XML file - WMTS Request for display the selected layer
@@ -63,37 +53,8 @@ class GsLayers {
         console.log("GsLayers: start GET CAPABILITIES url = " + capabilitiesUrl);
         return axios.get(capabilitiesUrl, { headers: { authorization } })
             .then( response => response.data)
-            .catch( error => error );
+            .catch( error => this.handleError(error, `Get Capabilities From Geoserver ERROR!: ${error}`));
     }
-
-    // ===============
-    //   PUT Requests - W O R L D S
-    // ===============
-    // UPDATE the name of a world (workspace) in geoserver by REST api
-    // static updateWorldNameInGeoserver(oldname, newname, layers){
-    //     console.log("start update world name in Geoserver...");
-    //     console.log("old name: " + oldname + ", new name: " + newname);
-    //     // 1. create a new workspace with the new name
-    //     return GsLayers.createNewWorldOnGeoserver(newname)
-    //         .then ( response => {
-    //             console.log("finished to create a new workspace in Geoserver..." + response);
-    //             // 2. copy the contents of the old workspace into the new workspace (upload the layers to the new workspace)
-    //             if(layers.length !== 0){
-    //                 layers.map( layer => UploadFilesToGS.uploadFile(newname, layer.layer.type, layer.layer.fileName, layer.layer.filePath))
-    //             }
-    //             // 3. remove the old workspace
-    //             GsLayers.deleteWorldFromGeoserver(oldname)
-    //                 .then ( response => res.send(response.data))
-    //                 .catch( error => {
-    //                     console.error(`GsWorlds: Failed to delete ${oldname} world! :` + error);
-    //                     return error;
-    //                 });
-    //         })
-    //         .catch( error => {
-    //             console.error(`GsWorlds: Failed to update ${oldname} world! :` + error);
-    //             return error;
-    //         });
-    // }
 
     // =================
     //  DELETE Requests
@@ -106,10 +67,7 @@ class GsLayers {
                 console.log(`success to delete the layer! ${url}`);
                 return response.data;
             })
-            .catch( error => {
-                console.error(`GsLayers: getStoreDataFromGeoserver ERROR! ${error}`);
-                return error;
-            });
+            .catch( error => this.handleError(error, `DELETE layer From Geoserver ERROR!, url: ${url}, error: ${error}`));
     }
 
     // ========================================= private  F U N C T I O N S ============================================
@@ -127,6 +85,11 @@ class GsLayers {
         }
         return typeData;
     }
+
+    handleError(error, message){
+        console.error('gs LAYER: ' + message);
+        return error;
+    };
 }
 
 

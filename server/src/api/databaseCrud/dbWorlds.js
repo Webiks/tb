@@ -3,14 +3,9 @@ const worldModel = require('../../database/schemas/WorldSchema');
 const MongoCrud = require('../../database/MongoCrud');
 const GsWorlds  = require("../geoserverCrud/GsWorlds");
 
-require('../../config/serverConfig')();
-const configParams = config().configParams;
-const configUrl = configBaseUrl().configUrl;
-
 const router = express.Router();
 
 const dbWorldCrud = new MongoCrud(worldModel);
-const geoserverBaseUrl = `${configUrl.serverBaseUrl}/api/gsWorlds`;
 
 // ==============
 //  CREATE (add)
@@ -25,15 +20,9 @@ router.post('/:worldName', (req, res) => {
             console.log('db WORLD SERVER: start to CREATE new World in the DataBase...');
             dbWorldCrud.add(req.body)
                 .then( response => res.send(response))
-                .catch( error => {
-                    console.error("create New World in mongoDB ERROR!: " + error);
-                    res.status(500).send(`Failed to create ${req.params.worldName} world! :` + error);
-                });
+                .catch( error => handleError(res, 500, `CREATE New World in DataBase ERROR!: ${error}`, `Failed to create ${req.params.worldName} world!`))
         })
-        .catch( error => {
-            console.error("db WORLD SERVER: CREATE WORLD ERROR!: " + error);
-            res.status(500).send(`Failed to create ${req.params.worldName} world! :` + error);
-        });
+        .catch( error => handleError(res, 500, `CREATE New World in GeoServer ERROR!: ${error}`, `Failed to create ${req.params.worldName} world!`));
 });
 
 // ============
@@ -44,10 +33,7 @@ router.get('/', (req, res) => {
     console.log("db WORLD SERVER: start GET ALL Worlds...");
     dbWorldCrud.getAll()
         .then( response => res.send(response))
-        .catch( error => {
-            console.error("db WORLD SERVER GET-ALL ERROR!: " + error);
-            res.status(404).send(`there are no worlds!`);
-        });
+        .catch( error => handleError(res, 404, `GET-ALL Worlds ERROR!: ${error}`, `there are no worlds!`));
 });
 
 // get One World from the Database by its Name
@@ -55,10 +41,7 @@ router.get('/:worldName', (req, res) => {
     console.log(`db WORLD SERVER: start GET ${req.params.worldName} World...`);
     dbWorldCrud.get({ name: req.params.worldName })
         .then( response => res.send(response))
-        .catch( error => {
-            console.error("db WORLD SERVER GET ERROR!: " + error);
-            res.status(404).send(`world ${req.params.worldName} can't be found!`);
-        });
+        .catch( error => handleError(res, 404, `GET World ERROR!: ${error}`, `world ${req.params.worldName} can't be found!`));
 });
 
 // =========
@@ -67,30 +50,13 @@ router.get('/:worldName', (req, res) => {
 // update all the World's fields (passing a new world object in the req.body)
 router.put('/:worldName', (req, res) => {
     console.log("db WORLD SERVER: start to UPDATE world " + req.params.worldName);
-    console.log("UPDATE data:" + JSON.stringify(req.body));
     let oldName = req.params.worldName;
     let newName = req.body['name'];
     const layers = req.body['layers'];
 
     dbWorldCrud.update(req.body)
         .then( response =>  res.send(response))
-        // {
-        //     // if the world's name was changed - update the new name in the geoserver
-        //     if (oldName !== newName) {
-        //         GsWorlds.updateWorldNameInGeoserver(oldName, newName, layers)
-        //             .then( response => res.send(response))
-        //             .catch((error) => {
-        //                 console.error("db WORLD SERVER: UPDATE-FIELD ERROR!: " + error);
-        //                 res.status(404).send(`Failed to update ${req.params.worldName} world! :` + error);
-        //             });
-        //     } else {
-        //         res.send(response);
-        //     }
-        // })
-        .catch( error => {
-            console.error("db WORLD SERVER: UPDATE ERROR!: " + error);
-            res.status(404).send(`Failed to update ${req.params.worldName} world! :` + error);
-        });
+        .catch( error => handleError(res, 500, `UPDATE World ERROR!: ${error}`, `Failed to update ${req.params.worldName} world!`));
 });
 
 // update a single field in the World (passing the world's id + layers the new value of the field in the req.body)
@@ -112,24 +78,7 @@ router.put('/:worldName/:fieldName', (req, res) => {
 
     dbWorldCrud.updateField(entityId, updatedField, operation)
         .then( response => res.send(response))
-        // {
-        //     if the world's name was changed - update the new name in the geoserver
-        //     if (fieldName === 'name') {
-        //         GsWorlds.updateWorldNameInGeoserver(worldName, fieldValue, layers)
-        //             .then(response => res.send(response))
-        //             .catch(error => {
-        //                 console.error("db WORLD SERVER: UPDATE-FIELD ERROR!: " + error);
-        //                 res.status(500).send(`Failed to update ${req.params.worldName} world! :` + error);
-        //             });
-        //     } else {
-        //         res.send(response);
-        //     }
-        // })
-        .catch( error => {
-            console.error("db WORLD SERVER: UPDATE-FIELD ERROR!: " + error);
-            res.status(500).send(`Failed to update ${req.params.worldName} world! :` + error);
-        });
-
+        .catch( error => handleError(res, 500, ` UPDATE-FIELD World ERROR!: ${error}`, `Failed to update ${req.params.worldName} world!`));
 });
 
 // =========
@@ -138,22 +87,22 @@ router.put('/:worldName/:fieldName', (req, res) => {
 // delete a world
 router.delete('/delete/:geoserverName/:worldId', (req, res) => {
     console.log("dbWorlds: delete world params: " + req.params.geoserverName + ", id: " + req.params.worldId);
-    // 1. delete the world(worlspace) from GeoServer:
+    // 1. delete the world(workspace) from GeoServer:
     GsWorlds.deleteWorldFromGeoserver(req.params.geoserverName)
         .then( response => {
             // 2. delete the world from the DataBase (passing the world's id as a req.params)
             console.log('db WORLD SERVER: start to REMOVE a World from the DataBase: ' + req.params.worldId);
             dbWorldCrud.remove({ _id: req.params.worldId })
                 .then( response => res.send(response))
-                .catch( error => {
-                    console.error("db SERVER: DELETE ERROR!: " + error);
-                    res.status(404).send(`Failed to delete ${req.params.geoserverName} world! :` + error);
-                });
+                .catch( error => handleError(res, 404, ` DELETE World from DataBase ERROR!: ${error}`, `Failed to delete ${req.params.geoserverName} world!`))
         })
-        .catch( error => {
-            console.error("db WORLD SERVER: DELETE ERROR!: " + error);
-            res.status(404).send(`Failed to delete ${req.params.geoserverName} world! :` + error);
-        });
+        .catch( error => handleError(res, 404, ` DELETE Workspace from GeoServer ERROR!: ${error}`, `Failed to delete ${req.params.geoserverName} worksapce!`));
 });
+
+// ========================================= private  F U N C T I O N S ============================================
+handleError = (res, status, consoleMessage, sendMessage) => {
+    console.error('db WORLD: ' + consoleMessage);
+    res.status(status).send(sendMessage);
+};
 
 module.exports = router;

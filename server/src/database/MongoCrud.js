@@ -14,8 +14,7 @@ class MongoCrud {
             try {
                 this.mongoModel.create(entityToAdd, (err, entityReturn) => {
                     if (err) {
-                        console.error("MongoCrud CREATE error: " + err);
-                        return reject(err);
+                        this.handleError(reject, err, `CREATE error: ${err}`);
                     }
                     else {
                         console.log("added entity: " + entityReturn.id);
@@ -24,8 +23,7 @@ class MongoCrud {
                 });
             }
             catch (err) {
-                console.error("MongoCrud ADD error: " + err);
-                return reject(err);
+                this.handleError(reject, err, `ADD error: ${err}`);
             }
         });
     }
@@ -35,8 +33,7 @@ class MongoCrud {
             try {
                 this.mongoModel.findOne(entityId, (err, entityReturn) => {
                     if (err) {
-                        console.error("MongoCrud FIND-ONE error: " + err);
-                        return reject(err);
+                        this.handleError(reject, err, `FIND(by ID) error: ${err}`);
                     }
                     else {
                         if (entityReturn) {
@@ -51,8 +48,7 @@ class MongoCrud {
                 });
             }
             catch (err) {
-                console.error("MongoCrud GET error: " + err);
-                return reject(err);
+                this.handleError(reject, err, `GET(by ID) error: ${err}`);
             }
         });
     }
@@ -62,8 +58,7 @@ class MongoCrud {
             try {
                 this.mongoModel.findOne(query, selector, (err, entityReturn) => {
                     if (err) {
-                        console.error("MongoCrud FIND-ONE error: " + err);
-                        return reject(err);
+                        this.handleError(reject, err, `FIND-ONE(by query) error: ${err}`);
                     }
                     else {
                         if (entityReturn) {
@@ -79,8 +74,7 @@ class MongoCrud {
                 });
             }
             catch (err) {
-                console.error("MongoCrud GET BY QUERY error: " + err);
-                return reject(err);
+                this.handleError(reject, err, `GET-ONE(by query) error: ${err}`);
             }
         });
     }
@@ -90,8 +84,7 @@ class MongoCrud {
             try {
                 this.mongoModel.find(query, selector).toArray((err, listReturn) => {
                     if (err) {
-                        console.error("MongoCrud FIND(by query) error: " + err);
-                        return reject(err);
+                        this.handleError(reject, err, `FIND-LIST(by query) error: ${err}`);
                     }
                     else {
                         if (listReturn) {
@@ -106,8 +99,7 @@ class MongoCrud {
                 });
             }
             catch (err) {
-                console.error("MongoCrud GET error: " + err);
-                return reject(err);
+                this.handleError(reject, err, `GET-LIST(by query) error: ${err}`);
             }
         });
     }
@@ -115,20 +107,18 @@ class MongoCrud {
     getAll() {
         return new Promise((resolve, reject) => {
             try {
-                this.mongoModel.find({}, (err, entityReturn) => {
+                this.mongoModel.find({}, (err, entitiesReturn) => {
                     if (err) {
-                        console.error("MongoCrud FIND error: " + err);
-                        return reject(err);
+                        this.handleError(reject, err, `GET-ALL error: ${err}`);
                     }
                     else {
                         console.log("got all entities!");
-                        return resolve(entityReturn);
+                        return resolve(entitiesReturn);
                     }
                 });
             }
             catch (err) {
-                console.error("MongoCrud GET-ALL error: " + err);
-                return reject(err);
+                this.handleError(reject, err, `GET-ALL error: ${err}`);
             }
         });
     }
@@ -139,8 +129,7 @@ class MongoCrud {
                 console.log("MongoCrud UPDATE params: " + JSON.stringify(updatedEntity));
                 this.mongoModel.findByIdAndUpdate({_id: updatedEntity._id}, updatedEntity, {new: true}, (err, entityReturn) => {
                     if (err) {
-                        console.error("MongoCrud FIND-AND-UPDATE error: " + err);
-                        return reject(err);
+                        this.handleError(reject, err, `FIND-AND-UPDATE error: ${err}`);
                     }
                     else {
                         console.log("update entity: " + entityReturn.id);
@@ -149,19 +138,13 @@ class MongoCrud {
                 });
             }
             catch (err) {
-                console.error("MongoCrud UPDATE error: " + err);
-                return reject(err);
+                this.handleError(reject, err, `UPDATE error: ${err}`);
             }
         });
     }
 
     updateField(entityId, updatedField, operation) {
         let updateOperation = {};
-        // if (isArray) {
-        //     updateOperation = {"$push" : updatedField};
-        // } else {
-        //     updateOperation = {"$set" : updatedField};
-        // }
         switch (operation){
             case ('update'):
                 updateOperation = {"$set" : updatedField};
@@ -180,8 +163,7 @@ class MongoCrud {
             try {
                 this.mongoModel.findByIdAndUpdate(entityId, updateOperation, {new: true}, (err, entityReturn) => {
                     if (err) {
-                        console.error("MongoCrud FIND-AND-UPDATE error: " + err);
-                        return reject(err);
+                        this.handleError(reject, err, `FIND-AND-UPDATE-FIELD error: ${err}`);
                     }
                     else {
                         console.log("update entity: " + entityReturn.id);
@@ -190,8 +172,7 @@ class MongoCrud {
                 });
             }
             catch (err) {
-                console.error("MongoCrud UPDATE-FIELD error: " + err);
-                return reject(err);
+                this.handleError(reject, err, `UPDATE-FIELD error: ${err}`);
             }
         });
     }
@@ -201,8 +182,7 @@ class MongoCrud {
             try {
                 this.mongoModel.remove(entityId, (err, entityReturn) => {
                     if (err) {
-                        console.error("MongoCrud REMOVE error: " + err);
-                        return reject(err);
+                        this.handleError(reject, err, `REMOVE error: ${err}`);
                     }
                     else {
                         console.log("remove entity: " + entityReturn._id);
@@ -211,8 +191,7 @@ class MongoCrud {
                 });
             }
             catch (err) {
-                console.error("MongoCrud REMOVE error: " + err);
-                return reject(err);
+                this.handleError(reject, err, `REMOVE error: ${err}`);
             }
         });
     }
@@ -222,21 +201,24 @@ class MongoCrud {
             try {
                 this.mongoModel.remove({}, (err) => {
                     if (err) {
-                        console.error("MongoCrud REMOVE-ALL error: " + err);
-                        return reject(err);
+                        this.handleError(reject, err, `REMOVE-ALL error: ${err}`);
                     }
                     else {
                         console.log("remove all!");
-                        return reject(err);
+                        return resolve();
                     }
                 });
             }
-            catch (err) {
-                console.error("MongoCrud REMOVE-ALL error: " + err);
-                return reject(err);
+            catch(err) {
+                this.handleError(reject, err, `REMOVE-ALL error: ${err}`);
             }
         });
     }
+
+    handleError(reject, err, message){
+        console.error('MongoCrud: ' + message);
+        return reject(err);
+    };
 }
 
 module.exports = MongoCrud;

@@ -3,19 +3,14 @@ const axios = require('axios');
 const worldModel = require('../../database/schemas/WorldSchema');
 const worldLayerModel = require('../../database/schemas/WorldLayersSchema');
 const MongoCrud = require('../../database/MongoCrud');
-const GsWorlds  = require("../geoserverCrud/GsWorlds");
 const GsLayers  = require("../geoserverCrud/GsLayers");
+
+const router = express.Router();
 
 require('../../config/serverConfig')();
 const configParams = config().configParams;
 const configUrl = configBaseUrl().configUrl;
-const authorization = configParams.headers.authorization;
-
-const router = express.Router();
-
 const dbWorldCrud = new MongoCrud(worldModel);
-// const dbLayerCrud = new MongoCrud(worldLayerModel);
-const geoserverBaseUrl = `${configUrl.serverBaseUrl}/api/gsLayers`;
 
 // ============
 //  GET (find)
@@ -27,10 +22,7 @@ router.get('/:worldName', (req, res) => {
     const selector = 'layers';
     dbWorldCrud.getListByQuery(query, selector)
         .then( response => res.send(response))
-        .catch( error => {
-            console.error("db LAYER SERVER GET-ALL ERROR!: " + error);
-            res.status(404).send(`there are no layers!`);
-        });
+        .catch( error => handleError(res, `GET-ALL from DataBase ERROR!: ${error}`, `there are no layers!`));
 });
 
 // ====================
@@ -41,10 +33,7 @@ router.get('/geoserver/:workspaceName', (req, res) => {
     console.log(`geo LAYER SERVER: start GET ALL ${req.params.workspaceName} World's Layers...`);
     GsLayers.getWorldLayerListFromGeoserver(req.params.workspaceName)
         .then( response => res.send(response.layers.layer))
-        .catch( error => {
-            console.error("db LAYER SERVER GET-ALL ERROR!: " + error);
-            res.status(404).send(`there are no layers!`);
-        });
+        .catch( error => handleError(res, `GET-ALL from GeoServer ERROR!: ${error}`, `there are no layers!`));
 });
 
 // get World's Layer DATA from GeoServer
@@ -156,20 +145,11 @@ router.get('/geoserver/:workspaceName/:layerName', (req, res) => {
                             // return the world-layer with all the data from GeoServer
                             res.send(worldLayer)
                         })
-                        .catch(error => {
-                            console.error("db LAYER: Get Store Data From Geoserver ERROR!: " + error);
-                            res.status(404).send(`can't find the Store!`);
-                        })
+                        .catch( error => handleError(res, `Get Store Data From Geoserver ERROR!: ${error}`, `can't find the Store!`))
                 })
-                .catch( error => {
-                    console.error("db LAYER: Get Layer Details From Geoserver ERROR!: " + error);
-                    res.status(404).send(`can't find the Layer's Details page!`);
-                });
+                .catch( error => handleError(res, `Get Layer Details From Geoserver ERROR!: ${error}`, `can't find the Layer's Details page!`));
         })
-        .catch( error => {
-            console.error("db LAYER SERVER GET-ALL ERROR!: " + error);
-            res.status(404).send(`can't find the Layer's Info page!`);
-        });
+        .catch( error => handleError(res, `Get Layer Info From Geoserver ERROR!: ${error}`, `can't find the Layer's Info page!`));
 });
 
 // get Capabilities XML file - WMTS Request for display the selected layer
@@ -178,10 +158,7 @@ router.get('/geoserver/wmts/:workspaceName/:layerName', (req, res) => {
     console.log("geo LAYER SERVER: start GetCapabilities url = " + capabilitiesUrl);
     GsLayers.getCapabilitiesFromGeoserver(capabilitiesUrl)
         .then( response => res.send(response))
-        .catch( error => {
-            console.error(`db LAYER SERVER GetCapabilities ERROR! ${capabilitiesUrl}: ${error}`);
-            res.status(404).send(`Capabilities XML file of ${req.params.layerName} can't be found!`);
-        });
+        .catch( error => handleError(res, `GetCapabilities ERROR!: ${error}`, `Capabilities XML file of ${req.params.layerName} can't be found!`));
 });
 
 // ==============
@@ -211,21 +188,18 @@ router.delete('/delete/:worldName/:layerId', (req, res) => {
                     // 3. delete the store
                     GsLayers.deleteLayerFromGeoserver(layer.data.store.href)
                         .then ( response => res.send(response))
-                        .catch( error => {
-                            console.error("db LAYER REMOVE layer's store ERROR!: " + error);
-                            res.status(404).send(`layer ${req.params.layerId} can't be found!`);
-                        });
+                        .catch( error => handleError(res, `REMOVE layer's store ERROR!: ${error}`, `layer ${req.params.layerId} can't be found!`))
                 })
-                .catch( error => {
-                    console.error("db LAYER REMOVE layer from resource ERROR!: " + error);
-                    res.status(404).send(`layer ${req.params.layerId} can't be found!`);
-                });
+                .catch( error => handleError(res, `REMOVE layer from resource ERROR!: ${error}`, `layer ${req.params.layerId} can't be found!`))
         })
-        .catch( error => {
-            console.error("db LAYER REMOVE find-layer ERROR!: " + error);
-            res.status(404).send(`layer ${req.params.layerId} can't be found!`);
-        });
+        .catch( error => handleError(res, `REMOVE find-layer ERROR!: ${error}`, `layer ${req.params.layerId} can't be found!`));
 });
+
+// ========================================= private  F U N C T I O N S ============================================
+handleError = (res, consoleMessage, sendMessage) => {
+    console.error('db LAYER: ' + consoleMessage);
+    res.status(404).send(sendMessage);
+};
 
 module.exports = router;
 

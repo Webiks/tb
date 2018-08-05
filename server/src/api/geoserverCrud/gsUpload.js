@@ -80,11 +80,9 @@ router.post('/:workspaceName', (req, res) => {
     }
     res.send(reqfiles);
 
-    // ======================
-    //   F U N C T I O N S
-    // ======================
+    // ========================================= private  F U N C T I O N S ============================================
     // prepare the file before uploading it to the geoserver
-    function beforeUpload(file) {
+    function beforeUpload(file){
         const filename = file.name;
         const filePath = uploadPath + filename;
         console.log("filePath: " + filePath);

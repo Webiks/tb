@@ -7,6 +7,7 @@ import { WorldsActions } from '../../actions/world.actions';
 import { IWorldLayer } from '../../interfaces/IWorldLayer';
 import { ILayer } from '../../interfaces/ILayer';
 import { ITBAction } from '../../consts/action-types';
+import { WorldService } from '../../services/WorldService';
 import { LayerService } from '../../services/LayerService';
 import DataTableHeader from '../DataTable/DataTableHeader';
 import UploadFile from './UploadFile';
@@ -21,7 +22,6 @@ import { DataTable } from 'primereact/components/datatable/DataTable';
 import { Column } from 'primereact/components/column/Column';
 import { Button } from 'primereact/components/button/Button';
 import { Dialog } from 'primereact/components/dialog/Dialog';
-import { ILayer } from '../../interfaces/ILayer';
 
 export interface IPropsLayers {
     worldName: string,

@@ -84,11 +84,11 @@ class UploadFile extends React.Component {
                                 console.log('Succeed to update the layers!');
                                 return this.refresh(world.layers);
                             })
-                            .catch( error => console.error('Failed to update the world layers: ' + JSON.stringify(error)));
+                            .catch( error => this.handleError('Failed to update the world layers: ' + error));
                     })
-                    .catch(error => console.error("UPLOAD: getLayerByName ERROR: " + error));
+                    .catch(error => this.handleError("UPLOAD: getAllLayersData ERROR: " + error));
             })
-            .catch(error => this.refresh([]));
+            .catch(error => this.handleError("UPLOAD: getWorldLayersFromGeoserver ERROR: " + error));
     };
 
     // get the input Data of the layer from the App store
@@ -115,6 +115,11 @@ class UploadFile extends React.Component {
         const name = this.props.worldName;
         this.props.updateWorld({ name, layers });
         this.setState({ hideSpinner: true } );
+    };
+
+    handleError = (message) => {
+        console.error(message);
+        return this.refresh(this.props.world.layers);
     };
 
     onError = (e: any) => {

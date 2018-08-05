@@ -8,6 +8,12 @@ export class LayerService {
     static baseUrl: string = `${config.baseUrl.path}/${config.baseUrl.api}/dbLayers`;
     static baseGeoUrl: string = `${config.baseUrl.path}/${config.baseUrl.api}/gsLayers`;
 
+    // Handle ERRORS
+    static handleError = (error, message) => {
+        console.error(message);
+        throw new Error(error);
+    };
+
     // ========================
     //  MONGO DATABASE METHODS
     // ========================
@@ -20,10 +26,7 @@ export class LayerService {
         return axios
             .get(`${this.baseUrl}/${worldName}`)
             .then(layers => layers.data)
-            .catch(error => {
-                console.error("getAllWorldLayers ERROR!" + error);
-                throw new Error(error);
-            });
+            .catch(error => this.handleError(error, "LAYER SERVICE: There are NO Layers!!!: " + error));
     }
 
     // get one World's Layer from the Database
@@ -32,10 +35,7 @@ export class LayerService {
         return axios
             .get(`${this.baseUrl}/${worldLayerId}`)
             .then(layers => layers.data)
-            .catch(error => {
-                console.error("getWorldLayer ERROR!" + error);
-                throw new Error(error);
-            });
+            .catch(error => this.handleError(error, "LAYER SERVICE: There is NO such Layer!!!: " + error));
     }
 
     // ==========================
@@ -50,7 +50,7 @@ export class LayerService {
                 console.log("WORLD SERVICE: SUCCEED to create new World-Layer: " + newLayer.name);
                 return res.data;
             })
-            .catch(error => console.error("WORLD SERVICE: FAILED to create new World-Layer: " + error));
+            .catch(error => this.handleError(error, "LAYER SERVICE: FAILED to create new World-Layer: " + error));
     }
 
     // ==============
@@ -65,7 +65,7 @@ export class LayerService {
                 console.log("LAYER SERVICE: SUCCEED to delete Layer id: " + layerId);
                 return res.data;
             })
-            .catch(error => console.error("LAYER SERVICE: FAILED to delete Layer id: " + layerId + " error: " + error));
+            .catch(error => this.handleError(error, "LAYER SERVICE: FAILED to delete Layer id: " + layerId + " error: " + error));
     }
 
     // ===================
@@ -77,10 +77,7 @@ export class LayerService {
         return axios
             .get(`${this.baseUrl}/geoserver/${workspaceName}`)
             .then(layers => layers.data)
-            .catch(error => {
-                console.error("getLayers ERROR!" + error);
-                throw new Error(error);
-            });
+            .catch(error => this.handleError(error, "LAYER SERVICE: Get WorldLayers From Geoserver error: " + error));
     }
 
     // get the data of each layer in the world from Geoserver
@@ -110,15 +107,9 @@ export class LayerService {
             //         .then ( imageData => {
             //             return {...layer, ...imageData };
             //         })
-            //         .catch(error => {
-            //             console.error("getImageData ERROR!" + error);
-            //             throw new Error(error)
-            //         });
+            //         .catch(error => this.handleError(error, "LAYER SERVICE: Get Image Data error: " + error));
             // })
-            .catch(error => {
-                console.error("getLayer ERROR!" + error);
-                throw new Error(error)
-            });
+            .catch(error => this.handleError(error, "LAYER SERVICE: Get Layer Data error: " + error));
     };
 
     // 1. get data from GeoServer
@@ -128,6 +119,7 @@ export class LayerService {
             .then(layerData => {
                 return {...worldLayer, ...layerData.data}
             })
+            .catch(error => this.handleError(error, "LAYER SERVICE: Get Geoserver Data error: " + error));
     }
 
     // 2. get data from the image file
@@ -143,7 +135,7 @@ export class LayerService {
                         console.log("geotiff raster: " + JSON.stringify(raster));
                         return raster;
                     })
-                    .catch(error => { throw new Error(error) });
+                    .catch(error => this.handleError(error, "LAYER SERVICE: Get Image Data error: " + error));
             });
     }
 
@@ -153,7 +145,7 @@ export class LayerService {
         return axios
             .get(`${this.baseUrl}/geoserver/wmts/${workspaceName}/${layerName}`)
             .then(xml => xml.data )
-            .catch(error => { throw new Error(error) });
+            .catch(error => this.handleError(error, "LAYER SERVICE: Get Capabilities error: " + error));
     }
 }
 

@@ -1,5 +1,4 @@
 export interface ILayer {
-    // id: string,   moved to the worldLayer Obj:'worldname:layername'
     name: string,
     type: string,                   // 'RASTER' or 'VECTOR'
     defaultStyle: IDefaultStyle,

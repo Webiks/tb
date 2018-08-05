@@ -5,8 +5,6 @@ import { bindActionCreators } from 'redux';
 import { Route } from 'react-router';
 import { IState } from '../../store';
 import { IWorld } from '../../interfaces/IWorld';
-import { ITBAction } from '../../consts/action-types';
-import { WorldsActions } from '../../actions/world.actions';
 import Layer from '../Layer/Layer';
 import LayersDataTable from './LayersDataTable';
 

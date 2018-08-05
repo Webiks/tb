@@ -94,8 +94,7 @@ class WorldEditor extends React.Component {
                         this.refresh(worlds);
                     });
             } else {
-                this.showWarn();
-                // alert ("this name is already exist. try another name!");
+                this.showError();
             }
 
         // else - update an existing world
@@ -104,8 +103,7 @@ class WorldEditor extends React.Component {
             // if the name was changed - check if there is no other world with the same name
             if (this.state.world.name !== this.props.world.name){
                 if (this.isNameExist(this.state.world.name)){
-                    this.showWarn();
-                    // alert ("this name is already exist. try another name!");
+                    this.showError();
                 } else {
                     // continue to update the changed world
                     this.saveWorlds(worlds);
@@ -116,6 +114,7 @@ class WorldEditor extends React.Component {
         }
     };
 
+    // update the changed world in the Database and then in the App store
     saveWorlds = (worlds) => {
         const updateWorld = updatedDiff(this.props.world, this.state.world);
         // if more then one field has changed - update the whole world object
@@ -123,20 +122,20 @@ class WorldEditor extends React.Component {
             console.warn("SAVE: update world : " + this.props.worldName);
             WorldService.updateWorld(this.props.world, this.state.world)
                 .then ( res =>  {
-                    console.warn('Succeed to update the world: ' + JSON.stringify(res));
+                    console.warn(`Succeed to update ${res.name} world`);
                     this.refresh(worlds);
                 })
-                .catch( error => console.error('Failed to update the world: ' + JSON.stringify(error.message)));
+                .catch( error => this.handleError(error));
         // else - update only the changed field
         } else {
             const fieldName = Object.keys(updateWorld)[0];
             const fieldValue = updateWorld[fieldName];
             WorldService.updateWorldField(this.props.world, fieldName, fieldValue)
                 .then(res => {
-                    console.warn('Succeed to update ' + fieldName + ' field: ' + JSON.stringify(res));
+                    console.warn('Succeed to update ' + fieldName + ' field: ');
                     this.refresh(worlds);
                 })
-                .catch(error => console.error('Failed to update the world: ' + JSON.stringify(error.message)));
+                .catch(error => this.handleError(error));
         }
     };
 
@@ -146,10 +145,16 @@ class WorldEditor extends React.Component {
         this.props.refresh(worlds);
     };
 
-    showWarn() {
+    // an ERROR massage - if the suggested world's name is already exists
+    showError() {
         this.growl.show({severity: 'error', summary: 'Error Message', life: 8000,
-                         detail: 'this name is already exist. try another name!'});
+                         detail: 'This name is already exist. Try another name!'});
     }
+
+    handleError = (error) => {
+        console.error(`Failed to update ${this.props.world.name} world: ${error}`);
+        return this.refresh(this.props.worldsList);
+    };
 
     render() {
 

@@ -6,6 +6,12 @@ export class WorldService {
 
     static baseUrl: string = `${config.baseUrl.path}/${config.baseUrl.api}/dbWorlds`;
 
+    // Handle ERRORS
+    static handleError = (error, message) => {
+        console.error(message);
+        throw new Error(error);
+    };
+
     // ==============
     //  GET Requests
     // ==============
@@ -16,7 +22,8 @@ export class WorldService {
             .get(this.baseUrl)
             .then(res => res.data)
             .then(data => data.map((world: any) => world))
-            .catch(() => undefined);
+            .catch(error => this.handleError(error, "WORLD SERVICE: There are NO Worlds!!!: " + error));
+            // .catch(() => undefined);
     }
 
     static getWorld(name: string): Promise<any> {
@@ -24,7 +31,7 @@ export class WorldService {
         return axios
             .get(`${this.baseUrl}/${name}`)
             .then(res => res.data)
-            .catch(() => undefined);
+            .catch(error => this.handleError(error, "WORLD SERVICE: There is NO such World!!!: " + error));
     }
 
     // ====================
@@ -36,7 +43,7 @@ export class WorldService {
         return axios
             .post(`${this.baseUrl}/${newWorld.name}`, newWorld)
             .then(res => res.data)
-            .catch(error => console.error("WORLD SERVICE: FAILED to create new World: " + error));
+            .catch(error => this.handleError(error, "WORLD SERVICE: FAILED to create new World: " + error));
     }
 
     // =================
@@ -49,7 +56,7 @@ export class WorldService {
         return axios
             .put(`${this.baseUrl}/${oldWorld.name}`, newWorld)
             .then(res => res.data)
-            .catch(error => console.error("WORLD SERVICE: FAILED to update the World: " + error));
+            .catch(error => this.handleError(error, "WORLD SERVICE: FAILED to update the World: " + error));
     }
 
     //  UPDATE a single Field in an existing world
@@ -65,21 +72,20 @@ export class WorldService {
         return axios
             .put(`${this.baseUrl}/${world.name}/${fieldName}`, data)
             .then(res => res.data)
-            .catch(error => console.error("WORLD SERVICE: FAILED to update the World: " + error));
+            .catch(error => this.handleError(error,"WORLD SERVICE: FAILED to update the World: " + error));
     }
 
     // ==============
     // DELETE Request
     // ==============
     static deleteWorld(world: IWorld): Promise<any> {
-        console.warn("start the DELETE WORLD service for world: " + world.name + ', ' + world._id);
+        console.log("start the DELETE WORLD service for world: " + world.name + ', ' + world._id);
         return axios
             .delete(`${this.baseUrl}/delete/${world.workspaceName}/${world._id}`)
             .then(res => {
                 console.log("WORLD SERVICE: SUCCEED to delete World: " + world.name);
                 return res.data;
             })
-            .catch(error => console.error("WORLD SERVICE: FAILED to delete World: " + world.name + " error: " + error));
+            .catch(error => this.handleError(error,"WORLD SERVICE: FAILED to delete World: " + world.name + " error: " + error));
     }
-
 }

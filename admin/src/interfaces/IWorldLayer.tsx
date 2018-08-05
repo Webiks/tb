@@ -17,5 +17,3 @@ export interface IWorldLayer {
     imageData: IImageData           // data from the image file
     inputData: IInputdata          // data from the user
 }
-
-// old: data:  IRaster | IVector        // raster or vector data from geoserver

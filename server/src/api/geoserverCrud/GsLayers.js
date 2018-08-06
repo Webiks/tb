@@ -1,4 +1,3 @@
-const UploadFilesToGS = require ('./UploadFilesToGS');
 const axios  = require ('axios');
 
 require('../../config/serverConfig')();
@@ -87,27 +86,6 @@ class GsLayers {
                 return error;
             });
     }
-
-    // ========================================= private  F U N C T I O N S ============================================
-    getTypeData(fileType){
-        const typeData = {};
-        switch (fileType) {
-            case ('RASTER'):
-                typeData.storeType = 'coveragestores';
-                typeData.layerDetailsType = 'coverages';
-                break;
-            case ('VECTOR'):
-                typeData.storeType = 'datastores';
-                typeData.layerDetailsType = 'featuretypes';
-                break;
-        }
-        return typeData;
-    }
-
-    handleError(error, message){
-        console.error('gs LAYER: ' + message);
-        return error;
-    };
 }
 
 module.exports = GsLayers;

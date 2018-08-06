@@ -1,8 +1,6 @@
-const UploadFilesToGS = require ('./UploadFilesToGS');
 const axios  = require ('axios');
 
 require('../../config/serverConfig')();
-
 const configParams = config().configParams;
 const configUrl = configBaseUrl().configUrl;
 const headers = configParams.headers;
@@ -45,12 +43,6 @@ class GsWorlds {
                 return error;
             });
     }
-
-    // ========================================= private  F U N C T I O N S ============================================
-    handleError(error, message){
-        console.error('gs WORLD: ' + message);
-        return error;
-    };
 }
 
 module.exports = GsWorlds;

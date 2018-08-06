@@ -35,7 +35,6 @@ app.use(session({
 }));
 
 app.use('/login', login);
-// app.use('/api', checkAuth);
 app.use('/api', api);
 
 // start the App server

@@ -8,10 +8,10 @@ module.exports = function(){
                 geoServerPort: 8080,
                 localIP: "://127.0.0.1",
                 remoteIP: "://35.162.61.200",
-                domain: "://tb-server.webiks.com",
+                // domain: "://tb-server.webiks.com",
                 dbName: 'tb_database',
                 mongoBaseUrl: "mongodb://127.0.0.1:27017",
-                // geoserverBaseUrl: "http://127.0.0.1:8080",
+                geoserverBaseUrl: "http://127.0.0.1:8080",
                 baseUrlGeoserver:
                     {
                         baseUrl: "geoserver",
@@ -47,19 +47,16 @@ module.exports = function(){
         const geoserverImportsUrl = `${this.config().configParams.baseUrlGeoserver.restImports}`;
 
         let baseUrl = '';
-        let serverBaseUrl = '';
 
         if (process.env.NODE_ENV === "production") {
             baseUrl = this.config().configParams.remoteIP;
-            // serverBaseUrl = `http${baseUrl}`;
         } else {
             baseUrl = this.config().configParams.localIP;
-            // serverBaseUrl = `http${baseUrl}:${this.config().configParams.serverPort}`
         }
 
+        const serverBaseUrl = `http${baseUrl}:${this.config().configParams.serverPort}`;
         // const mongoBaseUrl = `mongodb${baseUrl}:${this.config().configParams.mongoPort}`;
-        serverBaseUrl = `http${baseUrl}:${this.config().configParams.serverPort}`;
-        const geoserverBaseUrl = `http${baseUrl}:${this.config().configParams.geoServerPort}`;
+        // const geoserverBaseUrl = `http${baseUrl}:${this.config().configParams.geoServerPort}`;
 
         console.log("Config Base URL: " + baseUrl);
 
@@ -67,10 +64,10 @@ module.exports = function(){
             configUrl: {
                 // mongoBaseUrl,
                 serverBaseUrl,
-                baseUrlGeoserver: `${geoserverBaseUrl}/${geoserverUrl}`,
-                baseRestUrlGeoserver: `${geoserverBaseUrl}/${geoserverRestUrl}`,
-                baseWorkspacesUrlGeoserver: `${geoserverBaseUrl}/${geoserverWorkspacesUrl}`,
-                reqImportCurl: `${geoserverBaseUrl}/${geoserverImportsUrl}`,
+                baseUrlGeoserver: `${this.config().configParams.geoserverBaseUrl}/${geoserverUrl}`,
+                baseRestUrlGeoserver: `${this.config().configParams.geoserverBaseUrl}/${geoserverRestUrl}`,
+                baseWorkspacesUrlGeoserver: `${this.config().configParams.geoserverBaseUrl}/${geoserverWorkspacesUrl}`,
+                reqImportCurl: `${this.config().configParams.geoserverBaseUrl}/${geoserverImportsUrl}`,
                 baseUrlAppGetLayer: `${serverBaseUrl}/${this.config().configParams.baseUrlAppGetLayer}`
             }
         };

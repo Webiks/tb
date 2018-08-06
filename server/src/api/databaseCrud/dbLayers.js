@@ -171,7 +171,7 @@ router.get('/geoserver/wmts/:workspaceName/:layerName/:isRemote', (req, res) => 
     // const capabilitiesUrl = `${configUrl.capabilitiesBaseUrl}/${req.params.workspaceName}/${req.params.layerName}/${configParams.wmtsServiceUrl}`;
     let baseUrl;
     console.log("is remote? = " + req.params.isRemote);
-    if(req.params.isRemote === true){
+    if(req.params.isRemote === 'true'){
         baseUrl = configParams.remoteIP;
     } else {
         baseUrl = configParams.localIP;

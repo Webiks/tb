@@ -76,8 +76,8 @@ class DisplayMap extends React.Component {
                 // 2. convert the xml data to json
                 this.json = this.parser.read(xml);
                 // change the 'localhost' to the App domain (for the remote server)
-                if (!(config.baseUrl.path.includes('localhost'))) {
-                    const newPath = config.baseUrl.path.substr(config.baseUrl.path.indexOf('//') + 2);
+                if (!(config.baseUrl.includes('localhost'))) {
+                    const newPath = config.baseUrl.substr(config.baseUrl.indexOf('//') + 2);
                     const oldPath = /localhost/gi;
                     const jsonString = JSON.stringify(this.json).replace(oldPath, newPath);      // convert to JSON
                     this.json = JSON.parse(jsonString);                                          // convert to Object

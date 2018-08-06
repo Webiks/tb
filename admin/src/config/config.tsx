@@ -10,11 +10,7 @@ if (process.env.NODE_ENV === 'production') {
 console.log("Config Path: " + path);
 
 const config = {
-    baseUrl: {
-        path,
-        api: 'api',
-        login: 'login'
-    },
+    baseUrl: path,
     authorization: "Basic YWRtaW46Z2Vvc2VydmVy",
     geoserverUserName: 'sdf09rt2s',
     maxFileSize: 50000 * 1024 * 1024

@@ -41,7 +41,7 @@ export interface IStateWorld {
 class UploadFile extends React.Component {
     props: IPropsUploadFiles;
     state: IStateWorld = { hideSpinner: true };
-    url: string = `${config.baseUrl.path}/${config.baseUrl.api}/upload/${this.props.world.workspaceName}`;
+    url: string = `${config.baseUrl}/api/upload/${this.props.world.workspaceName}`;
 
     onUpload = (e: any) => {
         console.log("On Upload...");

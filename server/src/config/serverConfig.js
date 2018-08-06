@@ -56,7 +56,7 @@ module.exports = function(){
 
         const serverBaseUrl = `http${baseUrl}:${this.config().configParams.serverPort}`;
         // const mongoBaseUrl = `mongodb${baseUrl}:${this.config().configParams.mongoPort}`;
-        const capabilitiesBaseUrl = `http${baseUrl}:${this.config().configParams.geoServerPort}/geoserver`;
+        // const capabilitiesBaseUrl = `http${baseUrl}:${this.config().configParams.geoServerPort}/geoserver`;
 
         console.log("Config Base URL: " + baseUrl);
 
@@ -64,7 +64,7 @@ module.exports = function(){
             configUrl: {
                 // mongoBaseUrl,
                 serverBaseUrl,
-                capabilitiesBaseUrl,
+                // capabilitiesBaseUrl,
                 // baseUrlGeoserver: `${this.config().configParams.geoserverBaseUrl}/${geoserverUrl}`,
                 baseRestUrlGeoserver: `${this.config().configParams.geoserverBaseUrl}/${geoserverRestUrl}`,
                 baseWorkspacesUrlGeoserver: `${this.config().configParams.geoserverBaseUrl}/${geoserverWorkspacesUrl}`,

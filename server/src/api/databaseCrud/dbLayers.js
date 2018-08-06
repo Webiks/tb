@@ -167,7 +167,7 @@ router.get('/geoserver/:workspaceName/:layerName', (req, res) => {
 
 // get Capabilities XML file - WMTS Request for display the selected layer
 router.get('/geoserver/wmts/:workspaceName/:layerName', (req, res) => {
-    const capabilitiesUrl = `${configUrl.baseUrlGeoserver}/${req.params.workspaceName}/${req.params.layerName}/${configParams.wmtsServiceUrl}`;
+    const capabilitiesUrl = `${configUrl.capabilitiesBaseUrl}/${req.params.workspaceName}/${req.params.layerName}/${configParams.wmtsServiceUrl}`;
     console.log("geo LAYER SERVER: start GetCapabilities url = " + capabilitiesUrl);
     GsLayers.getCapabilitiesFromGeoserver(capabilitiesUrl)
         .then( response => res.send(response))

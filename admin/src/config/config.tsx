@@ -1,17 +1,28 @@
-let path: string = '';
 console.log("NODE_ENV: " + process.env.NODE_ENV);
 
+let path: string;
+let ip: string;
+let isRemote: boolean;
+
 if (process.env.NODE_ENV === 'production') {
-    path = 'http://tb-server.webiks.com';
+    path = 'tb-server.webiks.com';
+    ip = '35.162.61.200';
+    isRemote = true;
 } else {
-    path = 'http://localhost:4000';
+    path = 'localhost:4000';
+    ip = '127.0.0.1';
+    isRemote = false;
 }
 
-console.log("Config Path: " + path);
+console.log('Config Path: ' + path + ', ip: ' + ip);
 
 const config = {
-    baseUrl: path,
-    authorization: "Basic YWRtaW46Z2Vvc2VydmVy",
+    ip,
+    path,
+    isRemote,
+    baseUrl: `http://${path}`,
+    geoBaseUrl: `http://${ip}:${8080}`,
+    authorization: 'Basic YWRtaW46Z2Vvc2VydmVy',
     geoserverUserName: 'sdf09rt2s',
     maxFileSize: 50000 * 1024 * 1024
 };

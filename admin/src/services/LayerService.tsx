@@ -5,8 +5,7 @@ import { IWorldLayer } from "../interfaces/IWorldLayer";
 
 export class LayerService {
 
-    static baseUrl: string = `${config.baseUrl.path}/${config.baseUrl.api}/dbLayers`;
-    static baseGeoUrl: string = `${config.baseUrl.path}/${config.baseUrl.api}/gsLayers`;
+    static baseUrl: string = `${config.baseUrl}/api/dbLayers`;
 
     // Handle ERRORS
     static handleError = (error, message) => {
@@ -140,10 +139,10 @@ export class LayerService {
     }
 
     // get Capabilities (from Geoserver)
-    static getCapabilities (workspaceName: string, layerName: string): Promise<any> {
-        console.log("start the GET CAPABILITIES service..." + `${this.baseUrl}/geoserver/wmts/${workspaceName}/${layerName}`);
+    static getCapabilities (workspaceName: string, layerName: string, isRemote: boolean): Promise<any> {
+        console.log("start the GET CAPABILITIES service..." + `${this.baseUrl}/geoserver/wmts/${workspaceName}/${layerName}/${isRemote}`);
         return axios
-            .get(`${this.baseUrl}/geoserver/wmts/${workspaceName}/${layerName}`)
+            .get(`${this.baseUrl}/geoserver/wmts/${workspaceName}/${layerName}/${isRemote}`)
             .then(xml => xml.data )
             .catch(error => this.handleError(error, "LAYER SERVICE: Get Capabilities error: " + error));
     }

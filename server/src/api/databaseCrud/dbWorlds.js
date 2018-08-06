@@ -122,10 +122,4 @@ router.delete('/delete/:geoserverName/:worldId', (req, res) => {
         });
 });
 
-// ========================================= private  F U N C T I O N S ============================================
-function handleError(res, status, consoleMessage, sendMessage){
-    console.error('db WORLD: ' + consoleMessage);
-    res.status(status).send(sendMessage);
-}
-
 module.exports = router;

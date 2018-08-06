@@ -9,7 +9,6 @@ const router = express.Router();
 
 require('../../config/serverConfig')();
 const configParams = config().configParams;
-const configUrl = configBaseUrl().configUrl;
 const dbWorldCrud = new MongoCrud(worldModel);
 
 // ============
@@ -166,8 +165,16 @@ router.get('/geoserver/:workspaceName/:layerName', (req, res) => {
 });
 
 // get Capabilities XML file - WMTS Request for display the selected layer
-router.get('/geoserver/wmts/:workspaceName/:layerName', (req, res) => {
-    const capabilitiesUrl = `${configUrl.baseUrlGeoserver}/${req.params.workspaceName}/${req.params.layerName}/${configParams.wmtsServiceUrl}`;
+router.get('/geoserver/wmts/:workspaceName/:layerName/:isRemote', (req, res) => {
+    let baseUrl;
+    console.log("is remote? = " + req.params.isRemote);
+    if(req.params.isRemote === 'true'){
+        baseUrl = configParams.remoteIP;
+    } else {
+        baseUrl = configParams.localIP;
+    }
+    const geoBaseUrl = `http${baseUrl}:${configParams.geoServerPort}/geoserver`;
+    const capabilitiesUrl = `${geoBaseUrl}/${req.params.workspaceName}/${req.params.layerName}/${configParams.wmtsServiceUrl}`;
     console.log("geo LAYER SERVER: start GetCapabilities url = " + capabilitiesUrl);
     GsLayers.getCapabilitiesFromGeoserver(capabilitiesUrl)
         .then( response => res.send(response))
@@ -219,12 +226,6 @@ router.delete('/delete/:worldName/:layerId', (req, res) => {
             res.status(404).send(`layer ${req.params.layerId} can't be found!`);
         });
 });
-
-// ========================================= private  F U N C T I O N S ============================================
-function handleError(res, consoleMessage, sendMessage){
-    console.error('db LAYER: ' + consoleMessage);
-    res.status(404).send(sendMessage);
-}
 
 module.exports = router;
 

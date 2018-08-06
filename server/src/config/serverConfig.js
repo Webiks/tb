@@ -56,7 +56,7 @@ module.exports = function(){
 
         const serverBaseUrl = `http${baseUrl}:${this.config().configParams.serverPort}`;
         // const mongoBaseUrl = `mongodb${baseUrl}:${this.config().configParams.mongoPort}`;
-        const capabilitiesBaseUrl = `http${baseUrl}:${this.config().configParams.geoServerPort}`;
+        const capabilitiesBaseUrl = `http${baseUrl}:${this.config().configParams.geoServerPort}/geoserver`;
 
         console.log("Config Base URL: " + baseUrl);
 

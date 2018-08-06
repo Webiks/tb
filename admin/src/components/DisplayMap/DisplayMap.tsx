@@ -70,7 +70,6 @@ class DisplayMap extends React.Component {
 
     // 1. get the Capabilities XML file
     getJsonCapabilities = () => {
-        // return LayerService.getCapabilities(this.props.world.workspaceName, this.props.layer.name)
         return LayerService.getCapabilities(this.props.world.workspaceName, this.props.layer.name, config.isRemote)
             .then( xml => {
                 console.log("1. get capabilities XML");

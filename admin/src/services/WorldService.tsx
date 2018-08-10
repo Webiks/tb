@@ -43,7 +43,7 @@ export class WorldService {
         return axios
             .post(`${this.baseUrl}/${newWorld.name}`, newWorld)
             .then(res => res.data)
-            .catch(error => this.handleError(error, "WORLD SERVICE: FAILED to create new World: " + error));
+            .catch(error => this.handleError(error, "WORLD SERVICE: FAILED to create a new World: " + error));
     }
 
     // =================
@@ -62,10 +62,10 @@ export class WorldService {
     //  UPDATE a single Field in an existing world
     static updateWorldField(world: IWorld, fieldName: string, fieldValue : any): Promise<any> {
         const id = world._id;
-        const layers = world.layers;
+        const layersId = world.layersId;
         const data = {
             _id: id,
-            layers,
+            layersId,
             newValue: fieldValue
         };
         console.log("start the UPDATE WORLD's FIELD service..." + world.name + ', ' + fieldName);

@@ -6,7 +6,6 @@ import { IWorldLayer } from "../interfaces/IWorldLayer";
 export class LayerService {
 
     static baseUrl: string = `${config.baseUrl.path}/${config.baseUrl.api}/dbLayers`;
-    static baseGeoUrl: string = `${config.baseUrl.path}/${config.baseUrl.api}/gsLayers`;
 
     // Handle ERRORS
     static handleError = (error, message) => {
@@ -17,50 +16,83 @@ export class LayerService {
     // ========================
     //  MONGO DATABASE METHODS
     // ========================
+    // ====================
+    //  CREATE a new Layer
+    // ====================
+    static createLayer(newLayer: IWorldLayer): Promise<any> {
+        console.log("start the CREATE LAYER service..." + `${this.baseUrl}/${name}`);
+        return axios
+            .post(`${this.baseUrl}/${newLayer.name}`, newLayer)
+            .then(res => res.data)
+            .catch(error => this.handleError(error, "LAYER SERVICE: FAILED to create a new Layer: " + error));
+    }
+
     // ==============
     //  GET Requests
     // ==============
-    // get all World's Layers list from the Database
-    static getAllWorldLayers(worldName: string): Promise<any> {
-        console.log("start the GET All WORLD'S LAYERS service..." + worldName);
+    // get the Layers list from the Database
+    static getLayers(): Promise<any> {
+        console.warn("start the getLayers service..." + this.baseUrl);
         return axios
-            .get(`${this.baseUrl}/${worldName}`)
-            .then(layers => layers.data)
+            .get(this.baseUrl)
+            .then(res => res.data)
+            .then(data => data.map((layer: any) => layer))
             .catch(error => this.handleError(error, "LAYER SERVICE: There are NO Layers!!!: " + error));
     }
 
-    // get one World's Layer from the Database
-    static getWorldLayer(worldLayerId: string): Promise<any> {
-        console.log("start the GET LAYER INFO service..." + `${this.baseUrl}/${worldLayerId}`);
+    // get all World's Layers list from the Database
+    // static getAllWorldLayers(worldName: string): Promise<any> {
+    //     console.log("start the GET All WORLD'S LAYERS service..." + worldName);
+    //     return axios
+    //         .get(`${this.baseUrl}/${worldName}`)
+    //         .then(layers => layers.data)
+    //         .catch(error => this.handleError(error, "LAYER SERVICE: There are NO Layers!!!: " + error));
+    // }
+
+    // get one Layer from the Database
+    static getLayer(layerId: string): Promise<any> {
+        console.log("start the GET LAYER INFO service..." + `${this.baseUrl}/${layerId}`);
         return axios
-            .get(`${this.baseUrl}/${worldLayerId}`)
+            .get(`${this.baseUrl}/${layerId}`)
             .then(layers => layers.data)
             .catch(error => this.handleError(error, "LAYER SERVICE: There is NO such Layer!!!: " + error));
     }
 
-    // ==========================
-    //  CREATE a new World-Layer
-    // ==========================
-    // create a bew world-Layer in  the Database (add to the 'layres' array-field inside the World Model)
-    static createWorldLayer(newLayer: IWorldLayer): Promise<any> {
-        console.log("start the CREATE WORLD-LAYER service..." + `${this.baseUrl}/${newLayer.worldLayerId}`);
+    // =================
+    //  UPDATE Requests
+    // =================
+    //  UPDATE an existing world with a new world
+    static updateLayer(oldLayer: IWorldLayer, newLayer: IWorldLayer): Promise<any> {
+        newLayer._id = oldLayer._id;
+        console.log("start the UPDATE LAYER service..." + oldLayer.name);
         return axios
-            .post(`${this.baseUrl}/${newLayer.worldLayerId}`, newLayer)
-            .then(res => {
-                console.log("WORLD SERVICE: SUCCEED to create new World-Layer: " + newLayer.name);
-                return res.data;
-            })
-            .catch(error => this.handleError(error, "LAYER SERVICE: FAILED to create new World-Layer: " + error));
+            .put(`${this.baseUrl}/${oldLayer.name}`, newLayer)
+            .then(res => res.data)
+            .catch(error => this.handleError(error, "WORLD SERVICE: FAILED to update the World: " + error));
+    }
+
+    //  UPDATE a single Field in an existing world
+    static updateLayerField(layer: IWorldLayer, fieldName: string, fieldValue : any): Promise<any> {
+        // const id = layer._id;
+        // const data = {
+        //     _id: id,
+        //     newValue: fieldValue
+        // };
+        console.log("start the UPDATE LAYER's FIELD service..." + layer.name + ', ' + fieldName);
+        return axios
+            .put(`${this.baseUrl}/${layer._id}/${fieldName}`, { newValue: fieldValue })
+            .then(res => res.data)
+            .catch(error => this.handleError(error,"LAYER SERVICE: FAILED to update the Layer: " + error));
     }
 
     // ==============
     // DELETE Request
     // ==============
     // delete a layer from the Database (remove from the 'layres' array-field inside the World Model)
-    static deleteWorldLayer(worldName: string, layerId: string): Promise<any> {
+    static deleteWorldLayer(layerId: string): Promise<any> {
         console.log("start the DELETE LAYER service for layer id: " + layerId);
         return axios
-            .delete(`${this.baseUrl}/delete/${worldName}/${layerId}`)
+            .delete(`${this.baseUrl}/delete/${layerId}`)
             .then(res => {
                 console.log("LAYER SERVICE: SUCCEED to delete Layer id: " + layerId);
                 return res.data;

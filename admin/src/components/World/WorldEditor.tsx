@@ -9,7 +9,6 @@ import { ITBAction } from '../../consts/action-types';
 import { WorldsActions } from '../../actions/world.actions';
 import { WorldService } from '../../services/WorldService';
 
-
 /* Prime React components */
 import 'primereact/resources/themes/omega/theme.css';
 import 'primereact/resources/primereact.min.css';
@@ -51,6 +50,7 @@ class WorldEditor extends React.Component {
                 displayDialog: true,
                 world: {
                     name: '',
+                    password: '',
                     desc: '',
                     country: '',
                     directory: '',
@@ -80,30 +80,58 @@ class WorldEditor extends React.Component {
         return (this.props.worldsList.find( world => world.name === name || world.workspaceName === name));
     };
 
+    isPasswordExist = (password: string): any => {
+        // check if the password exists in the worlds list
+        return (this.props.worldsList.find( world => world.password === password));
+    };
+
     // save the changes in the App store and the DataBase
     save = () => {
         console.log("WorldEditor: start save world..." + this.props.newWorld);
         const worlds = [...this.props.worldsList];
         // if new - create a new world
         if (this.props.newWorld){
-            if (!this.isNameExist(this.state.world.name)){
-                WorldService.createWorld(this.state.world)
-                    .then (res => {
-                        console.log("create new world: " + JSON.stringify(res));
-                        worlds.push(res);
-                        this.refresh(worlds);
-                    });
+            // 1. check the name: if was given and if it is unique
+            if (this.state.world.name === ''){
+                this.showError('you must fill the name!');
             } else {
-                this.showError();
+                if (!this.isNameExist(this.state.world.name)){
+                    // 2. check the password: if was given and if it is unique
+                    if (this.state.world.password === ''){
+                        this.showError('you must fill the password!');
+                    } else {
+                        if (!this.isPasswordExist(this.state.world.password)){
+                            WorldService.createWorld(this.state.world)
+                                .then (res => {
+                                    console.log("create new world: " + JSON.stringify(res));
+                                    worlds.push(res);
+                                    this.refresh(worlds);
+                                });
+                        } else {
+                            this.showError('please Give another password!');
+                        }
+                    }
+                } else {
+                    this.showError('please Give another name!');
+                }
             }
 
-        // else - update an existing world
+            // else - update an existing world
         } else {
             worlds[this.worldIndex] = this.state.world;
             // if the name was changed - check if there is no other world with the same name
-            if (this.state.world.name !== this.props.world.name){
-                if (this.isNameExist(this.state.world.name)){
-                    this.showError();
+            if (this.state.world.name !== this.props.world.name) {
+                if (this.isNameExist(this.state.world.name)) {
+                    this.showError('please Give another name!');
+                } else {
+                    // continue to update the changed world
+                    this.saveWorlds(worlds);
+                }
+            }
+            // if the password was changed - check if there is no other world with the same password
+            else if (this.state.world.password !== this.props.world.password){
+                if (this.isPasswordExist(this.state.world.password)){
+                    this.showError('please Give another password!');
                 } else {
                     // continue to update the changed world
                     this.saveWorlds(worlds);
@@ -146,9 +174,9 @@ class WorldEditor extends React.Component {
     };
 
     // an ERROR massage - if the suggested world's name is already exists
-    showError() {
+    showError(message) {
         this.growl.show({severity: 'error', summary: 'Error Message', life: 8000,
-                         detail: 'This name is already exist. Try another name!'});
+            detail: message});
     }
 
     handleError = (error) => {
@@ -175,15 +203,22 @@ class WorldEditor extends React.Component {
                         footer={editorFooter}
                         responsive={true} style={{width:'50%'}}
                         onHide={() => this.refresh(this.props.worldsList) }>
-
                     {this.state.world && <div   className="content-section implementation"
                                                 style={{ textAlign: 'left', width: '100%', margin: 'auto' }}>
                         <div className="ui-grid-row">
                             <div className="ui-grid-col-4" style={{padding:'4px 10px'}}><label htmlFor="name">World Name</label></div>
                             <div className="ui-grid-col-8" style={{padding:'4px 10px'}}>
-                                <InputText id="name" required={true} requiredmessage="a name must be given!"
+                                <InputText id="name" required={true} requiredmessage="a name is must be given!"
                                            value={this.state.world.name}
                                            onChange={(e: any) => {this.updateProperty('name', e.target.value)}}/>
+                            </div>
+                        </div>
+                        <div className="ui-grid-row">
+                            <div className="ui-grid-col-4" style={{padding:'4px 10px'}}><label htmlFor="password">Password</label></div>
+                            <div className="ui-grid-col-8" style={{padding:'4px 10px'}}>
+                                <InputText type="password" id="name" required={true} requiredmessage="a password is must be given!"
+                                           value={this.state.world.password}
+                                           onChange={(e: any) => {this.updateProperty('password', e.target.value)}}/>
                             </div>
                         </div>
                         <div className="ui-grid-row">
@@ -209,9 +244,7 @@ class WorldEditor extends React.Component {
             </div>
         )
     }
-
 }
-
 const mapStateToProps = (state: IState, { worldName, ...props }: any) => {
     return {
         ...props, worldName,
@@ -219,7 +252,5 @@ const mapStateToProps = (state: IState, { worldName, ...props }: any) => {
         world: state.worlds.list.find(({ name, layers }: IWorld) => worldName === name),
     }
 };
-
 const mapDispatchToProps = (dispatch: any) => bindActionCreators({ updateWorld: WorldsActions.updateWorldAction }, dispatch);
-
 export default connect(mapStateToProps, mapDispatchToProps)(WorldEditor);

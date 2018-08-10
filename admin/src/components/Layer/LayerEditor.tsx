@@ -11,6 +11,7 @@ import { AFFILIATION_TYPES } from '../../consts/layer-types';
 import DataTableHeader from '../DataTable/DataTableHeader';
 import { cloneDeep, get } from 'lodash';
 import LayerPropertiesList from './LayerPropertiesList';
+import { LayerService } from '../../services/LayerService';
 
 /* Prime React components */
 import 'primereact/resources/themes/omega/theme.css';
@@ -23,6 +24,7 @@ import { Column } from 'primereact/components/column/Column';
 import { InputText } from 'primereact/components/inputtext/InputText';
 import { Dropdown } from 'primereact/components/dropdown/Dropdown';
 import { WorldService } from '../../services/WorldService';
+import { updatedDiff } from 'deep-object-diff';
 
 export interface IPropsLayer {
     worldName: string,
@@ -40,6 +42,8 @@ export interface IStateDetails {
 class LayerEditor extends React.Component {
     props: IPropsLayer;
     state: IStateDetails;
+    // fieldPath: string;
+    // newValue: any;
 
     layerIndex: number;
 
@@ -55,7 +59,8 @@ class LayerEditor extends React.Component {
     }
 
     onEditorValueChange = (props, value) => {
-        console.log('onEditorValueChange props: ' + JSON.stringify(props));
+        // this.newValue = value;
+        console.log('onEditorValueChange props: ' + props.path);
         const split = props.path.split('.');
         const field = split[1];
         let property = split[2];
@@ -63,8 +68,22 @@ class LayerEditor extends React.Component {
         switch (field) {
             case ('layer'):
                 const layer = { ...this.state.worldLayer };
+                // this.fieldPath = `layer.${property}`;
                 layer.layer[property] = value;
-                this.setState({ worldLayer: { ...layer } });
+                this.setState({ worldLayer: { ...layer }});
+            case ('imageData'):
+                const imageData = { ...this.state.worldLayer };
+                const subField = split[2];
+                property = split[3];
+                if (subField === 'file'){
+                    // this.fieldPath = `imageData.file.${property}`;
+                    imageData.imageData.file[property] = value;
+                }
+                else if (subField === 'image'){
+                    // this.fieldPath = `imageData.image.${property}`;
+                    imageData.imageData.image[property] = value;
+                }
+                this.setState({ worldLayer: { ...imageData }});
             case ('inputData'):
                 const inputData = { ...this.state.worldLayer };
                 if (property === 'sensor') {
@@ -72,14 +91,17 @@ class LayerEditor extends React.Component {
                     const index = props.path.indexOf('[');
                     if (index > -1) {
                         const bandsIndex = parseInt(props.path.substr(index + 1, 1), 10);
+                        // this.fieldPath = `inputData.sensor.bands.${property}`;
                         inputData.inputData.sensor.bands[bandsIndex] = (value);
                     } else {
+                        // this.fieldPath = `inputData.sensor.${property}`;
                         inputData.inputData.sensor[property] = value;
                     }
                 } else {
+                    // this.fieldPath = `inputData.${property}`;
                     inputData.inputData[property] = value;
                 }
-                this.setState({ worldLayer: { ...inputData } });
+                this.setState({ worldLayer: { ...inputData }});
         }
     };
 
@@ -92,6 +114,9 @@ class LayerEditor extends React.Component {
                 return <InputText type="number" min={props.rowData.min}
                                   value={get(this.state, props.rowData.path)}
                                   onChange={(e: any) => this.onEditorValueChange(props.rowData, e.target.value)}/>;
+            case ('date'):
+                return <InputText type="date" value={get(this.state, props.rowData.path)}
+                                  onChange={(e: any) => this.onEditorValueChange(props.rowData, e.target.value)}/>;
             case ('dropdown'):
                 return <Dropdown id="affiliation" options={this.layerAffiliationTypes}
                                  value={this.state.worldLayer.inputData.affiliation ? this.state.worldLayer.inputData.affiliation : AFFILIATION_TYPES.AFFILIATION_UNKNOWN}
@@ -103,10 +128,13 @@ class LayerEditor extends React.Component {
     };
 
     getFieldValue = (rowData) => {
-        if (rowData.path === 'worldLayer.data.center') {
+        if (rowData.path.includes('center')) {
             const value0 = (this.state.worldLayer.data.center[0]).toFixed(4);
             const value1 = (this.state.worldLayer.data.center[1]).toFixed(4);
             return value0 + ', ' + value1;
+        }
+        else if (rowData.path.includes('size')){
+            return (this.state.worldLayer.imageData.file.size / 1000).toFixed(0);
         }
         else {
             return get(this.state, rowData.path)
@@ -125,21 +153,42 @@ class LayerEditor extends React.Component {
         window.history.back();
     };
 
-    // save the changes in the App store and the DataBase
+    // update the changed world in the Database and then in the App store
     save = () => {
         const layers = [...this.props.world.layers];
-        console.log('save: ' + this.state.worldLayer.name);
         layers[this.layerIndex] = this.state.worldLayer;
-        // 1. update the changes in the database
-        WorldService.updateWorldField(this.props.world, 'layers', layers)
-            .then ( res =>  {
-                console.log(`Succeed to update ${this.props.worldName}'s layers`);
-                // 2. update the changes in the App Store and refresh the page
-                this.refresh(layers);
-                // 3. close the editor page and go back to the layers table page
-                this.backToWorldPage();
-            })
-            .catch( error => console.error('Failed to update the world: ' + JSON.stringify(error.message)));
+        const updateLayer = updatedDiff(this.props.layer, this.state.worldLayer);
+        // if more then one field has changed - update the whole layer object
+        // if ( Object.keys(updateLayer).length > 1 ){
+            console.warn("SAVE: update layer : " + this.props.layer.name);
+            // 1. update the changes in the database
+            LayerService.updateLayer(this.props.layer, this.state.worldLayer)
+                .then ( res =>  {
+                    console.warn(`Succeed to update ${res.name} layer`);
+                    // 2. update the changes in the App Store and refresh the page
+                    this.refresh(layers);
+                    // 3. close the editor page and go back to the layers table page
+                    this.backToWorldPage();
+                })
+                .catch( error => this.handleError(error));
+        // else - update only the changed field
+        // } else {
+        //     // 1. update the changes in the database
+        //     LayerService.updateLayerField(this.props.layer, this.fieldPath, this.newValue)
+        //         .then(res => {
+        //             console.warn('Succeed to update ' + this.fieldPath);
+        //             // 2. update the changes in the App Store and refresh the page
+        //             this.refresh(layers);
+        //             // 3. close the editor page and go back to the layers table page
+        //             this.backToWorldPage();
+        //         })
+        //         .catch(error => this.handleError(error));
+        // }
+    };
+
+    handleError = (error) => {
+        console.error(`Failed to update ${this.props.worldName} layer: ${error}`);
+        return this.refresh(this.props.world.layers);
     };
 
     // update the App store and refresh the page

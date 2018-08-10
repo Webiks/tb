@@ -1,7 +1,7 @@
 const express = require('express');
 
 const worldModel = require('../../database/schemas/WorldSchema');
-const worldLayerModel = require('../../database/schemas/WorldLayersSchema');
+const layerModel = require('../../database/schemas/LayerSchema');
 const MongoCrud = require('../../database/MongoCrud');
 const GsLayers  = require("../geoserverCrud/GsLayers");
 
@@ -10,21 +10,69 @@ const router = express.Router();
 require('../../config/serverConfig')();
 const configParams = config().configParams;
 const configUrl = configBaseUrl().configUrl;
+
 const dbWorldCrud = new MongoCrud(worldModel);
+const dbLayerCrud = new MongoCrud(layerModel);
+
+// ==============
+//  CREATE (add)
+// ==============
+// create a new layer in the DataBase(passing a new worldLayer object in the req.body)
+router.post('/:layerName', (req, res) => {
+        console.log('db WORLD SERVER: start to CREATE new World in the DataBase...' + req.body.name);
+        // 1. create the new layer in the Layers list
+        dbLayerCrud.add(req.body)
+            .then( newLayer => {
+                // 2. add the layer's Id to its world's layersId list
+                const layerId = newLayer._id;
+                // a. get the world entity by name
+                dbWorldCrud.get({ workspaceName: req.body.workspaceName })
+                    .then ( world => {
+                        console.log("dbLayers create layer: a. got the world: " + world.name);
+                        // b. update the layerId list (push the new layer's Id)
+                        dbWorldCrud.updateField({ _id: world._id }, { layersId: layerId }, 'updateArray')
+                            .then ( updateWorld => {
+                                console.log("dbLayers create layer: b. update the world layersId: " + newLayer.id);
+                                res.send(newLayer);
+                            })
+                            .catch( error => {
+                                console.error(`db LAYER: ERROR to update the World in DataBase!: ${error}`);
+                                res.status(500).send(`Failed to update ${req.body.workspaceName} layersId field!`);
+                            })
+                    })
+                    .catch( error => {
+                        console.error(`db LAYER: ERROR to find the World in DataBase!: ${error}`);
+                        res.status(404).send(`Failed to find ${req.body.workspaceName} workspace!`);
+                    })
+            })
+            .catch( error => {
+                console.error(`db LAYER: ERROR to CREATE New LAYER in DataBase!: ${error}`);
+                res.status(500).send(`Failed to create ${req.params.layerName} layer!`);
+            });
+});
 
 // ============
 //  GET (find)
 // ============
-// get all the World's Layers list from the Database
-router.get('/:worldName', (req, res) => {
-    console.log(`db LAYER SERVER: start GET ALL ${req.params.worldName} World's Layers...`);
-    const query = { worldName: req.params.worldName };
-    const selector = 'layers';
-    dbWorldCrud.getListByQuery(query, selector)
+// get all the Layers list from the Database
+router.get('/', (req, res) => {
+    console.log(`db LAYER SERVER: start GET ALL Layers...`);
+    dbLayerCrud.getAll()
         .then( response => res.send(response))
         .catch( error => {
-            console.error(`db LAYER: GET-ALL from DataBase ERROR!: ${error}`);
+            console.error(`db LAYER: ERROR in GET-ALL Layers!: ${error}`);
             res.status(404).send(`there are no layers!`);
+        });
+});
+
+// get a Layer from the Database by id
+router.get('/:layerId', (req, res) => {
+    console.log(`db LAYER SERVER: start GET ${req.params.layerId} Layer by id...`);
+    dbLayerCrud.get({ _id: req.params.layerId })
+        .then( response => res.send(response))
+        .catch( error => {
+            console.error(`db LAYER: ERROR in GET a LAYER!: ${error}`);
+            res.status(404).send(`layer ${req.params.layerId} can't be found!`);
         });
 });
 
@@ -50,6 +98,7 @@ router.get('/geoserver/:workspaceName/:layerName', (req, res) => {
     // 1. get the layer's info
     GsLayers.getLayerInfoFromGeoserver(req.params.workspaceName, layerName)
         .then( layerInfo => {
+            console.log("1. got Layer Info...");
             worldLayer.layer = layerInfo.layer;
             worldLayer.worldLayerId = layerInfo.layer.resource.name;            // set the layer id
             worldLayer.layer.type = layerInfo.layer.type.toUpperCase();         // set the layer type
@@ -60,8 +109,8 @@ router.get('/geoserver/:workspaceName/:layerName', (req, res) => {
             GsLayers.getLayerDetailsFromGeoserver(resourceUrl)
                 .then ( layerDetails => {
                     // get the layer details data according to the layer's type
-                    console.log("layerDetails: " + JSON.stringify(layerDetails));
-                    if (worldLayer.layer.type === 'RASTER') {
+                    console.log("2. got Layer Details...");
+                    if (worldLayer.layer.type.toLowerCase() === 'raster') {
                         worldLayer.data = layerDetails.coverage;
                         // translate maps to objects
                         worldLayer.data.nativeCRS =
@@ -79,7 +128,7 @@ router.get('/geoserver/:workspaceName/:layerName', (req, res) => {
                         worldLayer.data.center =
                             [layerDetails.coverage.latLonBoundingBox.minx, layerDetails.coverage.latLonBoundingBox.maxy];
                     }
-                    else if (worldLayer.layer.type === 'VECTOR') {
+                    else if (worldLayer.layer.type.toLowerCase() === 'vector') {
                         worldLayer.data = layerDetails.featureType;
                         // translate maps to objects
                         worldLayer.data.nativeCRS =
@@ -108,8 +157,10 @@ router.get('/geoserver/:workspaceName/:layerName', (req, res) => {
                     // 3. get the store's data
                     GsLayers.getStoreDataFromGeoserver(storeUrl)
                         .then( store => {
+                            console.log("3. got Store Data...");
                             // get the store data according to the layer's type
-                            if (worldLayer.layer.type === 'RASTER') {
+                            let url;
+                            if (worldLayer.layer.type.toLowerCase() === 'raster') {
                                 worldLayer.store = store.coverageStore;
                                 // translate map to an object
                                 worldLayer.store = {
@@ -117,10 +168,10 @@ router.get('/geoserver/:workspaceName/:layerName', (req, res) => {
                                         namespace: store.coverageStore.connectionParameters.entry.$
                                     }
                                 };
-                                worldLayer.layer.filePath = store.coverageStore.url;                    // set the file path
+                                url = store.coverageStore.url;                                          // set the file path
                                 worldLayer.store.format = store.coverageStore.type.toUpperCase();       // set the store format
                             }
-                            else if (worldLayer.layer.type === 'VECTOR') {
+                            else if (worldLayer.layer.type.toLowerCase() === 'vector') {
                                 worldLayer.store = store.dataStore;
                                 // translate map to an object
                                 worldLayer.store = {
@@ -129,7 +180,7 @@ router.get('/geoserver/:workspaceName/:layerName', (req, res) => {
                                         url: store.dataStore.connectionParameters.entry[1].$
                                     }
                                 };
-                                worldLayer.layer.filePath = worldLayer.store.connectionParameters.url;  // set the file path
+                                url = worldLayer.store.connectionParameters.url;                        // set the file path
                                 worldLayer.store.format = store.dataStore.type.toUpperCase();           // set the store format
                             }
                             else {
@@ -140,11 +191,16 @@ router.get('/geoserver/:workspaceName/:layerName', (req, res) => {
                             worldLayer.store.name = worldLayer.layer.storeName;
                             worldLayer.store.type = worldLayer.layer.type;
 
+                            // set the file path
+                            const dirPath = (configParams.uploadFilesUrl.replace(/%20/g, " ")).replace(/%2E/g, ".");
+                            worldLayer.layer.filePath = `${dirPath}${url.split(':')[1]}`;
+                            console.log("dbLayer: FilePath: " + worldLayer.layer.filePath);
+
                             // set the file name and extension
                             const path = worldLayer.layer.filePath;
-                            worldLayer.layer.fileName = path.substring(path.lastIndexOf(worldLayer.store.name));
-                            console.log("dbLayers: fileName: " + worldLayer.layer.fileName);
                             worldLayer.layer.fileExtension = path.substring(path.lastIndexOf('.'));
+                            worldLayer.layer.fileName = `${worldLayer.store.name}${worldLayer.layer.fileExtension}`;
+                            console.log("dbLayers: fileName: " + worldLayer.layer.fileName);
 
                             // return the world-layer with all the data from GeoServer
                             res.send(worldLayer)
@@ -157,7 +213,7 @@ router.get('/geoserver/:workspaceName/:layerName', (req, res) => {
                 .catch( error => {
                     console.error(`db LAYER: Get Layer Details From Geoserver ERROR!: ${error}`);
                     res.status(404).send(`can't find the Layer's Details page!`);
-                });
+                })
         })
         .catch( error => {
             console.error(`db LAYER: Get Layer Info From Geoserver ERROR!: ${error}`);
@@ -177,46 +233,116 @@ router.get('/geoserver/wmts/:workspaceName/:layerName', (req, res) => {
         });
 });
 
+// =========
+//  UPDATE
+// =========
+// update all the Layer's fields (passing a new layer object in the req.body)
+router.put('/:layerName', (req, res) => {
+    console.log("db WORLD SERVER: start to UPDATE layer " + req.params.layerName);
+    dbLayerCrud.update(req.body)
+        .then( response =>  res.send(response))
+        .catch( error => {
+            console.error(`db LAYER: UPDATE Layer ERROR!: ${error}`);
+            res.status(500).send(`Failed to update ${req.body.name} layer!`);
+        });
+});
+
+// update a single field in the Layer (passing the new value of the field in the req.body)
+router.put('/:layerId/:fieldName', (req, res) => {
+    console.log("db LAYER SERVER: start to UPDATE-FIELD layer " + req.params.layerId);
+    const fieldName = req.params.fieldName;
+    const fieldValue = req.body['newValue'];
+    const entityId = { _id: req.params.layerId };
+
+    let updatedField = {};
+    updatedField[fieldName] = fieldValue ;
+    console.log("dbLayer updatedField: " + JSON.stringify(updatedField));
+    let operation = 'update';
+    if ( Array.isArray(updatedField)){
+        operation = 'updateArray';
+        console.log("dbLayer: operation: " + operation);
+    }
+
+    dbWorldCrud.updateField(entityId, updatedField, operation)
+        .then( response => res.send(response))
+        .catch( error => {
+            console.error(`db LAYER: UPDATE-FIELD Layer ERROR!: ${error}`);
+            res.status(500).send(`Failed to update layer id: ${req.params.layerId}!`);
+        });
+});
+
 // ==============
 //  REMOVE layer
 // ==============
 // delete a layer from World's Layers list in the Database and from the geoserver
-router.delete('/delete/:worldName/:layerId', (req, res) => {
-    const worldName = req.params.worldName;
-    const layerId = req.params.layerId;
+router.delete('/delete/:layerId', (req, res) => {
     console.log(`db LAYER SERVER: start DELETE layer: ${req.params.layerId}`);
-    // 1. get the selected layer from the world's layers field in the database
-    console.log(`db LAYER SERVER: 1. start to FIND the layer ${req.params.layerId} in ${req.params.worldName} world`);
-    const query = {
-        name: worldName
-    };
-    const selector = {
-        layers: {
-            $elemMatch: { _id: layerId }
-        }
-    };
-    dbWorldCrud.getByQuery(query, selector)
-        .then( result => {
-            const layer = result.layers[0];
-            // 2. delete the layer from GeoServer:
-            GsLayers.deleteLayerFromGeoserver(layer.layer.resource.href)
+    const layerId = req.params.layerId;
+    const query = { _id: layerId };
+    let workspaceName;
+    let resourceUrl;
+    let storeUrl;
+    // 1. find the layer from the database
+    dbLayerCrud.get(query)
+        .then ( layer => {
+            console.log(`dbLayers remove layer: 1. got the layer: ${layer.name}`);
+            // save the layer data before remove it from the database
+            workspaceName = layer.workspaceName;
+            resourceUrl = layer.layer.resource.href;
+            storeUrl = layer.data.store.href;
+            // 2. remove the layer from the Layers list in the DataBase
+            dbLayerCrud.remove(query)
                 .then ( response => {
-                    // 3. delete the store
-                    GsLayers.deleteLayerFromGeoserver(layer.data.store.href)
-                        .then ( response => res.send(response))
+                    console.log(`db LAYER SERVER: 2. removed the layer from the layers list in MongoDB!`);
+                    // 3. remove the layer's Id from the world's layersId array
+                    // a. find the world by id
+                    dbWorldCrud.get({ workspaceName })
+                        .then ( world => {
+                            console.log("dbLayers remove layer: 3a. got the world: " + world.name);
+                            // b. update the layerId list (pull the layer's Id from the layersId field in the world)
+                            dbWorldCrud.updateField({ _id: world._id }, { layersId: layerId}, 'removeFromArray')
+                                .then ( result => {
+                                    console.log("dbLayers remove layer: 3b. update the world layerID array!" + JSON.stringify(world.layersId));
+                                    // 4. delete the layer from GeoServer:
+                                    console.log("dbLayers remove layer: 4. start to delete layer from the GeoServer!");
+                                    // a. delete the layer according to the resource Url
+                                    GsLayers.deleteLayerFromGeoserver(resourceUrl)
+                                        .then ( success => {
+                                            console.log("dbLayers remove layer: 4a. deleted the layer resource: " + resourceUrl);
+                                            // b. delete the store
+                                            GsLayers.deleteLayerFromGeoserver(storeUrl)
+                                                .then ( response => {
+                                                    console.log("dbLayers remove layer: 4b. deleted the store: " + storeUrl);
+                                                    res.send(response);
+                                                })
+                                                .catch( error => {
+                                                    console.error(`db LAYER: REMOVE layer's store ERROR!: ${error}`);
+                                                    res.status(404).send(`layer ${layerId} can't be found!`);
+                                                })
+                                        })
+                                        .catch( error => {
+                                            console.error(`db LAYER: REMOVE layer from resource ERROR!: ${error}`);
+                                            res.status(404).send(`layer ${layerId} can't be found!`);
+                                        })
+                                })
+                                .catch( error => {
+                                    console.error(`db LAYER: ERROR to update the World in DataBase!: ${error}`);
+                                    res.status(500).send(`Failed to update ${workspaceName} layersId field!`);
+                                })
+                        })
                         .catch( error => {
-                            console.error(`db LAYER: REMOVE layer's store ERROR!: ${error}`);
-                            res.status(404).send(`layer ${req.params.layerId} can't be found!`);
+                            console.error(`db LAYER: ERROR to find the World in DataBase!: ${error}`);
+                            res.status(404).send(`Failed to find ${workspaceName} workspace!`);
                         })
                 })
                 .catch( error => {
-                    console.error(`db LAYER: REMOVE layer from resource ERROR!: ${error}`);
-                    res.status(404).send(`layer ${req.params.layerId} can't be found!`);
-                })
+                    console.error(`db LAYER: ERROR to REMOVE LAYER from DataBase!: ${error}`);
+                    res.status(500).send(`Failed to delete layer id: ${layerId}!`);
+                });
         })
         .catch( error => {
-            console.error(`db LAYER: REMOVE find-layer ERROR!: ${error}`);
-            res.status(404).send(`layer ${req.params.layerId} can't be found!`);
+            console.error(`db LAYER: ERROR in GET LAYER from DataBase!: ${error}`);
+            res.status(404).send(`Failed to find layer id: ${layerId}!`);
         });
 });
 

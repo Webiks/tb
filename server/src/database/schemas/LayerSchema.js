@@ -3,10 +3,10 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 // create the World-Layer Schema
-const WorldLayerSchema = new Schema({
-    workspaceName: String ,                         // the name of the geoserver workspace
-    worldLayerId: String ,                          // worldname: layername , unique : true
-    name: String ,
+const LayerSchema = new Schema({
+    workspaceName: String ,                         // the name of the GeoServer workspace
+    worldLayerId: String ,                          // workspaceName: layername , unique : true
+    name: String ,                                  // from GeoServer
     href: String ,                                  // href to the Layer page
     // LAYER: from GeoServer - Layer page
     layer: {
@@ -169,24 +169,24 @@ const WorldLayerSchema = new Schema({
     imageData: {
         file: {
             name: String,
-            type: String,                           // TIF or SHX
-            folderPath: String,
-            dateCreated: Date,
-            dateModified: Date,
             size: Number,                           // MB or KB
-            attribute: String
-        },
-        image: {
-            width: Number,                          // pixels
-            height: Number,                         // pixels
-            horizontalResolution: Number,           // dpi
-            verticalResolution: Number,             // dpi
-            bitDepth: Number,
-            compression: String
-        },
-        photo: {
-            photometricInterpretation: String       // RGB
+            dateCreated: Date | null,
+            dateModified: Date | null,
+            // type: String,                           // TIF or SHX
+            // folderPath: String,
+            // attribute: String
         }
+        // image: {
+        //     width: Number,                          // pixels
+        //     height: Number,                         // pixels
+        //     horizontalResolution: Number,           // dpi
+        //     verticalResolution: Number,             // dpi
+        //     bitDepth: Number,
+        //     compression: String
+        // },
+        // photo: {
+        //     photometricInterpretation: String       // RGB
+        // }
     },
     // INPUT DATA: data from the user
     inputData: {
@@ -204,8 +204,7 @@ const WorldLayerSchema = new Schema({
     }
 });
 
-// create worldLyaer MODEL
-const worldLayerModel = mongoose.model('WorldLayer', WorldLayerSchema);
+// create the layer MODEL
+const layerModel = mongoose.model('Layer', LayerSchema);
 
-module.exports = { WorldLayerSchema, worldLayerModel };
-
+module.exports = layerModel;

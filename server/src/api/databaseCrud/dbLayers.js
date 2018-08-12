@@ -192,8 +192,8 @@ router.get('/geoserver/:workspaceName/:layerName', (req, res) => {
                             worldLayer.store.type = worldLayer.layer.type;
 
                             // set the file path
-                            const dirPath = (configParams.uploadFilesUrl.replace(/%20/g, " ")).replace(/%2E/g, ".");
-                            worldLayer.layer.filePath = `${dirPath}${url.split(':')[1]}`;
+                            // const dirPath = (configParams.uploadFilesUrl.replace(/%20/g, " ")).replace(/%2E/g, ".");
+                            worldLayer.layer.filePath = `${configParams.uploadFilesUrl}/${url.split(':')[1]}`;
                             console.log("dbLayer: FilePath: " + worldLayer.layer.filePath);
 
                             // set the file name and extension

@@ -22,7 +22,8 @@ module.exports = function(){
                     },
                 baseUrlAppGetLayer: "api/gsLayers/layer",
                 wmtsServiceUrl: "gwc/service/wmts?SERVICE=wmts&REQUEST=getcapabilities&VERSION=1%2E0%2E0",
-                uploadFilesUrl: "file:///D:/Program%20Files%20(x86)/GeoServer%202%2E13%2E0/data_dir",
+                // uploadFilesUrl: "file:///C:/Program%20Files%20(x86)/GeoServer%202%2E13%2E0/data_dir",
+                uploadFilesUrl: "file:///D:/GeoServer/data_dir",
                 baseCurl: "curl -u admin:geoserver",
                 headers:
                     {

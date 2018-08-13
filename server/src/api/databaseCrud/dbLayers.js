@@ -132,7 +132,7 @@ router.get('/geoserver/:workspaceName/:layerName', (req, res) => {
                     else if (worldLayer.layer.type.toLowerCase() === 'vector') {
                         worldLayer.data = layerDetails.featureType;
                         // set the latLonBoundingBox
-                        worldLayer.data.latLonBoundingBox = layerDetails.coverage.latLonBoundingBox;
+                        worldLayer.data.latLonBoundingBox = layerDetails.featureType.latLonBoundingBox;
                         // translate maps to objects
                         worldLayer.data.nativeCRS =
                             layerDetails.featureType.nativeCRS.$

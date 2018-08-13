@@ -2,12 +2,34 @@ const mongoose = require('mongoose');
 
 const Schema = mongoose.Schema;
 
+const PointSchema = new Schema({
+    point: [Number, Number]
+});
+
+const LineStringSchema = new Schema({
+    lineString: [PointSchema]
+});
+
+const polygon = new mongoose.Schema({
+    type: {
+        type: String,
+        enum: ['Polygon'],
+        required: true
+    },
+    coordinates: {
+        type: [[[Number]]], // Array of arrays of arrays of numbers
+        required: true
+    }
+});
+
 // create the World-Layer Schema
 const LayerSchema = new Schema({
     workspaceName: String ,                         // the name of the GeoServer workspace
     worldLayerId: String ,                          // workspaceName: layername , unique : true
     name: String ,                                  // from GeoServer
     href: String ,                                  // href to the Layer page
+    // for ANSYN: get the polygon from the latLonBoundingBox field in the data using the turf.bboxPolygon(bbox) function
+    foorprint: polygon,
     // LAYER: from GeoServer - Layer page
     layer: {
         name: String ,
@@ -170,8 +192,8 @@ const LayerSchema = new Schema({
         file: {
             name: String,
             size: Number,                           // MB or KB
-            dateCreated: Date | null,
-            dateModified: Date | null,
+            dateCreated: { type: Date, default: Date.now },
+            dateModified: { type: Date, default: Date.now },
             // type: String,                           // TIF or SHX
             // folderPath: String,
             // attribute: String

@@ -1,11 +1,11 @@
 const express = require('express');
+const turf = require('@turf/turf');
+const router = express.Router();
 
 const worldModel = require('../../database/schemas/WorldSchema');
 const layerModel = require('../../database/schemas/LayerSchema');
 const MongoCrud = require('../../database/MongoCrud');
 const GsLayers  = require("../geoserverCrud/GsLayers");
-
-const router = express.Router();
 
 require('../../config/serverConfig')();
 const configParams = config().configParams;
@@ -108,10 +108,13 @@ router.get('/geoserver/:workspaceName/:layerName', (req, res) => {
             // 2. get the layer's details
             GsLayers.getLayerDetailsFromGeoserver(resourceUrl)
                 .then ( layerDetails => {
+                    let latLonBoundingBox;
                     // get the layer details data according to the layer's type
                     console.log("2. got Layer Details...");
                     if (worldLayer.layer.type.toLowerCase() === 'raster') {
                         worldLayer.data = layerDetails.coverage;
+                        // set the latLonBoundingBox
+                        worldLayer.data.latLonBoundingBox = layerDetails.coverage.latLonBoundingBox;
                         // translate maps to objects
                         worldLayer.data.nativeCRS =
                             layerDetails.coverage.nativeCRS.$
@@ -123,13 +126,13 @@ router.get('/geoserver/:workspaceName/:layerName', (req, res) => {
                                 : layerDetails.coverage.nativeBoundingBox.crs;
 
                         worldLayer.data.metadata = {dirName: layerDetails.coverage.metadata.entry.$};
-                        worldLayer.layer.storeId = layerDetails.coverage.store.name;                    // set the store's ID
-                        // set the data center point
-                        worldLayer.data.center =
-                            [layerDetails.coverage.latLonBoundingBox.minx, layerDetails.coverage.latLonBoundingBox.maxy];
+                        // set the store's ID
+                        worldLayer.layer.storeId = layerDetails.coverage.store.name;
                     }
                     else if (worldLayer.layer.type.toLowerCase() === 'vector') {
                         worldLayer.data = layerDetails.featureType;
+                        // set the latLonBoundingBox
+                        worldLayer.data.latLonBoundingBox = layerDetails.coverage.latLonBoundingBox;
                         // translate maps to objects
                         worldLayer.data.nativeCRS =
                             layerDetails.featureType.nativeCRS.$
@@ -141,14 +144,22 @@ router.get('/geoserver/:workspaceName/:layerName', (req, res) => {
                                 : layerDetails.featureType.nativeBoundingBox.crs;
 
                         worldLayer.data.metadata = {recalculateBounds: layerDetails.featureType.metadata.entry.$};
-                        worldLayer.layer.storeId = layerDetails.featureType.store.name;                 // set the store's ID
-                        // set the data center point
-                        worldLayer.data.center =
-                            [layerDetails.featureType.latLonBoundingBox.minx, layerDetails.featureType.latLonBoundingBox.maxy];
+                        // set the store's ID
+                        worldLayer.layer.storeId = layerDetails.featureType.store.name;
                     }
                     else {
                         res.status(500).send('ERROR: unknown layer TYPE!');
                     }
+                    // set the data center point
+                    worldLayer.data.center =
+                        [worldLayer.data.latLonBoundingBox.minx, worldLayer.data.latLonBoundingBox.maxy];
+                    console.log("dbLayer: Center = " + JSON.stringify(worldLayer.data.center));
+
+                    // set the Polygon field for Ansyn
+                    console.log("dbLayer: bbox = " + JSON.stringify(Object.values(worldLayer.data.latLonBoundingBox).filter( value => typeof value === 'number')));
+                    worldLayer.polygon = turf.bboxPolygon(Object.values(worldLayer.data.latLonBoundingBox).filter( value => typeof value === 'number'));
+                    console.log("dbLayer: Polygon = " + JSON.stringify(worldLayer.polygon));
+
                     // set the store's name
                     worldLayer.layer.storeName = (worldLayer.layer.storeId).split(':')[1];                    
                     return worldLayer.data.store.href;

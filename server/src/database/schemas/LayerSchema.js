@@ -8,6 +8,7 @@ const LayerSchema = new Schema({
     worldLayerId: String ,                          // workspaceName: layername , unique : true
     name: String ,                                  // from GeoServer
     href: String ,                                  // href to the Layer page
+    date: Date,
     // LAYER: from GeoServer - Layer page
     layer: {
         name: String ,

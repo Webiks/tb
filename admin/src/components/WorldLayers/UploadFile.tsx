@@ -47,7 +47,7 @@ class UploadFile extends React.Component {
     props: IPropsUploadFiles;
     layersId: string[] = this.props.world.layersId ? this.props.world.layersId : [];
     state: IStateWorld = { hideSpinner: true };
-    url: string = `${config.baseUrl.path}/${config.baseUrl.api}/upload/${this.props.world.workspaceName}`;
+    url: string = `${config.baseUrl}/api/upload/${this.props.world.workspaceName}`;
 
     onUpload = (e: any) => {
         console.log('On Upload...');

@@ -2,7 +2,7 @@ import axios from 'axios';
 import config from '../../config/config';
 
 class LoginService {
-    static loginUrl = `${config.baseUrl.path}/${config.baseUrl.login}`;
+    static loginUrl = `${config.baseUrl}/login`;
 
     static login(username: string, password: string) {
         return   axios.post(`${this.loginUrl}/login`, { username, password }, { withCredentials: true });

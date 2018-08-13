@@ -23,8 +23,6 @@ import { DataTable } from 'primereact/components/datatable/DataTable';
 import { Column } from 'primereact/components/column/Column';
 import { InputText } from 'primereact/components/inputtext/InputText';
 import { Dropdown } from 'primereact/components/dropdown/Dropdown';
-import { WorldService } from '../../services/WorldService';
-import { updatedDiff } from 'deep-object-diff';
 
 export interface IPropsLayer {
     worldName: string,
@@ -42,8 +40,6 @@ export interface IStateDetails {
 class LayerEditor extends React.Component {
     props: IPropsLayer;
     state: IStateDetails;
-    // fieldPath: string;
-    // newValue: any;
 
     layerIndex: number;
 
@@ -68,7 +64,6 @@ class LayerEditor extends React.Component {
         switch (field) {
             case ('layer'):
                 const layer = { ...this.state.worldLayer };
-                // this.fieldPath = `layer.${property}`;
                 layer.layer[property] = value;
                 this.setState({ worldLayer: { ...layer }});
             case ('imageData'):
@@ -76,11 +71,9 @@ class LayerEditor extends React.Component {
                 const subField = split[2];
                 property = split[3];
                 if (subField === 'file'){
-                    // this.fieldPath = `imageData.file.${property}`;
                     imageData.imageData.file[property] = value;
                 }
                 else if (subField === 'image'){
-                    // this.fieldPath = `imageData.image.${property}`;
                     imageData.imageData.image[property] = value;
                 }
                 this.setState({ worldLayer: { ...imageData }});
@@ -91,14 +84,11 @@ class LayerEditor extends React.Component {
                     const index = props.path.indexOf('[');
                     if (index > -1) {
                         const bandsIndex = parseInt(props.path.substr(index + 1, 1), 10);
-                        // this.fieldPath = `inputData.sensor.bands.${property}`;
                         inputData.inputData.sensor.bands[bandsIndex] = (value);
                     } else {
-                        // this.fieldPath = `inputData.sensor.${property}`;
                         inputData.inputData.sensor[property] = value;
                     }
                 } else {
-                    // this.fieldPath = `inputData.${property}`;
                     inputData.inputData[property] = value;
                 }
                 this.setState({ worldLayer: { ...inputData }});
@@ -157,33 +147,17 @@ class LayerEditor extends React.Component {
     save = () => {
         const layers = [...this.props.world.layers];
         layers[this.layerIndex] = this.state.worldLayer;
-        const updateLayer = updatedDiff(this.props.layer, this.state.worldLayer);
-        // if more then one field has changed - update the whole layer object
-        // if ( Object.keys(updateLayer).length > 1 ){
-            console.warn("SAVE: update layer : " + this.props.layer.name);
-            // 1. update the changes in the database
-            LayerService.updateLayer(this.props.layer, this.state.worldLayer)
-                .then ( res =>  {
-                    console.warn(`Succeed to update ${res.name} layer`);
-                    // 2. update the changes in the App Store and refresh the page
-                    this.refresh(layers);
-                    // 3. close the editor page and go back to the layers table page
-                    this.backToWorldPage();
-                })
-                .catch( error => this.handleError(error));
-        // else - update only the changed field
-        // } else {
-        //     // 1. update the changes in the database
-        //     LayerService.updateLayerField(this.props.layer, this.fieldPath, this.newValue)
-        //         .then(res => {
-        //             console.warn('Succeed to update ' + this.fieldPath);
-        //             // 2. update the changes in the App Store and refresh the page
-        //             this.refresh(layers);
-        //             // 3. close the editor page and go back to the layers table page
-        //             this.backToWorldPage();
-        //         })
-        //         .catch(error => this.handleError(error));
-        // }
+        console.warn("SAVE: update layer : " + this.props.layer.name);
+        // 1. update the changes in the database
+        LayerService.updateLayer(this.props.layer, this.state.worldLayer)
+            .then ( res =>  {
+                console.warn(`Succeed to update ${res.name} layer`);
+                // 2. update the changes in the App Store and refresh the page
+                this.refresh(layers);
+                // 3. close the editor page and go back to the layers table page
+                this.backToWorldPage();
+            })
+            .catch( error => this.handleError(error));
     };
 
     handleError = (error) => {

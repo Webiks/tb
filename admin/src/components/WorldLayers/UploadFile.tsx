@@ -84,7 +84,7 @@ class UploadFile extends React.Component {
                 console.log('diff layers length: ' + diffLayers.length);
                 return diffLayers;
             })
-            // 2. get all the layers data from GeoServer (by a giving layers's list)
+            // 2. get all the layers data from GeoServer (only for the new upload files)
             .then((diffLayers: IWorldLayer[]) => {
                 LayerService.getAllLayersData(this.props.world.workspaceName, diffLayers)
                     .then((layers: IWorldLayer[]): Promise<any> => {
@@ -93,10 +93,11 @@ class UploadFile extends React.Component {
                         const promises = layers.map((layer: IWorldLayer) => {
                             // set the inputData to be EMPTY for the new layer
                             layer.inputData = this.setInitInputData(layer);
-                            // add the name and the size (IImageData) and the date of the file to the match layer (IWorldLayer)
+                            // find the match between the upload files to the geoserver layers by name
                             const matchLayer = filelist.find(file => file.name === layer.layer.fileName);
-                            layer.imageData = this.setInitImageData(matchLayer);
+                            // add the file data to the matched layer
                             layer.date = matchLayer.date;
+                            layer.imageData = this.getImageData(matchLayer);
                             // 3. Save the new layer in the DataBase and get its _id
                             return LayerService.createLayer({ ...layer })
                                 .then(dbLayer => {
@@ -142,15 +143,15 @@ class UploadFile extends React.Component {
     };
 
     // get the input Data of the layer from the App store
-    setInitImageData = (file: IFileData): IImageData => {
+    getImageData = (file: IFileData): IImageData => {
         console.log('getImageData...', file);
 
         return {
             file: {
                 name: file.name,
                 size: file.size,
-                dateCreated: new Date().toISOString(),
-                dateModified: new Date().toISOString()
+                dateModified: new Date().toISOString(),
+                // dateCreated: new Date().toISOString(),
                 // type: '',                           // TIF or SHX
                 // folderPath: '',
                 // attribute: ''

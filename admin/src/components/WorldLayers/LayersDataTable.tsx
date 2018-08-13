@@ -148,8 +148,8 @@ class LayersDataTable extends React.Component {
                             <Column field="store.type" header="Type" sortable={true} style={{width: '10%'}} />
                             <Column field="store.format" header="Format" sortable={true} style={{width: '10%'}}/>
                             <Column field="layer.fileExtension" header="Extension" sortable={true} style={{width: '12%'}}/>
-                            <Column field="imageData.file.dateCreated"  header="Date Created" sortable={true} style={{width: '12%'}}/>
-                            <Column field="imageData.file.dateModified" header="Last Modified" sortable={true} style={{width: '12%'}}/>
+                            <Column field="imageData.file.dateModified" header="File Modified" sortable={true} style={{width: '12%'}}/>
+                            <Column field="date"  header="Layer Created" sortable={true} style={{width: '12%'}}/>
                             <Column field="inputData.affiliation" header="File Affiliation" sortable={true} style={{width: '10%'}}/>
                             <Column header="Actions" body={this.actionsButtons} style={{width: '12%'}}/>
                         </DataTable>

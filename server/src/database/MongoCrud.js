@@ -7,11 +7,9 @@ class MongoCrud {
 
     add(entityToAdd){
         return new Promise((resolve, reject) => {
-            if (this.mongoModel.collection){
-                this.mongoModel.collection.dropIndexes();
-            }
-            console.log("mongoModel ADD: " + this.mongoModel);
+            console.log("MongoCrud - ADD: this.mongoModel.collection: " + this.mongoModel.collection);
             try {
+                console.log("MongoCrud - ADD: this.mongoModel: " + this.mongoModel);
                 this.mongoModel.create(entityToAdd, (err, entityReturn) => {
                     if (err) {
                         this.handleError(reject, err, `CREATE error: ${err}`);
@@ -28,19 +26,19 @@ class MongoCrud {
         });
     }
 
-    get(entityId) {
+    get(query) {
         return new Promise((resolve, reject) => {
             try {
-                this.mongoModel.findOne(entityId, (err, entityReturn) => {
+                this.mongoModel.findOne(query, (err, entityReturn) => {
                     if (err) {
-                        this.handleError(reject, err, `FIND(by ID) error: ${err}`);
+                        this.handleError(reject, err, `FIND-ONE error: ${err}`);
                     }
                     else {
                         if (entityReturn) {
                             console.log("got entity: " + entityReturn.id);
                         }
                         else {
-                            console.error("entity id:" + entityId + "doesn't exist");
+                            console.error("can't find this entity!");
                             entityReturn = {};
                         }
                         return resolve(entityReturn);
@@ -48,7 +46,7 @@ class MongoCrud {
                 });
             }
             catch (err) {
-                this.handleError(reject, err, `GET(by ID) error: ${err}`);
+                this.handleError(reject, err, `GET error: ${err}`);
             }
         });
     }
@@ -161,12 +159,15 @@ class MongoCrud {
 
         return new Promise((resolve, reject) => {
             try {
+                console.log("mongoCrud entityId: " + JSON.stringify(entityId));
+                console.log("mongoCrud updateOperation: " + JSON.stringify(updateOperation));
                 this.mongoModel.findByIdAndUpdate(entityId, updateOperation, {new: true}, (err, entityReturn) => {
                     if (err) {
                         this.handleError(reject, err, `FIND-AND-UPDATE-FIELD error: ${err}`);
                     }
                     else {
-                        console.log("update entity: " + entityReturn.id);
+                        // console.log("update entity: " + entityReturn.id);
+                        console.log("update entity: " + JSON.stringify(entityReturn));
                         return resolve(entityReturn);
                     }
                 });

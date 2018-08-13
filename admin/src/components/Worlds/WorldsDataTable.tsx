@@ -21,7 +21,6 @@ import { Dialog } from 'primereact/components/dialog/Dialog';
 
 export interface IPropsWorldsTable {
     worldsList: IWorld[],
-    getWorldsList: () => void;
     setWorlds: (worlds: IWorld[]) => ITBAction
     navigateTo: (layerName: string) => void
 }

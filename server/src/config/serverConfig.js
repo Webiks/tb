@@ -7,7 +7,8 @@ module.exports = function(){
                 mongoPort: 27017,
                 geoServerPort: 8080,
                 localIP: "://127.0.0.1",
-                remoteIP: "://35.162.61.200",
+                // remoteIP: "://35.162.61.200",
+                remoteIP: "://34.218.228.21",
                 domain: "://tb-server.webiks.com",
                 dbName: 'tb_database',
                 mongoBaseUrl: "mongodb://127.0.0.1:27017",
@@ -21,7 +22,7 @@ module.exports = function(){
                     },
                 baseUrlAppGetLayer: "api/gsLayers/layer",
                 wmtsServiceUrl: "gwc/service/wmts?SERVICE=wmts&REQUEST=getcapabilities&VERSION=1%2E0%2E0",
-                uploadFilesUrl: "file://D:/Program%20Files%20(x86)/GeoServer%202%2E13%2E0/data_dir",
+                uploadFilesUrl: "file:///D:/GeoServer/data_dir",
                 baseCurl: "curl -u admin:geoserver",
                 headers:
                     {

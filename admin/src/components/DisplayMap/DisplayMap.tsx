@@ -167,7 +167,7 @@ class DisplayMap extends React.Component {
         const layers = [...this.props.world.layers];
         layers[this.layerIndex] = this.state.selectedLayer;
         // 1. update the changes in the database
-        WorldService.updateWorldField(this.props.world, 'layers', layers)
+        LayerService.updateLayer(this.props.layer, this.state.selectedLayer)
             .then ( res =>  {
                 console.warn(`Succeed to update ${this.props.worldName}'s layers`);
                 // 2. update the changes in the App Store and refresh the page

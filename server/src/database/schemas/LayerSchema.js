@@ -29,7 +29,7 @@ const LayerSchema = new Schema({
     name: String ,                                  // from GeoServer
     href: String ,                                  // href to the Layer page
     // for ANSYN: get the polygon from the latLonBoundingBox field in the data using the turf.bboxPolygon(bbox) function
-    foorprint: polygon,
+    footprint: polygon,
     date: Date,
     // LAYER: from GeoServer - Layer page
     layer: {

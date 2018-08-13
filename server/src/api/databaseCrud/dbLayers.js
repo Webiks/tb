@@ -157,7 +157,8 @@ router.get('/geoserver/:workspaceName/:layerName', (req, res) => {
 
                     // set the Polygon field for Ansyn
                     console.log("dbLayer: bbox = " + JSON.stringify(Object.values(worldLayer.data.latLonBoundingBox).filter( value => typeof value === 'number')));
-                    worldLayer.footprint = turf.bboxPolygon(Object.values(worldLayer.data.latLonBoundingBox).filter( value => typeof value === 'number'));
+                    const { minx, maxx, miny, maxy } = worldLayer.data.latLonBoundingBox;
+                    worldLayer.footprint = turf.bboxPolygon([ minx, miny, maxx, maxy ]);
                     console.log("dbLayer: Polygon = " + JSON.stringify(worldLayer.polygon));
 
                     // set the store's name

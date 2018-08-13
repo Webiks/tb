@@ -2,25 +2,25 @@ const mongoose = require('mongoose');
 
 const Schema = mongoose.Schema;
 
-const PointSchema = new Schema({
-    point: [Number, Number]
-});
-
-const LineStringSchema = new Schema({
-    lineString: [PointSchema]
-});
-
-const polygon = new mongoose.Schema({
+const footprint = {
     type: {
         type: String,
-        enum: ['Polygon'],
+        enum: ['Feature'],
         required: true
     },
-    coordinates: {
-        type: [[[Number]]], // Array of arrays of arrays of numbers
-        required: true
-    }
-});
+    geometry: {
+        type: {
+            type: String,
+            enum: ['Polygon'],
+            required: true
+        },
+        coordinates: {
+            type: [[[Number]]], // Array of arrays of arrays of numbers
+            required: true
+        }
+    },
+    properties: {}
+};
 
 // create the World-Layer Schema
 const LayerSchema = new Schema({
@@ -29,7 +29,7 @@ const LayerSchema = new Schema({
     name: String ,                                  // from GeoServer
     href: String ,                                  // href to the Layer page
     // for ANSYN: get the polygon from the latLonBoundingBox field in the data using the turf.bboxPolygon(bbox) function
-    footprint: polygon,
+    footprint,
     date: Date,
     // LAYER: from GeoServer - Layer page
     layer: {

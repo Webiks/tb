@@ -10,10 +10,8 @@
     "classnames": "^2.2.5",
     "deep-object-diff": "^1.1.0",
     "font-awesome": "^4.7.0",
-    "gdal": "^0.9.7",
     "geotiff": "^1.0.0-beta.3",
     "history": "^4.7.2",
-    "imagemagick": "^0.1.3",
     "lodash": "^4.17.10",
     "openlayers": "^4.6.5",
     "primeicons": "^1.0.0-beta.9",
@@ -31,11 +29,10 @@
   },
   "scripts": {
     "predeploy": "npm run build && npm run CNAME",
-    "deploy": "gh-pages --repo https://$GITHUB_TOKEN@github.com/webiks/tb.git -d build",
     "start": "react-scripts-ts start",
     "start:prod": "set NODE_ENV=production&&react-scripts-ts start",
     "build": "set NODE_ENV=production&&react-scripts-ts build",
-    "CNAME": "echo https://tb-admin-app.webiks.com > build/CNAME",
+    "build:start": "npm run build && http-server ./build -p 80",
     "test": "echo \"fix your tests\" ",
     "eject": "react-scripts-ts eject"
   },
@@ -51,6 +48,7 @@
     "@types/react-router-dom": "^4.2.7",
     "@types/react-router-redux": "^5.0.15",
     "gh-pages": "^1.1.0",
+    "http-server": "^0.11.1",
     "typescript": "^2.8.3"
   }
 }

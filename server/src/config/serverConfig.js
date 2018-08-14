@@ -7,7 +7,6 @@ module.exports = function(){
                 mongoPort: 27017,
                 geoServerPort: 8080,
                 localIP: "://127.0.0.1",
-                // remoteIP: "://35.162.61.200",
                 remoteIP: "://34.218.228.21",
                 domain: "://tb-server.webiks.com",
                 dbName: 'tb_database',

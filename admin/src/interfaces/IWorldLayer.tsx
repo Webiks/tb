@@ -10,7 +10,7 @@ export interface IWorldLayer {
     workspaceName: string;
     worldLayerId: string;           // get from the resource.name from getInfo
     name: string;
-    date: Date;
+    date: string;
     href?: string;
     layer: ILayer;                  // layer data from geoserver
     store: IStore;                  // store store data from geoserver (coverStore or dataStore)

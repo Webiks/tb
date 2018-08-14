@@ -36,7 +36,7 @@ export interface IReqFile {
 export interface IFileData {
     name: string;
     size: number;
-    date: Date;
+    date: string;
 }
 
 export interface IStateWorld {
@@ -60,56 +60,42 @@ class UploadFile extends React.Component {
 
     createFileList(reqFiles: IReqFile[]): IFileData[] {
         const includeSHPfile = reqFiles[0] && reqFiles[0].type === 'application/octet-stream';
-        const files = includeSHPfile  ? [ reqFiles.find(({ name }) => name.split('.')[1] === 'shp') ] : [ ...reqFiles ];
+        const files = includeSHPfile
+            ? [ reqFiles.find(({ name }) => name.split('.')[1] === 'shp') ]
+            : [ ...reqFiles ];
         return files.map((file: IReqFile) => ({
             name: file.name,
             size: file.size,
-            date: file.mtime
+            date: new Date(file.mtime).toISOString()
         }));
     }
+
+    getNewLayersList = (geolayers: IWorldLayer[]): IWorldLayer[] => {
+        console.log('app layers length: ' + this.props.world.layers.length);
+        console.log('geo layers length: ' + geolayers.length);
+        // check if there is a difference between the App Store layers's list to the GeoServer layers's list
+        const newLayers = (this.props.world.layers.length && this.props.world.layers[0] !== null)
+            ? _.differenceWith(geolayers, this.props.world.layers,
+                (geoLayer: IWorldLayer, appLayer: IWorldLayer) => geoLayer.name === appLayer.name)
+            : geolayers;
+        console.log('diff layers length: ' + newLayers.length);
+        return newLayers;
+    };
 
     getNewLayersData = (filelist: IFileData[]) => {
         this.setState({ hideSpinner: false });
         console.log('getNewLayersData...');
         // 1. get an Array of all the world's layers from the GeoServer
         LayerService.getWorldLayersFromGeoserver(this.props.world.workspaceName)
-            .then((geolayers: IWorldLayer[]) => {
-                console.log('app layers length: ' + this.props.world.layers.length);
-                console.log('geo layers length: ' + geolayers.length);
-                // check if there is a difference between the App Store layers's list to the GeoServer layers's list
-                const diffLayers = (this.props.world.layers.length && this.props.world.layers[0] !== null)
-                    ? _.differenceWith(geolayers, this.props.world.layers,
-                        (geoLayer: IWorldLayer, appLayer: IWorldLayer) => geoLayer.name === appLayer.name)
-                    : geolayers;
-                console.log('diff layers length: ' + diffLayers.length);
-                return diffLayers;
-            })
+            .then((geolayers: IWorldLayer[]) => this.getNewLayersList(geolayers))
             // 2. get all the layers data from GeoServer (only for the new upload files)
-            .then((diffLayers: IWorldLayer[]) => {
-                LayerService.getAllLayersData(this.props.world.workspaceName, diffLayers)
+            .then((newLayers: IWorldLayer[]) => {
+                LayerService.getAllLayersData(this.props.world.workspaceName, newLayers)
                     .then((layers: IWorldLayer[]): Promise<any> => {
-                        console.log('getLayersDataByList getInputData...');
                         // set the final layers list and save it in the DataBase
                         const promises = layers.map((layer: IWorldLayer) => {
-                            // set the inputData to be EMPTY for the new layer
-                            layer.inputData = this.setInitInputData(layer);
-                            // find the match between the upload files to the geoserver layers by name
-                            const matchLayer = filelist.find(file => file.name === layer.layer.fileName);
-                            // add the file data to the matched layer
-                            layer.date = matchLayer.date;
-                            layer.imageData = this.getImageData(matchLayer);
-                            // 3. Save the new layer in the DataBase and get its _id
-                            return LayerService.createLayer({ ...layer })
-                                .then(dbLayer => {
-                                    console.warn('CREATE new layer in MongoDB id: ' + dbLayer._id);
-                                    // update the layer with its Id in the DataBase
-                                    layer._id = dbLayer._id;
-                                    // update the world's layersId with the new Id
-                                    this.layersId.push(dbLayer._id);
-                                    console.log('world layersId: ' + JSON.stringify(this.layersId));
-                                    return layer;
-                                })
-                                .catch(error => this.handleError('Failed to save the layer in MongoDB: ' + error));
+                            const newLayer = this.getOtherLayerData(filelist, layer);
+                            return this.createLayer(newLayer);
                         });
                         return Promise.all(promises);
                     })
@@ -122,6 +108,18 @@ class UploadFile extends React.Component {
                     .catch(error => this.handleError('UPLOAD: getAllLayersData ERROR: ' + error));
             })
             .catch(error => this.handleError('UPLOAD: getWorldLayersFromGeoserver ERROR: ' + error));
+    };
+
+    // get other data of the layer
+    getOtherLayerData = (filelist: IFileData[], layer: IWorldLayer): IWorldLayer => {
+        // set the inputData to be EMPTY for the new layer
+        layer.inputData = this.setInitInputData(layer);
+        // find the upload layer from the geoserver layers list
+        const uploadLayer = filelist.find(file => file.name === layer.layer.fileName);
+        // add the file data to the upload layer
+        layer.date = uploadLayer.date;
+        layer.imageData = this.getImageData(uploadLayer);
+        return {...layer};
     };
 
     // get the input Data of the layer from the App store
@@ -168,6 +166,20 @@ class UploadFile extends React.Component {
             //     photometricInterpretation: ''       // RGB
             // }
         };
+    };
+
+    // create new layer in the DataBase and update its _id in the world layersId list
+    createLayer = ( newLayer: IWorldLayer ): Promise<any> => {
+        return LayerService.createLayer(newLayer)
+            .then(dbLayer => {
+                console.warn('CREATE new layer in MongoDB id: ' + dbLayer._id);
+                // update the layer with its Id in the DataBase
+                newLayer._id = dbLayer._id;
+                // update the world's layersId with the new Id
+                this.layersId.push(dbLayer._id);
+                return newLayer;
+            })
+            .catch(error => this.handleError('Failed to save the layer in MongoDB: ' + error));
     };
 
     // update the App store and refresh the page

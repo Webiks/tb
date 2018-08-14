@@ -30,18 +30,15 @@ const findWorldById = (_id) => dbWorldCrud.get({ _id });
 
 const findWorldByWorkspaceName = (workspaceName) => dbWorldCrud.get({ workspaceName });
 
-const updateWorldField = (_id, layersId, operation) =>
-													dbWorldCrud.updateField({ _id }, { layersId }, operation );
+const updateWorldLayersId = (_id, layerId, operation) =>
+													dbWorldCrud.updateField({ _id }, { layersId : layerId }, operation );
 // ===========
 // L A Y E R S
 // ===========
 const findLayerById = (_id) => dbLayerCrud.get({ _id });
 
-const removeLayerById = (_id) => dbLayerCrud.remove({ _id });
-
 // parse layer
 const parseLayerDetails = (worldLayer, data) => {
-	console.log("parseLayerDetails data: " + JSON.stringify(data));
 	worldLayer.data = data;
 	// set the latLonBoundingBox
 	worldLayer.data.latLonBoundingBox = data.latLonBoundingBox;
@@ -96,13 +93,10 @@ const getLayerDetailsFromGeoserver  = (worldLayer, resourceUrl) => {
 			// set the data center point
 			worldLayer.data.center =
 				[worldLayer.data.latLonBoundingBox.minx, worldLayer.data.latLonBoundingBox.maxy];
-			console.log("dbLayer: Center = " + JSON.stringify(worldLayer.data.center));
 
 			// set the Polygon field for Ansyn
-			console.log("dbLayer: bbox = " + JSON.stringify(Object.values(worldLayer.data.latLonBoundingBox).filter( value => typeof value === 'number')));
 			const { minx, maxx, miny, maxy } = worldLayer.data.latLonBoundingBox;
 			worldLayer.footprint = turf.bboxPolygon([ minx, miny, maxx, maxy ]);
-			console.log("dbLayer: Polygon = " + JSON.stringify(worldLayer.polygon));
 
 			// set the store's name
 			worldLayer.layer.storeName = (worldLayer.layer.storeId).split(':')[1];
@@ -154,19 +148,33 @@ const getStoreDataFromGeoserver = (worldLayer, storeUrl) => {
 			// set the file path
 			// const dirPath = (configParams.uploadFilesUrl.replace(/%20/g, " ")).replace(/%2E/g, ".");
 			worldLayer.layer.filePath = `${configParams.uploadFilesUrl}/${url.split(':')[1]}`;
-			console.log("dbLayer: FilePath: " + worldLayer.layer.filePath);
 
 			// set the file name and extension
 			const path = worldLayer.layer.filePath;
 			worldLayer.layer.fileExtension = path.substring(path.lastIndexOf('.'));
 			worldLayer.layer.fileName = `${worldLayer.store.name}${worldLayer.layer.fileExtension}`;
-			console.log("dbLayers: fileName: " + worldLayer.layer.fileName);
 
 			// return the world-layer with all the data from GeoServer
 			return worldLayer;
 		})
 		.catch( error => {
 			throw new Error(`can't find the Store page!`);
+		});
+};
+
+const removeLayerById = (_id) => dbLayerCrud.remove({ _id });
+
+// delete the layer from GeoServer
+const removeLayerFromGeoserver = (resourceUrl, storeUrl) => {
+	// 1. delete the layer according to the resource Url
+	return GsLayers.deleteLayerFromGeoserver(resourceUrl)
+		.then ( success => {
+			console.log("dbLayers remove layer: 4a. deleted the layer resource: " + resourceUrl);
+			// 2. delete the store
+			return GsLayers.deleteLayerFromGeoserver(storeUrl)
+		})
+		.catch( error => {
+			throw new Error(`can't delete layer from geoserver!`);
 		});
 };
 
@@ -180,7 +188,6 @@ router.post('/:layerName', (req, res) => {
         dbLayerCrud.add(req.body)
             .then( newLayer => {
 							// 2. add the layer Id to the layersId list in the world
-							const layerId = newLayer._id;
 							return findWorldByWorkspaceName(req.body.workspaceName)
 								.then(world => {
 									if (!world) {
@@ -191,7 +198,7 @@ router.post('/:layerName', (req, res) => {
 								.then ( world => {
 										console.log("dbLayers create layer: a. got the world: " + world.name);
 										// update the layerId list (push the new layer's Id)
-										updateWorldField( world._id, world.layersId , 'updateArray')
+									updateWorldLayersId( world._id, newLayer._id , 'updateArray')
 												.then ( updateWorld => {
 														console.log("dbLayers create layer: b. update the world layersId: " + newLayer.id);
 														res.send(newLayer);
@@ -314,11 +321,9 @@ router.put('/:layerId/:fieldName', (req, res) => {
 
     let updatedField = {};
     updatedField[fieldName] = fieldValue ;
-    console.log("dbLayer updatedField: " + JSON.stringify(updatedField));
     let operation = 'update';
     if ( Array.isArray(updatedField)){
         operation = 'updateArray';
-        console.log("dbLayer: operation: " + operation);
     }
 
     dbWorldCrud.updateField(entityId, updatedField, operation)
@@ -334,74 +339,59 @@ router.put('/:layerId/:fieldName', (req, res) => {
 // ==============
 // delete a layer from World's Layers list in the Database and from the geoserver
 router.delete('/delete/:layerId', (req, res) => {
-    console.log(`db LAYER SERVER: start DELETE layer: ${req.params.layerId}`);
-    const layerId = req.params.layerId;
-    const query = { _id: layerId };
-    let workspaceName;
-    let resourceUrl;
-    let storeUrl;
-    // 1. find the layer from the database
-    dbLayerCrud.get(query)
+	console.log(`db LAYER SERVER: start DELETE layer: ${req.params.layerId}`);
+	// 1. find the layer from the database
+	findLayerById(req.params.layerId)
         .then ( layer => {
-            console.log(`dbLayers remove layer: 1. got the layer: ${layer.name}`);
-            // save the layer data before remove it from the database
-            workspaceName = layer.workspaceName;
-            resourceUrl = layer.layer.resource.href;
-            storeUrl = layer.data.store.href;
-            // 2. remove the layer from the Layers list in the DataBase
-            dbLayerCrud.remove(query)
-                .then ( response => {
-                    console.log(`db LAYER SERVER: 2. removed the layer from the layers list in MongoDB!`);
-                    // 3. remove the layer's Id from the world's layersId array
-                    // a. find the world by id
-                    dbWorldCrud.get({ workspaceName })
-                        .then ( world => {
-                            console.log("dbLayers remove layer: 3a. got the world: " + world.name);
-                            // b. update the layerId list (pull the layer's Id from the layersId field in the world)
-                            dbWorldCrud.updateField({ _id: world._id }, { layersId: layerId}, 'removeFromArray')
-                                .then ( result => {
-                                    console.log("dbLayers remove layer: 3b. update the world layerID array!" + JSON.stringify(world.layersId));
-                                    // 4. delete the layer from GeoServer:
-                                    console.log("dbLayers remove layer: 4. start to delete layer from the GeoServer!");
-                                    // a. delete the layer according to the resource Url
-                                    GsLayers.deleteLayerFromGeoserver(resourceUrl)
-                                        .then ( success => {
-                                            console.log("dbLayers remove layer: 4a. deleted the layer resource: " + resourceUrl);
-                                            // b. delete the store
-                                            GsLayers.deleteLayerFromGeoserver(storeUrl)
-                                                .then ( response => {
-                                                    console.log("dbLayers remove layer: 4b. deleted the store: " + storeUrl);
-                                                    res.send(response);
-                                                })
-                                                .catch( error => {
-                                                    console.error(`db LAYER: REMOVE layer's store ERROR!: ${error}`);
-                                                    res.status(404).send(`layer ${layerId} can't be found!`);
-                                                })
-                                        })
-                                        .catch( error => {
-                                            console.error(`db LAYER: REMOVE layer from resource ERROR!: ${error}`);
-                                            res.status(404).send(`layer ${layerId} can't be found!`);
-                                        })
-                                })
-                                .catch( error => {
-                                    console.error(`db LAYER: ERROR to update the World in DataBase!: ${error}`);
-                                    res.status(500).send(`Failed to update ${workspaceName} layersId field!`);
-                                })
-                        })
-                        .catch( error => {
-                            console.error(`db LAYER: ERROR to find the World in DataBase!: ${error}`);
-                            res.status(404).send(`Failed to find ${workspaceName} workspace!`);
-                        })
-                })
-                .catch( error => {
-                    console.error(`db LAYER: ERROR to REMOVE LAYER from DataBase!: ${error}`);
-                    res.status(500).send(`Failed to delete layer id: ${layerId}!`);
-                });
-        })
-        .catch( error => {
-            console.error(`db LAYER: ERROR in GET LAYER from DataBase!: ${error}`);
-            res.status(404).send(`Failed to find layer id: ${layerId}!`);
-        });
+					console.log(`dbLayers remove layer: 1. got the layer: ${layer.name}`);
+					// save the layer data before remove it from the database
+					const removedLayerData = {
+						workspaceName: layer.workspaceName,
+						resourceUrl: layer.layer.resource.href,
+						storeUrl: layer.data.store.href
+					};
+					// 2. remove the layer from the Layers list in the DataBase
+					return removeLayerById(req.params.layerId)
+						.then ( response => removedLayerData )
+						.catch( error => {
+							throw new Error(`can't find the layer!`);
+						});
+				})
+				.then ( removedLayerData => {
+					console.log(`db LAYER SERVER: 2. removed the layer from the layers list in MongoDB!`);
+					// 3. remove the layer's Id from the world's layersId array
+					return findWorldByWorkspaceName(removedLayerData.workspaceName)
+						.then ( world => {
+							console.log("dbLayers remove layer: 3a. got the world: " + world.name);
+							// update the layerId list (pull the layer's Id from the layersId field in the world)
+							return updateWorldLayersId(world._id, req.params.layerId, 'removeFromArray');
+						})
+						.then ( world => {
+							console.log("dbLayers remove layer: 3b. update the world layerID array!" + JSON.stringify(world.layersId));
+							// 4. delete the layer from GeoServer:
+							console.log("dbLayers remove layer: 4. start to delete layer from the GeoServer!");
+							return removeLayerFromGeoserver(removedLayerData.resourceUrl, removedLayerData.storeUrl)
+								.then( response => {
+									console.log("dbLayers remove layer: 4b. deleted the store: " + removedLayerData.storeUrl);
+									res.send(response);
+								})
+								.catch(error => {
+									const consoleMessage = `db LAYER: REMOVE layer's store ERROR!: ${error}`;
+									const sendMessage = `layer ${req.params.layerId} can't be found!`;
+									handleError(res, 404, consoleMessage, sendMessage);
+								})
+						})
+						.catch( error => {
+							const consoleMessage = `db LAYER: ERROR to find the World in DataBase!: ${error}`;
+							const sendMessage = `Failed to find ${removedLayerData.workspaceName} workspace!`;
+							handleError(res, 404, consoleMessage, sendMessage);
+						})
+				})
+				.catch( error => {
+					const consoleMessage = `db LAYER: ERROR to REMOVE LAYER from DataBase!: ${error}`;
+					const sendMessage = `Failed to delete layer id: ${req.params.layerId}!`;
+					handleError(res, 500, consoleMessage, sendMessage);
+				});
 });
 
 module.exports = router;

@@ -9,7 +9,7 @@ const findLayers = (layersId, $gte, $lte, $geometry) => {
 	console.log({ $gte, $lte });
 	return layerModel.find({
 		$or: layersId.map((_id) => ({_id})),
-		date: {$gte, $lte},
+		'fileData.fileCreatedDate': {$gte, $lte},
 		'footprint.geometry': {$geoWithin: {$geometry}}
 	});
 };

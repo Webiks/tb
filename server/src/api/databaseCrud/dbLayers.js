@@ -37,7 +37,7 @@ const updateWorldLayersId = (_id, layerId, operation) =>
 // ===========
 const findLayerById = (_id) => dbLayerCrud.get({ _id });
 
-// parse layer
+// parse layer data
 const parseLayerDetails = (worldLayer, data) => {
 	worldLayer.data = data;
 	// set the latLonBoundingBox
@@ -115,6 +115,7 @@ const getStoreDataFromGeoserver = (worldLayer, storeUrl) => {
 			// get the store data according to the layer's type
 			let url;
 			if (worldLayer.layer.type.toLowerCase() === 'raster') {
+				console.log("dbLayer get RASTER data...");
 				worldLayer.store = store.coverageStore;
 				// translate map to an object
 				worldLayer.store = {
@@ -122,10 +123,12 @@ const getStoreDataFromGeoserver = (worldLayer, storeUrl) => {
 						namespace: store.coverageStore.connectionParameters.entry.$
 					}
 				};
-				url = store.coverageStore.url;                                          // set the file path
+				url = store.coverageStore.url;                                          // for the file path
 				worldLayer.store.format = store.coverageStore.type.toUpperCase();       // set the store format
+				console.log("dbLayer url = " + url);
 			}
 			else if (worldLayer.layer.type.toLowerCase() === 'vector') {
+				console.log("dbLayer get VECTOR data...");
 				worldLayer.store = store.dataStore;
 				// translate map to an object
 				worldLayer.store = {
@@ -134,7 +137,7 @@ const getStoreDataFromGeoserver = (worldLayer, storeUrl) => {
 						url: store.dataStore.connectionParameters.entry[1].$
 					}
 				};
-				url = worldLayer.store.connectionParameters.url;                        // set the file path
+				url = worldLayer.store.connectionParameters.url;                        // for the file path
 				worldLayer.store.format = store.dataStore.type.toUpperCase();           // set the store format
 			}
 			else {
@@ -144,16 +147,16 @@ const getStoreDataFromGeoserver = (worldLayer, storeUrl) => {
 			worldLayer.store.storeId = worldLayer.layer.storeId;
 			worldLayer.store.name = worldLayer.layer.storeName;
 			worldLayer.store.type = worldLayer.layer.type;
+			console.log("dbLayer store data: " + worldLayer.store.storeId + ', ' + worldLayer.store.type);
 
 			// set the file path
-			// const dirPath = (configParams.uploadFilesUrl.replace(/%20/g, " ")).replace(/%2E/g, ".");
-			worldLayer.layer.filePath = `${configParams.uploadFilesUrl}/${url.split(':')[1]}`;
+			worldLayer.filePath = `${configParams.uploadFilesUrl}/${url.split(':')[1]}`;
 
-			// set the file name and extension
-			const path = worldLayer.layer.filePath;
-			worldLayer.layer.fileExtension = path.substring(path.lastIndexOf('.'));
-			worldLayer.layer.fileName = `${worldLayer.store.name}${worldLayer.layer.fileExtension}`;
-
+			// set the file name
+			const path = worldLayer.filePath;
+			const extension = path.substring(path.lastIndexOf('.'));
+			worldLayer.fileName = `${worldLayer.store.name}${extension}`;
+			console.log("dbLayer fileName: " + worldLayer.fileName);
 			// return the world-layer with all the data from GeoServer
 			return worldLayer;
 		})
@@ -183,7 +186,7 @@ const removeLayerFromGeoserver = (resourceUrl, storeUrl) => {
 // ==============
 // create a new layer in the DataBase(passing a new worldLayer object in the req.body)
 router.post('/:layerName', (req, res) => {
-        console.log('db WORLD SERVER: start to CREATE new World in the DataBase...' + req.body.name);
+        console.log('db LAYER SERVER: start to CREATE new Layer in the DataBase...' + req.body.name);
         // 1. create the new layer in the Layers list and get the layer id (from mongoDB)
         dbLayerCrud.add(req.body)
             .then( newLayer => {
@@ -276,6 +279,7 @@ router.get('/geoserver/:workspaceName/:layerName', (req, res) => {
 				})
 				.then ( storeUrl => {
 					// 3. get the store's data
+					console.log("dbLayer storeUrl: " + storeUrl);
 					return getStoreDataFromGeoserver(worldLayer, storeUrl)
 				})
 				.then( worldLayer => res.send(worldLayer))

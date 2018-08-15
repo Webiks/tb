@@ -42,9 +42,6 @@ const layer = {
     } ,
     storeId: String ,                               // get from the details page (RASTER/VECTOR) store's name field
     storeName: String ,                             // get from the store's name field
-    filePath: String ,                              // get from the store's url field
-    fileName: String ,                              // get from the store's url field
-    fileExtension: String                           // get from the store's url field
 };
 
 // STORE: from GeoServer - Store page (coveragestores(RASTER) / datastores(VECTOR))
@@ -183,29 +180,31 @@ const data = {
     }
 };
 
-// IMAGE DATA: data from the image file
-const imageData = {
-    file: {
-        name: String,
-        size: Number,                           // MB or KB
-        dateModified: {type: Date, default: Date.now},
-        // dateCreated: {type: Date, default: Date.now},
-        // type: String,                           // TIF or SHX
-        // folderPath: String,
-        // attribute: String
-    }
-    // image: {
-    //     width: Number,                          // pixels
-    //     height: Number,                         // pixels
-    //     horizontalResolution: Number,           // dpi
-    //     verticalResolution: Number,             // dpi
-    //     bitDepth: Number,
-    //     compression: String
-    // },
-    // photo: {
-    //     photometricInterpretation: String       // RGB
-    // }
+// FILE DATA: data from the upload file
+const fileData = {
+		name: String,
+		size: Number,                           // MB or KB
+		// type: String,                      	  // 'image/tiff' for raster
+		lastModified: Number,										// the file created date in number
+		fileCreatedDate: Date | String,					// the file created date
+		fileUploadDate: Date | String,						// the upload file date
+		fileExtension: String
 };
+
+// IMAGE DATA: data from the image file
+// const imageData = {
+//     image: {
+//         width: Number,                          // pixels
+//         height: Number,                         // pixels
+//         horizontalResolution: Number,           // dpi
+//         verticalResolution: Number,             // dpi
+//         bitDepth: Number,
+//         compression: String
+//     },
+//     photo: {
+//         photometricInterpretation: String       // RGB
+//     }
+// };
 
 // INPUT DATA: data from the user
 const inputData = {
@@ -228,12 +227,15 @@ const LayerSchema = new Schema({
     worldLayerId: String ,                          // workspaceName: layername , unique : true
     name: String ,                                  // from GeoServer
     href: String ,                                  // href to the Layer page
-    date: Date,
+		fileName: String,
+		filePath: String,
+    // date: Date,
     footprint,
     layer,
     store,
     data,
-    imageData,
+		fileData,
+    // imageData,
     inputData
 });
 

@@ -66,17 +66,7 @@ class LayerEditor extends React.Component {
                 const layer = { ...this.state.worldLayer };
                 layer.layer[property] = value;
                 this.setState({ worldLayer: { ...layer }});
-            case ('imageData'):
-                const imageData = { ...this.state.worldLayer };
-                const subField = split[2];
-                property = split[3];
-                if (subField === 'file'){
-                    imageData.imageData.file[property] = value;
-                }
-                else if (subField === 'image'){
-                    imageData.imageData.image[property] = value;
-                }
-                this.setState({ worldLayer: { ...imageData }});
+
             case ('inputData'):
                 const inputData = { ...this.state.worldLayer };
                 if (property === 'sensor') {
@@ -92,6 +82,11 @@ class LayerEditor extends React.Component {
                     inputData.inputData[property] = value;
                 }
                 this.setState({ worldLayer: { ...inputData }});
+
+            case ('fileData'):
+                const fileData = { ...this.state.worldLayer };
+                fileData.fileData[property] = value;
+                this.setState({ worldLayer: { ...fileData }});
         }
     };
 
@@ -124,7 +119,7 @@ class LayerEditor extends React.Component {
             return value0 + ', ' + value1;
         }
         else if (rowData.path.includes('size')){
-            return (this.state.worldLayer.imageData.file.size / 1000).toFixed(0);
+            return (this.state.worldLayer.fileData.size / 1000).toFixed(0);
         }
         else {
             return get(this.state, rowData.path)

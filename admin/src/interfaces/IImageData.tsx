@@ -1,17 +1,6 @@
 export interface IImageData {
-    file: IFile,
     image?: IImage,
     photo?: IPhoto
-}
-
-export interface IFile {
-    name: string,
-    type?: string,                            // TIF or SHX
-    folderPath?: string,
-    // dateCreated: Date | any,
-    dateModified: Date | any,
-    size: number,                           // MB or KB
-    attribute?: string
 }
 
 export interface IImage {

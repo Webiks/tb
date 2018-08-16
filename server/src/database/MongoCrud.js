@@ -80,7 +80,7 @@ class MongoCrud {
     getListByQuery (query, selector) {
         return new Promise((resolve, reject) => {
             try {
-                this.mongoModel.find(query, selector).toArray((err, listReturn) => {
+                this.mongoModel.find(query, selector,(err, listReturn) => {
                     if (err) {
                         this.handleError(reject, err, `FIND-LIST(by query) error: ${err}`);
                     }

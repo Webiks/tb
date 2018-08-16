@@ -5,7 +5,7 @@ import { IWorldLayer } from "../interfaces/IWorldLayer";
 
 export class LayerService {
 
-    static baseUrl: string = `${config.baseUrl.path}/${config.baseUrl.api}/dbLayers`;
+    static baseUrl: string = `${config.baseUrl}/api/dbLayers`;
 
     // Handle ERRORS
     static handleError = (error, message) => {

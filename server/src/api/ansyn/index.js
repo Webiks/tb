@@ -24,9 +24,9 @@ const fetchLayers = (req, res) => {
 		})
 		.then((world) => {
 			const layers = world.layersId,
-						start = Date.parse(req.body.dates.start),
-						end = Date.parse(req.body.dates.end),
-						geometry = req.body.geometry;
+				start = Date.parse(req.body.dates.start),
+				end = Date.parse(req.body.dates.end),
+				geometry = req.body.geometry;
 			return findLayers(layers, start, end, geometry)
 				.then((layers) => res.send(layers));
 		})

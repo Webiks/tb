@@ -165,7 +165,7 @@ class WorldsDataTable extends React.Component {
                 {
                 this.props.worldsList &&
                 <div>
-                    <DataTable  id="dataTable" value={this.props.worldsList} paginator={true} rows={10} responsive={true}
+                    <DataTable  id="dataTable" value={this.props.worldsList} paginator={true} rows={30} responsive={true}
                                 resizableColumns={true} autoLayout={true} style={{margin:'10px 20px'}}
                                 header={<DataTableHeader title={'Worlds List'} setGlobalFilter={this.setGlobalFilter}/>}
                                 footer={footer}

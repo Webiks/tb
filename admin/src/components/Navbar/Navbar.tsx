@@ -22,13 +22,7 @@ import {
 } from '@material-ui/core';
 import { Home } from '@material-ui/icons';
 import { connect } from 'react-redux';
-import { withStyles } from '@material-ui/core/styles';
 
-const styles = {
-    fontBiggerSize: {
-        fontSize: '200px'
-    }
-};
 class Navbar extends React.Component {
     props: any;
     state = { open: false };
@@ -44,12 +38,16 @@ class Navbar extends React.Component {
 
         return <AppBar color="primary" >
             <Toolbar className="root">
-
-                <Tooltip className='fontBiggerSize' title="Back to Worlds list">
-                    <IconButton id="home" className="menuButton" color="inherit" aria-label="Menu" onClick={ () => this.props.push('/') }>
-                        <Home/>
-                    </IconButton>
-                </Tooltip>
+                {
+                    this.props.isAuthenticated ?
+                        <Tooltip title="Back to Worlds list">
+                            <IconButton id="home" className="menuButton" color="inherit" aria-label="Menu"
+                                        onClick={() => this.props.push('/')}>
+                                <Home/>
+                            </IconButton>
+                        </Tooltip>
+                        : null
+                }
 
                 <Typography variant="title" color="inherit" className="flex">
                     TB
@@ -61,7 +59,7 @@ class Navbar extends React.Component {
                             <Manager>
                                 <Target>
                                     <div ref={node => { this.target1 = node; }}>
-                                        <Tooltip title="Logout">
+                                        <Tooltip title="Menu">
                                             <IconButton color="inherit"
                                                         aria-label="Logout"
                                                         aria-owns="menu-user"
@@ -104,4 +102,4 @@ class Navbar extends React.Component {
 const mapStateToProps = (state: IState, props: any): any => ({ isAuthenticated: state.login.isAuthenticated });
 const mapDispatchToProps = (dispatch: any) => bindActionCreators({ SetAuth, push }, dispatch);
 
-export default withStyles(styles)(connect(mapStateToProps, mapDispatchToProps)(Navbar));
+export default connect(mapStateToProps, mapDispatchToProps)(Navbar);

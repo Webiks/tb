@@ -164,7 +164,7 @@ class LayersDataTable extends React.Component {
                 {
                     this.props.layers &&
                     <div>
-                        <DataTable  value={this.props.layers} paginator={true} rows={10} responsive={false}
+                        <DataTable  value={this.props.layers} paginator={true} rows={30} responsive={false}
                                     resizableColumns={true} autoLayout={true} style={{margin:'10px 20px'}}
                                     header={<DataTableHeader title={`${this.props.worldName} World's Files List`} setGlobalFilter={this.setGlobalFilter}/>}
                                     footer={<UploadFile worldName={this.props.worldName}/>}

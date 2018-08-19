@@ -41,7 +41,8 @@ module.exports = function() {
         const importObject = this.createImportObject(workspaceName);
         const data = {
             type: `"file"`,
-            file: `"${filePath}"`
+            file: `"${filePath}"`,
+						format: `"Shapefile"`
         };
         console.log("import object with data");
         return { ...importObject, data};

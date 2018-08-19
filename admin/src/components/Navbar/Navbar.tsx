@@ -101,4 +101,4 @@ class Navbar extends React.Component {
 const mapStateToProps = (state: IState, props: any): any => ({ isAuthenticated: state.login.isAuthenticated });
 const mapDispatchToProps = (dispatch: any) => bindActionCreators({ SetAuth, push }, dispatch);
 
-export default withStyles(styles)(connect(mapStateToProps, mapDispatchToProps)(Navbar));
+export default connect(mapStateToProps, mapDispatchToProps)(Navbar);

@@ -182,7 +182,7 @@ class LayerEditor extends React.Component {
                 {
                     this.state.worldLayer && <div className="content-section implementation"
                                                   style={{ textAlign: 'left', width: '70%', margin: 'auto' }}>
-                        <DataTable value={LayerPropertiesList} paginator={true} rows={10} responsive={false}
+                        <DataTable value={LayerPropertiesList} paginator={true} rows={30} responsive={false}
                                    header={<DataTableHeader title={'File Editor'} setGlobalFilter={this.setGlobalFilter}/>}
                                    globalFilter={this.state.globalFilter}
                                    footer={editorFooter} style={{ margin: '10px 20px' }}>

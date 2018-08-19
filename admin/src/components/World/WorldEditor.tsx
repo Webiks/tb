@@ -210,6 +210,7 @@ class WorldEditor extends React.Component {
                             <div className="ui-grid-col-8" style={{padding:'4px 10px'}}>
                                 <InputText id="name" required={true} requiredmessage="a name is must be given!"
                                            value={this.state.world.name}
+                                           placeholder={"world name - required!"}
                                            onChange={(e: any) => {this.updateProperty('name', e.target.value)}}/>
                             </div>
                         </div>
@@ -218,25 +219,36 @@ class WorldEditor extends React.Component {
                             <div className="ui-grid-col-8" style={{padding:'4px 10px'}}>
                                 <InputText type="password" id="name" required={true} requiredmessage="a password is must be given!"
                                            value={this.state.world.password}
+                                           placeholder={"password - required!"}
                                            onChange={(e: any) => {this.updateProperty('password', e.target.value)}}/>
                             </div>
                         </div>
                         <div className="ui-grid-row">
                             <div className="ui-grid-col-4" style={{padding:'4px 10px'}}><label htmlFor="country">Country</label></div>
                             <div className="ui-grid-col-8" style={{padding:'4px 10px'}}>
-                                <InputText id="country" onChange={(e: any) => {this.updateProperty('country', e.target.value)}} value={this.state.world.country}/>
+                                <InputText id="country"
+                                           value={this.state.world.country}
+                                           placeholder={"country"}
+                                           onChange={(e: any) => {this.updateProperty('country', e.target.value)}}/>
+
                             </div>
                         </div>
                         <div className="ui-grid-row">
                             <div className="ui-grid-col-4" style={{padding:'4px 10px'}}><label htmlFor="desc">Description</label></div>
                             <div className="ui-grid-col-8" style={{padding:'4px 10px'}}>
-                                <InputText id="desc" onChange={(e: any) => {this.updateProperty('desc', e.target.value)}} value={this.state.world.desc}/>
+                                <InputText id="desc"
+                                           value={this.state.world.desc}
+                                           placeholder={"description of the world"}
+                                           onChange={(e: any) => {this.updateProperty('desc', e.target.value)}}/>
                             </div>
                         </div>
                         <div className="ui-grid-row">
                             <div className="ui-grid-col-4" style={{padding:'4px 10px'}}><label htmlFor="directory">Directory</label></div>
                             <div className="ui-grid-col-8" style={{padding:'4px 10px'}}>
-                                <InputText id="directory" onChange={(e: any) => {this.updateProperty('directory', e.target.value)}} value={this.state.world.directory}/>
+                                <InputText id="directory"
+                                           value={this.state.world.directory}
+                                           placeholder={"the world's directory"}
+                                           onChange={(e: any) => {this.updateProperty('directory', e.target.value)}}/>
                             </div>
                         </div>
                     </div>}

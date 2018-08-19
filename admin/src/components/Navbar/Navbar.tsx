@@ -1,5 +1,13 @@
 import * as React from 'react';
 import './Navbar.css';
+import { IState } from '../../store';
+import { SetAuth } from '../../actions/login.actions';
+import { bindActionCreators } from 'redux';
+import LoginService from '../Login/LoginService';
+import { Popper, Manager, Target } from 'react-popper';
+import { push } from 'react-router-redux';
+
+/* Material-ui components */
 import {
     AppBar,
     ClickAwayListener,
@@ -9,17 +17,18 @@ import {
     Menu,
     MenuItem, MenuList, Paper,
     Toolbar,
-    Typography
+    Typography,
+    Tooltip
 } from '@material-ui/core';
 import { Home } from '@material-ui/icons';
 import { connect } from 'react-redux';
-import { IState } from '../../store';
-import { SetAuth } from '../../actions/login.actions';
-import { bindActionCreators } from 'redux';
-import LoginService from '../Login/LoginService';
-import { Popper, Manager, Target } from 'react-popper';
-import { push } from 'react-router-redux';
+import { withStyles } from '@material-ui/core/styles';
 
+const styles = {
+    fontBiggerSize: {
+        fontSize: '200px'
+    }
+};
 class Navbar extends React.Component {
     props: any;
     state = { open: false };
@@ -33,12 +42,14 @@ class Navbar extends React.Component {
     render() {
         const open = Boolean(this.state.open);
 
-        return <AppBar color="primary" title="My App">
+        return <AppBar color="primary" >
             <Toolbar className="root">
 
-                <IconButton className="menuButton" color="inherit" aria-label="Menu" onClick={ () => this.props.push('/') }>
-                    <Home/>
-                </IconButton>
+                <Tooltip className='fontBiggerSize' title="Back to Worlds list">
+                    <IconButton id="home" className="menuButton" color="inherit" aria-label="Menu" onClick={ () => this.props.push('/') }>
+                        <Home/>
+                    </IconButton>
+                </Tooltip>
 
                 <Typography variant="title" color="inherit" className="flex">
                     TB
@@ -49,17 +60,15 @@ class Navbar extends React.Component {
                         <div>
                             <Manager>
                                 <Target>
-                                    <div
-                                        ref={node => {
-                                            this.target1 = node;
-                                        }}
-                                    >
-                                        <IconButton color="inherit"
-                                                    aria-label="Logout"
-                                                    aria-owns="menu-user"
-                                                    onClick={(event) => this.setState({ open: true })}>
-                                            <Icon className="fa fa-user"/>
-                                        </IconButton>
+                                    <div ref={node => { this.target1 = node; }}>
+                                        <Tooltip title="Logout">
+                                            <IconButton color="inherit"
+                                                        aria-label="Logout"
+                                                        aria-owns="menu-user"
+                                                        onClick={(event) => this.setState({ open: true })}>
+                                                <Icon className="fa fa-user"/>
+                                            </IconButton>
+                                        </Tooltip>
                                     </div>
                                 </Target>
                                 <Popper
@@ -95,4 +104,4 @@ class Navbar extends React.Component {
 const mapStateToProps = (state: IState, props: any): any => ({ isAuthenticated: state.login.isAuthenticated });
 const mapDispatchToProps = (dispatch: any) => bindActionCreators({ SetAuth, push }, dispatch);
 
-export default connect(mapStateToProps, mapDispatchToProps)(Navbar);
+export default withStyles(styles)(connect(mapStateToProps, mapDispatchToProps)(Navbar));

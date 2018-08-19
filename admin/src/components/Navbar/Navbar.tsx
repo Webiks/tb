@@ -48,7 +48,6 @@ class Navbar extends React.Component {
                         </Tooltip>
                         : null
                 }
-
                 <Typography variant="title" color="inherit" className="flex">
                     TB
                 </Typography>
@@ -102,4 +101,4 @@ class Navbar extends React.Component {
 const mapStateToProps = (state: IState, props: any): any => ({ isAuthenticated: state.login.isAuthenticated });
 const mapDispatchToProps = (dispatch: any) => bindActionCreators({ SetAuth, push }, dispatch);
 
-export default connect(mapStateToProps, mapDispatchToProps)(Navbar);
+export default withStyles(styles)(connect(mapStateToProps, mapDispatchToProps)(Navbar));

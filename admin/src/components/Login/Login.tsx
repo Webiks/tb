@@ -60,7 +60,7 @@ class Login extends React.Component {
                         />
                     </FormControl>
 
-                    <br/>
+                    <br/><br/>
 
                     <FormControl>
                         <InputLabel htmlFor="password">Password</InputLabel>
@@ -87,7 +87,7 @@ class Login extends React.Component {
                     <br/>
 
                     <FormControl>
-                        <Button variant="raised" type="submit" style={{ margin: 15 }} color="primary">Submit</Button>
+                        <Button variant="raised" type="submit" style={{ margin: 15 }} color="primary">Log In</Button>
                     </FormControl>
                 </form>
 

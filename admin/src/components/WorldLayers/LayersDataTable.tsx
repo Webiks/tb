@@ -22,6 +22,7 @@ import { DataTable } from 'primereact/components/datatable/DataTable';
 import { Column } from 'primereact/components/column/Column';
 import { Button } from 'primereact/components/button/Button';
 import { Dialog } from 'primereact/components/dialog/Dialog';
+import { Tooltip } from 'primereact/components/tooltip/Tooltip';
 
 export interface IPropsLayers {
     worldName: string,
@@ -36,7 +37,9 @@ export interface IStateTable {
     selectedLayer: any,
     displayMapWindow: boolean,
     displayAlert: boolean,
-    globalFilter: any
+    globalFilter: any,
+    title: string,
+    tooltipPosition: string
 }
 
 class LayersDataTable extends React.Component {
@@ -48,7 +51,9 @@ class LayersDataTable extends React.Component {
         selectedLayer: null,
         displayMapWindow: false,
         displayAlert: false,
-        globalFilter: ''
+        globalFilter: '',
+        title: null,
+        tooltipPosition: 'bottom'
     };
 
     // set state to initial state
@@ -56,7 +61,9 @@ class LayersDataTable extends React.Component {
         this.setState({
             selectedLayer: null,
             displayMapWindow: false,
-            displayAlert: false
+            displayAlert: false,
+            title: null,
+            tooltipPosition: 'bottom'
         });
 
     setDisplayMap = (value) => this.setState({ displayMapWindow: value });
@@ -110,14 +117,34 @@ class LayersDataTable extends React.Component {
 
     setGlobalFilter = (e: any) => this.setState({globalFilter: e.target.value});
 
+    onTooltipPosition = (e) => {
+        const element = e.originalEvent.target;
+
+        switch(element.id) {
+            case "preview":
+                this.setState({ title: "Preview" });
+                break;
+            case "edit":
+                this.setState({ title: "Edit" });
+                break;
+            case "delete":
+                this.setState({ title: "Delete" });
+                break;
+            default:
+                break;
+        }
+    };
+
     actionsButtons = (rowData: any, column: any) => {
         return (
             <div className="ui-button-icon ui-helper-clearfix">
-                <Button type="button" icon="fa fa-search" className="ui-button-success" style={{margin: '3px 7px'}}
+                <Tooltip for={["#preview", "#edit", "#delete"]} title={this.state.title} tooltipPosition={this.state.tooltipPosition}
+                         onBeforeShow={(e) => this.onTooltipPosition(e)}/>
+                <Button type="button" id="preview" icon="fa fa-search" className="ui-button-success" style={{margin: '3px 7px'}}
                         onClick={() => this.setState({selectedLayer: rowData, displayMapWindow: true})}/>
-                <Button type="button" icon="fa fa-edit" className="ui-button-warning" style={{margin: '3px 7px'}}
+                <Button type="button" id="edit" icon="fa fa-edit" className="ui-button-warning" style={{margin: '3px 7px'}}
                         onClick={() => this.editLayer(rowData)}/>
-                <Button type="button" icon="fa fa-close" style={{margin: '3px 7px'}}
+                <Button type="button" id="delete" icon="fa fa-close" style={{margin: '3px 7px'}}
                         onClick={() => this.deleteLayer(rowData.layer)}/>
             </div>
         );

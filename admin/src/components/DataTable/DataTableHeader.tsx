@@ -32,7 +32,7 @@ class DataTableHeader extends React.Component {
                 <div style={{'textAlign':'center'}}>
                     <i className="fa fa-search" style={{margin:'4px 4px 0 0'}}/>
                     <InputText id='search' type="search"
-                               onChange={this.props.setGlobalFilter} placeholder="Global Search" size={30}/>
+                               onChange={this.props.setGlobalFilter} placeholder="Search" size={30}/>
                 </div>
             </header>
         );

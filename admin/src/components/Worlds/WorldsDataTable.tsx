@@ -18,6 +18,7 @@ import { DataTable } from 'primereact/components/datatable/DataTable';
 import { Column } from 'primereact/components/column/Column';
 import { Button } from 'primereact/components/button/Button';
 import { Dialog } from 'primereact/components/dialog/Dialog';
+import { Tooltip } from 'primereact/components/tooltip/Tooltip';
 
 export interface IPropsWorldsTable {
     worldsList: IWorld[],
@@ -29,7 +30,9 @@ export interface IStateWorldsTable {
     selectedWorld: any,
     displayEditor: boolean,
     displayAlert: boolean,
-    globalFilter: any
+    globalFilter: any,
+    title: string,
+    tooltipPosition: string
 }
 
 class WorldsDataTable extends React.Component {
@@ -39,7 +42,9 @@ class WorldsDataTable extends React.Component {
         selectedWorld: null,
         displayEditor: false,
         displayAlert: false,
-        globalFilter: ''
+        globalFilter: '',
+        title: null,
+        tooltipPosition: 'bottom'
     };
     newWorld: boolean = false;
 
@@ -48,7 +53,9 @@ class WorldsDataTable extends React.Component {
         this.setState({
             selectedWorld: null,
             displayEditor: false,
-            displayAlert: false
+            displayAlert: false,
+            title: null,
+            tooltipPosition: 'bottom'
         });
     };
 
@@ -112,14 +119,30 @@ class WorldsDataTable extends React.Component {
         return this.refresh(this.props.worldsList);
     };
 
+    onTooltipPosition = (e) => {
+        const element = e.originalEvent.target;
+
+        switch(element.id) {
+            case "edit":
+                this.setState({ title: "Edit" });
+                break;
+            case "delete":
+                this.setState({ title: "Delete" });
+                break;
+            default:
+                break;
+        }
+    };
+
     actionsButtons = (rowData: any, column: any) => {
         return (
             <div className="ui-button-icon ui-helper-clearfix" onClick={($event) => $event.stopPropagation()}>
-                <Button type="button" icon="fa fa-edit" className="ui-button-warning" style={{margin: '3px 7px'}}
+                <Tooltip for={["#edit", "#delete"]} title={this.state.title} tooltipPosition={this.state.tooltipPosition}
+                         onBeforeShow={(e) => this.onTooltipPosition(e)}/>
+                <Button type="button" id="edit" icon="fa fa-edit" className="ui-button-warning" style={{margin: '3px 7px'}}
                         onClick={() => this.editWorld(rowData)}/>
-                <Button type="button" icon="fa fa-close" style={{margin: '3px 7px'}}
+                <Button type="button" id="delete" icon="fa fa-close" style={{margin: '3px 7px'}}
                         onClick={() => this.deleteWorld(rowData)}/>
-
             </div>
         );
     };
@@ -127,7 +150,7 @@ class WorldsDataTable extends React.Component {
     render(){
 
         const footer = <div className="ui-helper-clearfix" style={{width:'100%'}}>
-            <Button icon="fa fa-plus" label="Add" onClick={this.addNew} style={{margin:'auto'}}/>
+            <Button icon="fa fa-plus" label="Create new World" onClick={this.addNew} style={{margin:'auto'}}/>
         </div>;
 
         const alertFooter = (
@@ -142,7 +165,7 @@ class WorldsDataTable extends React.Component {
                 {
                 this.props.worldsList &&
                 <div>
-                    <DataTable  value={this.props.worldsList} paginator={true} rows={10} responsive={true}
+                    <DataTable  id="dataTable" value={this.props.worldsList} paginator={true} rows={10} responsive={true}
                                 resizableColumns={true} autoLayout={true} style={{margin:'10px 20px'}}
                                 header={<DataTableHeader title={'Worlds List'} setGlobalFilter={this.setGlobalFilter}/>}
                                 footer={footer}
@@ -150,9 +173,9 @@ class WorldsDataTable extends React.Component {
                                 selectionMode="single" selection={this.state.selectedWorld}
                                 onSelectionChange={(e: any)=> this.setState({selectedLayer: e.data})}
                                 onRowSelect={this.goToSelectedWorld}>
-                        <Column field="name" header="Name" sortable={true} style={{textAlign:'left', padding:'7px 20px', width: '20%'}}/>
-                        <Column field="country" header="Country"  style={{width: '15%'}}/>
-                        <Column field="desc" header="Description" sortable={false}/>
+                        <Column className="name" field="name" header="Name" sortable={true} style={{textAlign:'left', padding:'7px 20px', width: '20%'}}/>
+                        <Column className="country" field="country" header="Country"  style={{width: '15%'}}/>
+                        <Column className="desc" field="desc" header="Description" sortable={false}/>
                         <Column header="Actions" body={this.actionsButtons} style={{width: '12%'}} />
                     </DataTable>
                 </div>

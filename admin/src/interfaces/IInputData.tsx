@@ -1,6 +1,7 @@
 import { AFFILIATION_TYPES } from '../consts/layer-types';
 
 export interface IInputdata {
+    fileName: string,
     affiliation?: AFFILIATION_TYPES,
     GSD?: number,                        // units: cm (raster only)
     flightAltitude?: number,             // units: meters

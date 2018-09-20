@@ -155,21 +155,21 @@ export class LayerService {
     }
 
     // 2. get data from the image file
-    static getImageData(url: string): Promise<any> {
-        console.log("geotiff: " + GeoTIFF);
-        return GeoTIFF.fromUrl("file://C:/dev/Terrabiks/geoserver/rasters/SugarCane.tif")
-            .then( tiff => {
-                console.log("geotiff tiff: " + JSON.stringify(tiff));
-                tiff.getImage()
-                    .then( image => {
-                        console.log("geotiff image: " + JSON.stringify(image));
-                        const raster = image.readRasters();
-                        console.log("geotiff raster: " + JSON.stringify(raster));
-                        return raster;
-                    })
-                    .catch(error => this.handleError(error, "LAYER SERVICE: Get Image Data error: " + error));
-            });
-    }
+    // static getImageData(url: string): Promise<any> {
+    //     console.log("geotiff: " + GeoTIFF);
+    //     return GeoTIFF.fromUrl("file://C:/dev/Terrabiks/geoserver/rasters/SugarCane.tif")
+    //         .then( tiff => {
+    //             console.log("geotiff tiff: " + JSON.stringify(tiff));
+    //             tiff.getImage()
+    //                 .then( image => {
+    //                     console.log("geotiff image: " + JSON.stringify(image));
+    //                     const raster = image.readRasters();
+    //                     console.log("geotiff raster: " + JSON.stringify(raster));
+    //                     return raster;
+    //                 })
+    //                 .catch(error => this.handleError(error, "LAYER SERVICE: Get Image Data error: " + error));
+    //         });
+    // }
 
     // get Capabilities (from Geoserver)
     static getCapabilities (workspaceName: string, layerName: string): Promise<any> {

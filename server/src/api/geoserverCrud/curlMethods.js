@@ -11,129 +11,214 @@ const curlAcceptHeader = '-H  "accept:application/json"';
 
 module.exports = function() {
 
-    //====================
-    //  create JSON Files
-    //====================
-    // create the Workspace Json file for creating a new workspace
-    this.createWorkspaceObject = (workspaceName) => {
-        return {
-            workspace: {
-                name: workspaceName
-            }
-        };
-    };
+	//====================
+	//  create JSON Files
+	//====================
+	// create the Workspace Json file for creating a new workspace
+	this.createWorkspaceObject = (workspaceName) => {
+		return {
+				workspace: {
+						name: workspaceName
+				}
+		};
+	};
 
-    // create the import Json file for uploading files (Rasters or Vectors)
-    this.createImportObject = (workspaceName) => {
-        return {
-            import: {
-                targetWorkspace: {
-                    workspace: {
-                        name: `"${workspaceName}"`
-                    }
-                }
-            }
-        };
-    };
+	// create the Workspace Json file for creating a new workspace
+	this.createTargetWorkspaceObject = (workspaceName) => {
+		return {
+				workspace: {
+					name: `"${workspaceName}"`
+				}
+		};
+	};
 
-    // adding the data inside the import Json file for uploading Vectors
-    this.createImportObjectWithData = (workspaceName, filePath) => {
-        const importObject = this.createImportObject(workspaceName);
-        const data = {
-            type: `"file"`,
-            file: `"${filePath}"`,
-						format: `"Shapefile"`
-        };
-        console.log("import object with data");
-        return { ...importObject, data};
-    };
+	// create the import Json file for uploading files (Rasters or Vectors)
+	this.createImportObject = (workspaceName) => {
+		return {
+			import: {
+				targetWorkspace: this.createTargetWorkspaceObject(workspaceName)
+			}
+		}
+	};
 
-    // update the missing projection when uploading a .SHP file
-    this.createLayerSrsUpdate = () => {
-        return {
-            layer: {
-                srs: `"EPSG:4326"`
-            }
-        }
-    };
+	// adding the data inside the import Json file for uploading Vectors
+	this.createImportObjectWithData = (workspaceName, filePath) => {
+		console.log("import object with data");
+		return {
+			import: {
+				targetWorkspace: this.createTargetWorkspaceObject(workspaceName),
+				data: {
+					type: `"file"`,
+					format: `"Shapefile"`,
+					file: `"${filePath}"`
+				}
+			}
+		}
+	};
 
-    //============
-    //  WORKSPACE
-    //============
-    // CREATE a new workspace in geoserver
-    this.createNewWorkspaceInGeoserver = (workspaceJsonFile) => {
-        console.log("Creating a new Workspace using the cURL...");
-        const curl_createWorkspace = `${baseCurl} -XPOST ${curlContentTypeHeader} -d "${workspaceJsonFile}" ${configUrl.baseWorkspacesUrlGeoserver}`;
-        console.log("succeed to create a new workspace in geoserver..." + curl_createWorkspace);
-        return execSync(curl_createWorkspace);
-    };
+	// SHP file: update the missing format in the DATA field, when getting state: 'NO_FORMAT'
+	this.dataFormatUpdate = () => {
+		return {
+			data: {
+				format: `"Shapefile"`
+			}
+		}
+	};
 
-    // UPDATE the workspace's name in geoserver
-    this.updateWorkspaceInGeoserver = (workspaceName, newName) => {
-        console.log("Updateing Workspace's name using the cURL...");
-        const curl_updateWorkspace = `${baseCurl} -XPUT ${configUrl.baseWorkspacesUrlGeoserver}/${workspaceName} ${curlAcceptHeader} ${curlContentTypeHeader} -d "{ \"name\": \"${newName}\" }"`;
-        console.log(`succeed to update ${workspaceName} workspace to ${newName} ... ${curl_updateWorkspace}`);
-        return execSync(curl_updateWorkspace);
-    };
 
-    // DELETE a workspace from geoserver
-    this.deleteWorkspaceFromGeoserver = (workspaceName) => {
-        console.log(`Deleting ${workspaceName} Workspace using the cURL...`);
-        const curl_deleteWorkspace = `${baseCurl} -XDELETE ${configUrl.baseWorkspacesUrlGeoserver}/${workspaceName}?recurse=true ${curlAcceptHeader} ${curlContentTypeHeader}`;
-        console.log("succeed to delete workspace " + curl_deleteWorkspace + " from geoserver");
-        return execSync(curl_deleteWorkspace);
-    };
+	// SHP file: update the missing projection in the LAYER field, when getting state: 'NO_CRS'
+	this.layerSrsUpdate = () => {
+		return {
+			layer: {
+				srs: `"EPSG:4326"`
+			}
+		}
+	};
 
-    //============
-    //   LAYERS
-    //============
-    // upload new layer to geoserver by the importer extension
-    this.getImportObj = (importJson) => {
-        console.log("Upload File using the cURL...");
-        // 1. create a empty import with no store as the target
-        const curl_createEmptyImport = `${baseCurl} -XPOST ${curlContentTypeHeader} -d "${importJson}" ${configUrl.reqImportCurl}`;
-        console.log("step 1 is DONE..." + curlContentTypeHeader);
-        const importJSON = execSync(curl_createEmptyImport);
-        const importObj = JSON.parse(importJSON);
-        return importObj.import;
-    };
+	//============
+	//  WORKSPACE
+	//============
+	// CREATE a new workspace in geoserver
+	this.createNewWorkspaceInGeoserver = (workspaceJsonFile) => {
+			console.log("Creating a new Workspace using the cURL...");
+			const curl_createWorkspace = `${baseCurl} -XPOST ${curlContentTypeHeader} -d "${workspaceJsonFile}" ${configUrl.baseWorkspacesUrlGeoserver}`;
+			console.log("succeed to create a new workspace in geoserver..." + curl_createWorkspace);
+			return execSync(curl_createWorkspace);
+	};
 
-    this.sendToTask = (filepath, filename, importId) => {
-        //POST the GeoTiff file to the tasks list, in order to create an import task for it
-        console.log("sendToTask: filepath: " + filepath);
-        const curlFileData = `-F name=${filename} -F filedata=@${filepath}`;
-        console.log("sendToTask: curlFileData: " + curlFileData);
+	// UPDATE the workspace's name in geoserver
+	this.updateWorkspaceInGeoserver = (workspaceName, newName) => {
+			console.log("Updateing Workspace's name using the cURL...");
+			const curl_updateWorkspace = `${baseCurl} -XPUT ${configUrl.baseWorkspacesUrlGeoserver}/${workspaceName} ${curlAcceptHeader} ${curlContentTypeHeader} -d "{ \"name\": \"${newName}\" }"`;
+			console.log(`succeed to update ${workspaceName} workspace to ${newName} ... ${curl_updateWorkspace}`);
+			return execSync(curl_updateWorkspace);
+	};
 
-        const curl_postToTaskList = `${baseCurl} ${curlFileData} ${configUrl.reqImportCurl}/${importId}/tasks`;
-        console.log("sendToTask: curl_postToTaskList: " + curl_postToTaskList);
-        const taskJson = execSync(curl_postToTaskList);
-        console.log("taskJSON: " + taskJson);
-        const task = JSON.parse(taskJson);
-        console.log("sent to the Tasks Queue..." + JSON.stringify(task));
-        return task.task;
-    };
+	// DELETE a workspace from geoserver
+	this.deleteWorkspaceFromGeoserver = (workspaceName) => {
+			console.log(`Deleting ${workspaceName} Workspace using the cURL...`);
+			const curl_deleteWorkspace = `${baseCurl} -XDELETE ${configUrl.baseWorkspacesUrlGeoserver}/${workspaceName}?recurse=true ${curlAcceptHeader} ${curlContentTypeHeader}`;
+			console.log("succeed to delete workspace " + curl_deleteWorkspace + " from geoserver");
+			return execSync(curl_deleteWorkspace);
+	};
 
-    this.updateSrs = (updateSrsJson, importId, taskId) => {
-        // update the import Json file with a default projection
-        const curl_updateSrs = `${baseCurl} -XPUT ${curlContentTypeHeader} -d "${updateSrsJson}" ${configUrl.reqImportCurl}/${importId}/tasks/${taskId}/layer/`;
-        console.log("updateSrs: " + curl_updateSrs);
-        return execSync(curl_updateSrs);
-    };
+	//============
+	//   LAYERS
+	//============
+	// upload new layer to geoserver by the importer extension
 
-    this.executeFileToGeoserver = (importId) => {
-        // execute the import task
-        const curl_execute = `${baseCurl} -XPOST ${configUrl.reqImportCurl}/${importId}`;
-        const execute = execSync(curl_execute);
-        console.log("The execute is DONE..." + execute);
-        console.log("DONE!");
-    };
+	// 1. POST the import JSON file to Geoserver
+	this.postImportObj = (importJson) => {
+			// the importer will return an import object (in Vectors - also will prepare the tasks automatically)
+			console.log("Upload File using the cURL...");
+			const curl_createEmptyImport = `${baseCurl} -XPOST ${curlContentTypeHeader} -d "${importJson}" ${configUrl.reqImportCurl}`;
+			console.log("step 1 is DONE..." + curlContentTypeHeader);
+			const importJSON = execSync(curl_createEmptyImport);
+			const importObj = JSON.parse(importJSON);
+			return importObj.import;
+	};
 
-    this.deleteUncompleteImports = () => {
-        // delete the task from the importer queue
-        const curl_deletsTasks = `${baseCurl} -XDELETE ${curlAcceptHeader} ${curlContentTypeHeader} ${configUrl.reqImportCurl}`;
-        const deleteTasks = execSync(curl_deletsTasks);
-        console.log("Delete task from the Importer..." + deleteTasks);
-        console.log("DONE!");
-    };
+	this.getImportObj = (importId) => {
+		// get the import file
+		const curl_getImport = `${baseCurl} -XGET ${configUrl.reqImportCurl}/${importId}`;
+		console.log("Get the import object..." + curl_getImport);
+		const importJSON = execSync(curl_getImport);
+		const importObj = JSON.parse(importJSON);
+		return importObj.import;
+	};
 
+	this.getDataObj = (importId) => {
+		// get the Data file
+		const curl_getTask = `${baseCurl} -XGET ${configUrl.reqImportCurl}/${importId}/data`;
+		console.log("Get the task object..." + curl_getTask);
+		const taskJSON = execSync(curl_getTask);
+		const taskObj = JSON.parse(taskJSON);
+		return taskObj.task;
+	};
+
+	this.getFileObj = (importId, fileName) => {
+		// get the File data
+		const curl_getTask = `${baseCurl} -XGET ${configUrl.reqImportCurl}/${importId}/data/files/${fileName}`;
+		console.log("Get the task object..." + curl_getTask);
+		const taskJSON = execSync(curl_getTask);
+		const taskObj = JSON.parse(taskJSON);
+		return taskObj.task;
+	};
+
+	this.getTaskObj = (importId, taskId) => {
+		// get the task file
+		const curl_getTask = `${baseCurl} -XGET ${configUrl.reqImportCurl}/${importId}/tasks/${taskId}`;
+		console.log("Get the task object..." + curl_getTask);
+		const taskJSON = execSync(curl_getTask);
+		const taskObj = JSON.parse(taskJSON);
+		return taskObj.task;
+	};
+
+	this.getLayerObj = (importId, taskId) => {
+		// get the task file
+		const curl_getLayer = `${baseCurl} -XGET ${configUrl.reqImportCurl}/${importId}/tasks/${taskId}/layer`;
+		console.log("Get the layer object..." + curl_getLayer);
+		const layerJSON = execSync(curl_getLayer);
+		const layerObj = JSON.parse(layerJSON);
+		return layerObj.layer;
+	};
+
+	this.updateImportById = (updateImportJson, importId) => {
+		// update the import Json file by ID
+		const curl_updateImport = `${baseCurl} -XPUT ${curlContentTypeHeader} -d "${updateImportJson}" ${configUrl.reqImportCurl}/${importId}`;
+		console.log("updateFormat: " + curl_updateImport);
+		return execSync(curl_updateImport);
+	};
+
+	this.updateImportField = (updateImportJson, importId, fieldName) => {
+		// update the import Field
+		const curl_updateImport = `${baseCurl} -XPUT ${curlContentTypeHeader} -d "${updateImportJson}" ${configUrl.reqImportCurl}/${importId}/${fieldName}`;
+		console.log("updateFormat: " + curl_updateImport);
+		return execSync(curl_updateImport);
+	};
+
+	this.updateTaskById = (updateTaskJson, importId, taskId) => {
+		// update the task in the import Json file by ID
+		const curl_updateTask = `${baseCurl} -XPUT ${curlContentTypeHeader} -d "${updateTaskJson}" ${configUrl.reqImportCurl}/${importId}/tasks/${taskId}`;
+		console.log("updateTask: " + curl_updateTask);
+		return execSync(curl_updateTask);
+	};
+
+	this.updateTaskField = (updateTaskJson, importId, taskId, fieldName) => {
+		// update the task field in the import Json file
+		const curl_updateTask = `${baseCurl} -XPUT ${curlContentTypeHeader} -d "${updateTaskJson}" ${configUrl.reqImportCurl}/${importId}/tasks/${taskId}/${fieldName}`;
+		console.log("updateTask: " + curl_updateTask);
+		return execSync(curl_updateTask);
+	};
+
+	this.sendToTask = (filepath, filename, importId) => {
+		//POST the GeoTiff file to the tasks list, in order to create an import task for it
+		console.log("sendToTask: filepath: " + filepath);
+		const curlFileData = `-F name=${filename} -F filedata=@${filepath}`;
+		console.log("sendToTask: curlFileData: " + curlFileData);
+
+		const curl_postToTaskList = `${baseCurl} ${curlFileData} ${configUrl.reqImportCurl}/${importId}/tasks`;
+		console.log("sendToTask: curl_postToTaskList: " + curl_postToTaskList);
+		const taskJson = execSync(curl_postToTaskList);
+		console.log("taskJSON: " + taskJson);
+		const task = JSON.parse(taskJson);
+		console.log("sent to the Tasks Queue..." + JSON.stringify(task));
+		return task;
+	};
+
+	this.executeFileToGeoserver = (importId) => {
+			// execute the import task
+			const curl_execute = `${baseCurl} -XPOST ${configUrl.reqImportCurl}/${importId}`;
+			const execute = execSync(curl_execute);
+			console.log("The execute is DONE..." + execute);
+			console.log("DONE!");
+	};
+
+	this.deleteUncompleteImports = () => {
+			// delete the task from the importer queue
+			const curl_deletsTasks = `${baseCurl} -XDELETE ${curlAcceptHeader} ${curlContentTypeHeader} ${configUrl.reqImportCurl}`;
+			const deleteTasks = execSync(curl_deletsTasks);
+			console.log("Delete task from the Importer..." + deleteTasks);
+			console.log("DONE!");
+	};
 };

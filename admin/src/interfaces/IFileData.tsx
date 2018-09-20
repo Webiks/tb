@@ -6,6 +6,10 @@ export interface IFileData {
     lastModified: number;
     fileCreatedDate?: Date | string;
     fileUploadDate?: Date | string;
-    fileExtension: string
+    fileExtension: string,
+    fileType: string,
+    filePath?: string,
+    encodeFileName?: string,
+    encodePathName?: string
 }
 

@@ -11,7 +11,7 @@ require('../fileMethods')();
 const uploadDir = '/public/uploads/';
 const dirPath = __dirname.replace(/\\/g, "/");
 const uploadPath = `${dirPath}${uploadDir}`;
-const jsonPath = `${dirPath}/public/json`;
+// const jsonPath = `${dirPath}/public/json`;
 
 const opts = setOptions(uploadPath);
 router.use(formidable(opts));
@@ -19,86 +19,102 @@ router.use(formidable(opts));
 router.post('/:workspaceName', (req, res) => {
     const workspaceName = req.params.workspaceName;
     let reqFiles = req.files.uploads;
-    let fileType;
-    let isZipped;
 
-    console.log("req files: " + JSON.stringify(reqFiles));
+    console.log("req Files: " + JSON.stringify(reqFiles));
     console.log("req length: " + reqFiles.length);
     console.log("uploadPath: " + uploadPath);
 
-    // check if need to do a ZIP file
-    if (!reqFiles.length && (reqFiles.name.includes('.zip') || reqFiles.size < 1000000000)){
-        isZipped = false;
-        if (reqFiles.name.includes('.zip')){
-            fileType = 'zip';
-        } else {
-            fileType = findFileType(reqFiles.type);
-        }
-    } else {
-        isZipped = true;
-        fileType = 'zip';
-        if (!reqFiles.length) {
-            // define the file as an array
-            reqFiles = [reqFiles];
-        }
-        console.log("req files Single Array: " + JSON.stringify(reqFiles));
-    }
+		let name;
+		let path;
 
-    console.log("isZipped: " + isZipped);
-    let reqfiles;
+		// find the file type
+		let file;
+		if (!reqFiles.length){
+				file = reqFiles;
+		} else {
+				file = reqFiles[0];
+		}
+		const fileType = findFileType(file.type);
 
-    if (!isZipped){
+		// check if need to make a ZIP file
+    if (!reqFiles.length){
         // upload a single file to GeoServer
-        const file = beforeUpload(reqFiles);
-        console.log("uploadToGeoserver single file");
-        reqfiles = UploadFilesToGS.uploadFile(workspaceName, reqFiles, fileType, file.filename, file.filePath);
+				console.log("uploadToGeoserver single file...");
+				console.log("req files (before): " + JSON.stringify(reqFiles));
+				reqFiles = setBeforeUpload(reqFiles, fileType);
+				name = reqFiles.name;
+				path = reqFiles.filePath;
+				console.log("UploadFiles SINGLE req file(after): " + JSON.stringify(reqFiles));
     } else {
-        // upload multiple files - creating a ZIP file
-        // set the ZIP name according to the first file name
+        // creating a ZIP file
+				console.log("uploadToGeoserver multi files...");
+				// set the ZIP name according to the first file name
         const splitName = (reqFiles[0].name).split('.');
-        const zipFilename = `${splitName[0]}.zip`;
-        const zipFilePath = uploadPath + zipFilename;
-        console.log("zipFilePath: " + zipFilePath);
+        name = `${splitName[0]}.zip`;
+        path = uploadPath + name;
 
         // creating archives
         let zip = new AdmZip();
 
-        // define the names of the files to be zipped (in Sync opperation)
-        reqFiles.map( file => {
-            console.log("req file: " + JSON.stringify(file));
-            const newFile = beforeUpload(file);
+        // define the names of the files to be zipped (in Sync operation)
+				reqFiles = reqFiles.map( file => {
+            let newFile = setBeforeUpload(file, fileType);
+						console.log("newFile: " + JSON.stringify(newFile));
 
-            // add local file to the zip file
-            zip.addLocalFile(newFile.filePath);
+            // add the local file to the zip file
+            zip.addLocalFile(newFile.encodePathName);
 
             // remove the original file that was added to the zip file
-            removeFile(newFile.filePath);
+            removeFile(newFile.encodePathName);
+
+            return {...newFile};
         });
 
         // write everything to disk
-        console.log("write zip file: " + zipFilePath);
-        zip.writeZip(zipFilePath);
-
-        // upload the zip file to GeoServer
-        reqfiles = UploadFilesToGS.uploadFile(workspaceName,reqFiles, fileType, zipFilename, zipFilePath);
+        console.log("write zip file: " + path);
+        zip.writeZip(path);
     }
-    res.send(reqfiles);
+
+		// upload the file to GeoServer
+		console.log("UploadFiles SEND req files: " + JSON.stringify(reqFiles));
+    // res.send(UploadFilesToGS.uploadFile(workspaceName, reqFiles, fileType, name, path, encodeFileName, encodePathName));
+		res.send(UploadFilesToGS.uploadFile(workspaceName, reqFiles, name, path));
 
     // ========================================= private  F U N C T I O N S ============================================
     // prepare the file before uploading it to the geoserver
-    function beforeUpload(file){
-        const filename = file.name;
-        const filePath = uploadPath + filename;
-        console.log("filePath: " + filePath);
+    function setBeforeUpload(file, fileType) {
+			const fileName = file.name;
+			const filePath = uploadPath + fileName;
+			const encodeFileName = encodeURI(fileName);
+			const encodePathName = uploadPath + encodeFileName;
+			console.log("beforeUpload fileName: " + fileName);
+			console.log("beforeUpload encoded fileName: " + encodeFileName);
+			console.log("beforeUpload filePath: " + filePath);
+			console.log("beforeUpload encoded filePath: " + encodePathName);
 
-        // renaming the file full path
-        renameFile(file.path, filePath);
+			const newFile = {
+				fileType,
+				filePath,
+				encodeFileName,
+				encodePathName
+			};
 
-        return {
-            filename,
-            filePath
-        };
+			// renaming the file full path (according to the encoded name)
+			renameFile(file.path, encodePathName);
+
+			return { ...file, ...newFile };
     }
+
+		// // add the new fields to the reqFile object
+		// function setNewFile(file, fileType, filePath, encodeFileName, encodePathName ) {
+        // const newFile = {
+		// 			fileType,
+		// 			filePath,
+		// 			encodeFileName,
+		// 			encodePathName,
+		// 	};
+        // return { ...file, ...newFile };
+		// }
 });
 
 module.exports = router;

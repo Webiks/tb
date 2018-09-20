@@ -182,13 +182,16 @@ const data = {
 
 // FILE DATA: data from the upload file
 const fileData = {
-		name: String,
+		name: String,														// the original name
 		size: Number,                           // MB or KB
-		// type: String,                      	  // 'image/tiff' for raster
 		lastModified: Number,										// the file created date in number
 		fileCreatedDate: Date | String,					// the file created date
-		fileUploadDate: Date | String,						// the upload file date
-		fileExtension: String
+		fileUploadDate: Date | String,				  // the upload file date
+		fileExtension: String,
+		fileType: String,												// 'raster' or 'vector'
+		filePath: String,
+		encodeFileName: String,									// the encoded file name (differ when there is special charecters in the name)
+		encodePathName: String									// the encoded file path (differ when there is special charecters in the name)
 };
 
 // IMAGE DATA: data from the image file
@@ -208,6 +211,7 @@ const fileData = {
 
 // INPUT DATA: data from the user
 const inputData = {
+		fileName: String,
     affiliation: { type: String , uppercase: true , enum: ["INPUT", "OUTPUT", "UNKNOWN" ] },  // 'INPUT' or 'OUTPUT'
     GSD: Number ,
     flightAltitude: Number ,

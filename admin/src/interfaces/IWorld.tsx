@@ -6,7 +6,6 @@ export interface IWorld {
     password: string,
     desc?: string,
     country?: string,
-    directory?: string,
     layers: IWorldLayer[],
     layersId: string[],
     workspaceName: string

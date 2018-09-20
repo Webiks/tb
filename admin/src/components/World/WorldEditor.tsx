@@ -53,7 +53,6 @@ class WorldEditor extends React.Component {
                     password: '',
                     desc: '',
                     country: '',
-                    directory: '',
                     layers: [],
                     workspaceName: ''
                 }
@@ -243,12 +242,11 @@ class WorldEditor extends React.Component {
                             </div>
                         </div>
                         <div className="ui-grid-row">
-                            <div className="ui-grid-col-4" style={{padding:'4px 10px'}}><label htmlFor="directory">Directory</label></div>
+                            <div className="ui-grid-col-4" style={{padding:'4px 10px'}}><label htmlFor="workspaceName">WorkSpace Name</label></div>
                             <div className="ui-grid-col-8" style={{padding:'4px 10px'}}>
-                                <InputText id="directory"
-                                           value={this.state.world.directory}
-                                           placeholder={"the world's directory"}
-                                           onChange={(e: any) => {this.updateProperty('directory', e.target.value)}}/>
+                                <InputText id="workspaceName"
+                                           value={this.state.world.workspaceName}
+                                           readOnly={true}/>
                             </div>
                         </div>
                     </div>}

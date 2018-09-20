@@ -93,21 +93,24 @@ class LayerEditor extends React.Component {
     inputTextEditor(props) {
         switch (props.rowData.type) {
             case ('text'):
-                return <InputText type="text" value={get(this.state, props.rowData.path)}
+                return <InputText type="text"
+                                  value={get(this.state, props.rowData.path)}
                                   onChange={(e: any) => this.onEditorValueChange(props.rowData, e.target.value)}/>;
             case ('number'):
                 return <InputText type="number" min={props.rowData.min}
                                   value={get(this.state, props.rowData.path)}
                                   onChange={(e: any) => this.onEditorValueChange(props.rowData, e.target.value)}/>;
             case ('date'):
-                return <InputText type="date" value={get(this.state, props.rowData.path)}
+                return <InputText type="date"
+                                  value={get(this.state, props.rowData.path)}
                                   onChange={(e: any) => this.onEditorValueChange(props.rowData, e.target.value)}/>;
             case ('dropdown'):
                 return <Dropdown id="affiliation" options={this.layerAffiliationTypes}
                                  value={this.state.worldLayer.inputData.affiliation ? this.state.worldLayer.inputData.affiliation : AFFILIATION_TYPES.AFFILIATION_UNKNOWN}
                                  onChange={(e: any) => this.onEditorValueChange(props.rowData, e.value)}/>;
             default:
-                return <InputText type="text" value={get(this.state, props.rowData.path)}
+                return <InputText type="text"
+                                  value={get(this.state, props.rowData.path)}
                                   onChange={(e: any) => this.onEditorValueChange(props.rowData, e.target.value)}/>;
         }
     };

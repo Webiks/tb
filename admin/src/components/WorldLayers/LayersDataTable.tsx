@@ -171,7 +171,7 @@ class LayersDataTable extends React.Component {
                                     globalFilter={this.state.globalFilter}
                                     selectionMode="single" selection={this.state.selectedLayer}
                                     onSelectionChange={(e: any)=>{this.setState({selectedLayer: e.data});}}>
-                            <Column field="layer.name" header="Name" sortable={true} style={{textAlign:'left', padding:'7px 20px'}}/>
+                            <Column field="inputData.fileName" header="Name" sortable={true} style={{textAlign:'left', padding:'7px 20px'}}/>
                             <Column field="store.type" header="Type" sortable={true} style={{width: '10%'}} />
                             <Column field="store.format" header="Format" sortable={true} style={{width: '10%'}}/>
                             <Column field="fileData.fileExtension" header="Extension" sortable={true} style={{width: '12%'}}/>
@@ -200,7 +200,7 @@ class LayersDataTable extends React.Component {
                         <Dialog visible={this.state.displayAlert}
                                 width="350px" modal={true} footer={alertFooter} minY={70}
                                 onHide={() => this.refresh(this.props.layers) }>
-                            <b>DELETE</b> layer <b>{this.state.selectedLayer.layer.name}</b> ?
+                            <b>DELETE</b> layer <b>{this.state.selectedLayer.name}</b> ?
                         </Dialog>
                     </div>
                 }

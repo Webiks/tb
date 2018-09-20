@@ -8,7 +8,7 @@ export interface IPropertiesList {
 
 const LayerPropertiesList: IPropertiesList[] = [
     { label: 'World Name', path: 'worldName', readonly: true },
-    { label: 'File Name', path: 'worldLayer.layer.name', readonly: false, type: 'text'},
+    { label: 'File Name', path: 'worldLayer.inputData.fileName', readonly: false, type: 'text'},
     { label: 'File Type', path: 'worldLayer.layer.type', readonly: true },
     { label: 'File Size(KB)', path:'worldLayer.fileData.size' , readonly: true },
     { label: 'Folder Path', path: 'worldLayer.filePath', readonly: true },

@@ -123,9 +123,9 @@ const getStoreDataFromGeoserver = (worldLayer, storeUrl) => {
 						namespace: store.coverageStore.connectionParameters.entry.$
 					}
 				};
-				url = store.coverageStore.url;                                          // for the file path
+				worldLayer.filePath = store.coverageStore.url;                          // for the file path
+				console.log("dbLayer RASTER url = " + worldLayer.filePath);
 				worldLayer.store.format = store.coverageStore.type.toUpperCase();       // set the store format
-				console.log("dbLayer url = " + url);
 			}
 			else if (worldLayer.layer.type.toLowerCase() === 'vector') {
 				console.log("dbLayer get VECTOR data...");
@@ -137,7 +137,8 @@ const getStoreDataFromGeoserver = (worldLayer, storeUrl) => {
 						url: store.dataStore.connectionParameters.entry[1].$
 					}
 				};
-				url = worldLayer.store.connectionParameters.url;                        // for the file path
+				worldLayer.filePath = worldLayer.store.connectionParameters.url;        // for the file path
+				console.log("dbLayer VECTOR url = " + worldLayer.filePath);
 				worldLayer.store.format = store.dataStore.type.toUpperCase();           // set the store format
 			}
 			else {
@@ -149,11 +150,9 @@ const getStoreDataFromGeoserver = (worldLayer, storeUrl) => {
 			worldLayer.store.type = worldLayer.layer.type;
 			console.log("dbLayer store data: " + worldLayer.store.storeId + ', ' + worldLayer.store.type);
 
-			// set the file path
-			worldLayer.filePath = `${configParams.uploadFilesUrl}/${url.split(':')[1]}`;
-
 			// set the file name
 			const path = worldLayer.filePath;
+			console.log("dbLayer filePath: " + worldLayer.filePath);
 			const extension = path.substring(path.lastIndexOf('.'));
 			worldLayer.fileName = `${worldLayer.store.name}${extension}`;
 			console.log("dbLayer fileName: " + worldLayer.fileName);

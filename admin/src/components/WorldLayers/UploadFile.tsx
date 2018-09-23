@@ -30,15 +30,17 @@ export interface IPropsUploadFiles {
 }
 
 export interface IReqFile {
-    name: string;
-    size: number;
-    type: string;
-    path: string;
-    lastModifiedDate: Date;
-    fileType: string;
-    filePath: string;
-    encodeFileName: string;
-    encodePathName: string
+    file: {
+        name: string;
+        size: number;
+        type: string;
+        path: string;
+        mtime: Date;
+        fileType: string;
+        filePath: string;
+        // encodeFileName: string;
+        // encodePathName: string
+    }
 }
 
 export interface IStateWorld {
@@ -202,16 +204,17 @@ class UploadFile extends React.Component {
     updateFilesList = (reqFiles: IReqFile[])=> {
         reqFiles.map((reqFile: IReqFile) => {
             // find the match layer
-            const extension = this.getExtension(reqFile.name);
+            console.log("updateFilesList reqFile: " + JSON.stringify(reqFile));
+            const extension = this.getExtension(reqFile.file.name);
             if (extension === '.tif' || extension === '.tiff' || extension === '.shp'){
-                console.log("reqFile name: " + reqFile.name);
-                const layerIndex = this.findFileIndex(reqFile.name);
+                console.log("reqFile name: " + reqFile.file.name);
+                const layerIndex = this.findFileIndex(reqFile.file.name);
                 console.log("updateFilesList layerIndex: " + layerIndex);
                 // update the file new fields
-                this.uploadFiles[layerIndex].fileUploadDate = new Date(reqFile.lastModifiedDate).toISOString();
-                this.uploadFiles[layerIndex].filePath = reqFile.filePath;
-                this.uploadFiles[layerIndex].encodeFileName = reqFile.encodeFileName;
-                this.uploadFiles[layerIndex].encodePathName = reqFile.encodePathName;
+                this.uploadFiles[layerIndex].fileUploadDate = new Date(reqFile.file.mtime).toISOString();
+                this.uploadFiles[layerIndex].filePath = reqFile.file.filePath;
+                // this.uploadFiles[layerIndex].encodeFileName = reqFile.encodeFileName;
+                // this.uploadFiles[layerIndex].encodePathName = reqFile.encodePathName;
                 console.log(`updateFilesList File list[${layerIndex}]: ${JSON.stringify(this.uploadFiles[layerIndex])}`);
             }
         });
@@ -262,7 +265,8 @@ class UploadFile extends React.Component {
         // set the fileData field with the upload layer data
         console.log("layer name: " + layer.fileName);
         console.log("filesList: " + JSON.stringify(this.uploadFiles));
-        const currentFile = this.uploadFiles.find(file => file.encodeFileName === layer.fileName);
+        // const currentFile = this.uploadFiles.find(file => file.encodeFileName === layer.fileName);
+        const currentFile = this.uploadFiles.find(file => file.name === layer.fileName);
         layer.fileData = this.setFileData(currentFile);
         // set the inputData to be EMPTY for the new layer
         layer.inputData = this.setInitInputData(layer);
@@ -283,8 +287,8 @@ class UploadFile extends React.Component {
             fileExtension: file.fileExtension,
             fileType: file.fileType,
             filePath: file.filePath,
-            encodeFileName: file.encodeFileName,
-            encodePathName: file.encodePathName
+            // encodeFileName: file.encodeFileName,
+            // encodePathName: file.encodePathName
         };
     };
 

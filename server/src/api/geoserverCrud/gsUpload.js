@@ -62,10 +62,12 @@ router.post('/:workspaceName', (req, res) => {
 						console.log("newFile: " + JSON.stringify(newFile));
 
             // add the local file to the zip file
-            zip.addLocalFile(newFile.encodePathName);
+            // zip.addLocalFile(newFile.encodePathName);
+						zip.addLocalFile(newFile.filePath);
 
             // remove the original file that was added to the zip file
-            removeFile(newFile.encodePathName);
+            // removeFile(newFile.encodePathName);
+						removeFile(newFile.filePath);
 
             return {...newFile};
         });
@@ -85,24 +87,28 @@ router.post('/:workspaceName', (req, res) => {
     function setBeforeUpload(file, fileType) {
 			const fileName = file.name;
 			const filePath = uploadPath + fileName;
-			const encodeFileName = encodeURI(fileName);
-			const encodePathName = uploadPath + encodeFileName;
+			// const encodeFileName = encodeURI(fileName);
+			// const encodePathName = uploadPath + encodeFileName;
 			console.log("beforeUpload fileName: " + fileName);
-			console.log("beforeUpload encoded fileName: " + encodeFileName);
+			// console.log("beforeUpload encoded fileName: " + encodeFileName);
 			console.log("beforeUpload filePath: " + filePath);
-			console.log("beforeUpload encoded filePath: " + encodePathName);
+			// console.log("beforeUpload encoded filePath: " + encodePathName);
 
 			const newFile = {
 				fileType,
-				filePath,
-				encodeFileName,
-				encodePathName
+				filePath
+				// encodeFileName,
+				// encodePathName
 			};
 
 			// renaming the file full path (according to the encoded name)
-			renameFile(file.path, encodePathName);
+			// renameFile(file.path, encodePathName);
+			renameFile(file.path, filePath);
 
-			return { ...file, ...newFile };
+			console.log("setBeforeUpload File: " + JSON.stringify(file));
+			console.log("setBeforeUpload newFile: " + JSON.stringify({...newFile}));
+
+			return { file, ...newFile };
     }
 });
 

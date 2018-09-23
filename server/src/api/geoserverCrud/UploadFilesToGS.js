@@ -76,10 +76,10 @@ class UploadFilesToGS {
         // 5. remove the file from the local store
         removeFile(path);
 				// in ZIP file: remove the directory (after open the zip file)
-				const splitPath = path.split('.');
-        if (splitPath[1] === 'zip'){
-					removeFile(splitPath[0]);
-				}
+			// 	const splitPath = path.split('.');
+        // if (splitPath[1] === 'zip'){
+			// 		removeFile(splitPath[0]);
+			// 	}
 
         // 6. delete all the uncompleted tasks in the import queue
         deleteUncompleteImports();

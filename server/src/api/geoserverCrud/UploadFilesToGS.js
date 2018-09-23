@@ -26,17 +26,13 @@ class UploadFilesToGS {
         // 3a. for VECTORS only:
 				if (file[0].fileType.toLowerCase() === 'vector') {
 					// A. check the FORMAT field in the data field in the Import Object and update it if it's missing
-					if(!importObj.data.format || importObj.data.format == null){
+					if(importObj.data.format === null){
 						importObj.data.format = 'Shapefile';
 						const updateImportJson = JSON.stringify({ import: importObj });
 						console.log("NO_FORMAT updateImportJson = " + updateImportJson);
 					}
 
-					// B. get the Task List from the Import Object
-					// let taskList = importObj.tasks;
-					// console.log("task List: " + JSON.stringify(taskList));
-
-					// C. check the STATE of each task in the Task List
+					// B. check the STATE of each task in the Task List
 					console.log("taskList map... ");
 					importObj.tasks.map( task => {
 						console.log(`task ${task.id} state = ${task.state}`);
@@ -57,10 +53,6 @@ class UploadFilesToGS {
 									updateTaskById(updateTaskJson, importObj.id, task.id);
 									break;
 								case ('NO_CRS'):
-									// get the layer Object from the Task Object and update the projection
-									// task.layer = getLayerObj(importObj.id, task.id);
-									// task.layer.srs = 'EPSG:4326';
-									// const updateLayerJson = JSON.stringify({ layer: task.layer });
 									const updateLayerJson = JSON.stringify(layerSrsUpdate());
 									console.log("NO_CRS updateTaskJson: " + updateLayerJson);
 									// create the update SRS Json file and update the task
@@ -72,12 +64,6 @@ class UploadFilesToGS {
 							}
 						}
 					});
-					// console.log("update import(from the object): " + JSON.stringify(importObj));
-					// D. update the Import Object
-					// updateImportById(importObj, importObj.id);
-					// get the update Import Object
-					// importObj = getImportObj(importObj.id);
-					// console.log("update import(from geoserver): " + JSON.stringify(importObj));
 				}
 				// 3b. for RASTERS only: POST the file to the tasks list, in order to create an import task for it
 				else {
@@ -99,6 +85,7 @@ class UploadFilesToGS {
         deleteUncompleteImports();
 
         // 7. return OK
+				console.log("return file: " + JSON.stringify(file));
         return file;
     }
 }

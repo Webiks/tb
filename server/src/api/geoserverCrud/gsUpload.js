@@ -104,17 +104,6 @@ router.post('/:workspaceName', (req, res) => {
 
 			return { ...file, ...newFile };
     }
-
-		// // add the new fields to the reqFile object
-		// function setNewFile(file, fileType, filePath, encodeFileName, encodePathName ) {
-        // const newFile = {
-		// 			fileType,
-		// 			filePath,
-		// 			encodeFileName,
-		// 			encodePathName,
-		// 	};
-        // return { ...file, ...newFile };
-		// }
 });
 
 module.exports = router;

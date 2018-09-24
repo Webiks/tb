@@ -4,7 +4,7 @@ require('./curlMethods')();
 class UploadFilesToGS {
 
     static uploadFile(workspaceName, reqFiles, name, path) {
-    		const file = reqFiles.length ? reqFiles : [reqFiles];
+    		let file = reqFiles.length ? reqFiles : [reqFiles];
 				console.log("uploadFile file: " + JSON.stringify(file));
 				console.log("uploadFile PATH: " + path);
 
@@ -25,15 +25,8 @@ class UploadFilesToGS {
 
         // 3a. for VECTORS only:
 				if (file[0].fileType.toLowerCase() === 'vector') {
-					// A. check the FORMAT field in the data field in the Import Object and update it if it's missing
-					if(importObj.data.format === null){
-						importObj.data.format = 'Shapefile';
-						const updateImportJson = JSON.stringify({ import: importObj });
-						console.log("NO_FORMAT updateImportJson = " + updateImportJson);
-					}
-
 					// B. check the STATE of each task in the Task List
-					console.log("taskList map... ");
+					console.log("check the state of each task... ");
 					importObj.tasks.map( task => {
 						console.log(`task ${task.id} state = ${task.state}`);
 						if (task.state !== 'READY') {
@@ -41,26 +34,13 @@ class UploadFilesToGS {
 							task = getTaskObj(importObj.id, task.id);
 							console.log(`task ${task.id} (before change): ${JSON.stringify(task)}`);
 							// check the state's error and fix it
-							switch (task.state) {
-								case ('NO_FORMAT'):
-									console.log("NO_FORMAT updateTaskJson: ");
-									// create the update FORMAT Json file and update the import's data
-									// updateTaskJson = JSON.stringify(dataFormatUpdate());
-									task.data.format = 'Shapefile';
-									task.transformChain.type = 'vector';
-									const updateTaskJson = JSON.stringify({ task: task });
-									console.log(`task ${task.id} (after the change): ${updateTaskJson}`);
-									updateTaskById(updateTaskJson, importObj.id, task.id);
-									break;
-								case ('NO_CRS'):
-									const updateLayerJson = JSON.stringify(layerSrsUpdate());
-									console.log("NO_CRS updateTaskJson: " + updateLayerJson);
-									// create the update SRS Json file and update the task
-									updateTaskField(updateLayerJson, importObj.id, task.id, 'layer');
-									break;
-								default:
-									// return an Error Massage with the task's state
-									return `ERROR to upload the file! state: ${task.state}`;
+							if (task.state === 'NO_CRS') {
+								const updateLayerJson = JSON.stringify(layerSrsUpdate());
+								console.log("NO_CRS updateTaskJson: " + updateLayerJson);
+								// create the update SRS Json file and update the task
+								updateTaskField(updateLayerJson, importObj.id, task.id, 'layer');
+							} else {
+									file = [];
 							}
 						}
 					});

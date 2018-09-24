@@ -24,6 +24,10 @@ router.post('/:workspaceName', (req, res) => {
     console.log("req length: " + reqFiles.length);
     console.log("uploadPath: " + uploadPath);
 
+    // convert the request Files to JSON and back to an Object
+		const jsonFiles = JSON.stringify(reqFiles);
+		reqFiles = JSON.parse(jsonFiles);
+
 		let name;
 		let path;
 
@@ -62,14 +66,12 @@ router.post('/:workspaceName', (req, res) => {
 						console.log("newFile: " + JSON.stringify(newFile));
 
             // add the local file to the zip file
-            // zip.addLocalFile(newFile.encodePathName);
-						zip.addLocalFile(newFile.filePath);
+            zip.addLocalFile(newFile.encodePathName);
 
             // remove the original file that was added to the zip file
-            // removeFile(newFile.encodePathName);
-						removeFile(newFile.filePath);
+            removeFile(newFile.encodePathName);
 
-            return {...newFile};
+            return newFile;
         });
 
         // write everything to disk
@@ -79,36 +81,32 @@ router.post('/:workspaceName', (req, res) => {
 
 		// upload the file to GeoServer
 		console.log("UploadFiles SEND req files: " + JSON.stringify(reqFiles));
-    // res.send(UploadFilesToGS.uploadFile(workspaceName, reqFiles, fileType, name, path, encodeFileName, encodePathName));
 		res.send(UploadFilesToGS.uploadFile(workspaceName, reqFiles, name, path));
 
     // ========================================= private  F U N C T I O N S ============================================
     // prepare the file before uploading it to the geoserver
     function setBeforeUpload(file, fileType) {
-			const fileName = file.name;
-			const filePath = uploadPath + fileName;
-			// const encodeFileName = encodeURI(fileName);
-			// const encodePathName = uploadPath + encodeFileName;
-			console.log("beforeUpload fileName: " + fileName);
-			// console.log("beforeUpload encoded fileName: " + encodeFileName);
-			console.log("beforeUpload filePath: " + filePath);
-			// console.log("beforeUpload encoded filePath: " + encodePathName);
+			console.log("setBeforeUpload File: " + JSON.stringify(file));
+    	const name = file.name;
+			const filePath = uploadPath + name;
+			const encodeFileName = encodeURI(name);
+			const encodePathName = uploadPath + encodeFileName;
 
 			const newFile = {
+				name,
+				size: file.size,
+				path: file.path,
+				mtime: new Date(file.mtime).toISOString(),
 				fileType,
-				filePath
-				// encodeFileName,
-				// encodePathName
+				filePath,
+				encodeFileName,
+				encodePathName
 			};
 
 			// renaming the file full path (according to the encoded name)
-			// renameFile(file.path, encodePathName);
-			renameFile(file.path, filePath);
+			renameFile(file.path, newFile.encodePathName);
 
-			console.log("setBeforeUpload File: " + JSON.stringify(file));
-			console.log("setBeforeUpload newFile: " + JSON.stringify({...newFile}));
-
-			return { file, ...newFile };
+			return newFile;
     }
 });
 

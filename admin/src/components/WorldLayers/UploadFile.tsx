@@ -2,6 +2,7 @@ import * as React from 'react';
 
 import config from '../../config/config';
 import { connect } from 'react-redux';
+import { parseString } from 'xml2js';
 import * as _ from 'lodash';
 import { IState } from '../../store';
 import { IWorld } from '../../interfaces/IWorld';
@@ -14,6 +15,8 @@ import { WorldsActions } from '../../actions/world.actions';
 import { FileUpload } from 'primereact/components/fileupload/FileUpload';
 import { AFFILIATION_TYPES } from '../../consts/layer-types';
 
+// var parseString = require('xml2js').parseString;
+
 /* Prime React components */
 import 'primereact/resources/primereact.min.css';
 import 'primereact/resources/themes/omega/theme.css';
@@ -22,6 +25,7 @@ import 'font-awesome/css/font-awesome.css';
 import { ProgressSpinner } from 'primereact/components/progressspinner/ProgressSpinner';
 import { Growl } from 'primereact/components/growl/Growl';
 import { IInputdata } from '../../interfaces/IInputData';
+import Layer from '../Layer/Layer';
 
 export interface IPropsUploadFiles {
     worldName: string,
@@ -38,7 +42,8 @@ export interface IReqFile {
     fileType: string;
     filePath: string;
     encodeFileName: string;
-    encodePathName: string
+    encodePathName: string;
+    splitPath: string;
 }
 
 export interface IStateWorld {
@@ -52,6 +57,7 @@ class UploadFile extends React.Component {
     url: string = `${config.baseUrl}/api/upload/${this.props.world.workspaceName}`;
     growl: any;
     uploadFiles: IFileData[] = [];
+    splitpath: string ;
 
     onSelect = (e: { files: FileList }) => {
         console.log('On Select...');
@@ -208,7 +214,7 @@ class UploadFile extends React.Component {
             // find the match layer
             console.log("updateFilesList reqFile: " + JSON.stringify(reqFile));
             const extension = this.getExtension(reqFile.name);
-            if (extension === '.tif' || extension === '.tiff' || extension === '.shp'){
+            if (extension.toLowerCase().includes('tif') || extension === '.shp'){
                 console.log("reqFile name: " + reqFile.name);
                 const layerIndex = this.findFileIndex(reqFile.name);
                 console.log("updateFilesList layerIndex: " + layerIndex);
@@ -217,6 +223,7 @@ class UploadFile extends React.Component {
                 this.uploadFiles[layerIndex].filePath = reqFile.filePath;
                 this.uploadFiles[layerIndex].encodeFileName = reqFile.encodeFileName;
                 this.uploadFiles[layerIndex].encodePathName = reqFile.encodePathName;
+                this.uploadFiles[layerIndex].splitPath = reqFile.splitPath;
                 console.log(`updateFilesList File list[${layerIndex}]: ${JSON.stringify(this.uploadFiles[layerIndex])}`);
             }
         });
@@ -245,10 +252,8 @@ class UploadFile extends React.Component {
                 LayerService.getAllLayersData(this.props.world.workspaceName, newLayers)
                     .then((layers: IWorldLayer[]): Promise<any> => {
                         // 3. set the final layers list and save it in the DataBase
-                        const promises = layers.map((layer: IWorldLayer) => {
-                            const newLayer = this.getOtherLayerData(layer);
-                            return this.createLayer(newLayer);
-                        });
+                        const promises = layers.map((layer: IWorldLayer) =>
+                                                    this.createLayer(this.getOtherLayerData(layer)));
                         return Promise.all(promises);
                     })
                     .then((layersList: IWorldLayer[]) => {
@@ -262,11 +267,35 @@ class UploadFile extends React.Component {
             .catch(error => this.handleError('UPLOAD: getWorldLayersFromGeoserver ERROR: ' + error));
     };
 
+    getCapabilities = (layer: IWorldLayer) => {
+        LayerService.getCapabilities(this.props.world.workspaceName, layer.name)
+            .then( xml => {
+                console.log("get capabilities XML");
+                // 2. convert the xml data to json
+                return parseString(xml, (err, result) => {
+                    if (err){
+                        return this.handleError('UPLOAD: getCapabilities ERROR translate XML to JS: ' + err);
+                    } else {
+                        console.log("the WMTS Object: " + JSON.stringify(result));
+                        return 'OK'
+                    }
+                });
+
+                // // change the 'localhost' to the App domain (for the remote server)
+                // if (config.isRemote) {
+                //     const oldPath = /localhost/gi;
+                //     const jsonString = JSON.stringify(this.json).replace(oldPath, config.path);  // convert to JSON
+                //     this.json = JSON.parse(jsonString);                                          // convert to Object
+                // }
+            })
+            .catch(error => { throw new Error(error) });
+    };
+
     // get other data of the layer
     getOtherLayerData = (layer: IWorldLayer): IWorldLayer => {
         // set the fileData field with the upload layer data
         console.log("layer name: " + layer.fileName);
-        console.log("filesList: " + JSON.stringify(this.uploadFiles));
+        console.log("encode name: " + this.uploadFiles[0].encodeFileName);
         const currentFile = this.uploadFiles.find(file => file.encodeFileName === layer.fileName);
         layer.fileData = this.setFileData(currentFile);
         // set the inputData to be EMPTY for the new layer
@@ -289,7 +318,8 @@ class UploadFile extends React.Component {
             fileType: file.fileType,
             filePath: file.filePath,
             encodeFileName: file.encodeFileName,
-            encodePathName: file.encodePathName
+            encodePathName: file.encodePathName,
+            splitPath: file.splitPath
         };
     };
 

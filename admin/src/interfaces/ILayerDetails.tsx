@@ -12,7 +12,7 @@ export interface ILayerDetails {
     latLonBoundingBox: ILatLonBoundingBox,
     center: [ number, number],
     projectionPolicy?: string,
-    enabled?: boolean,
+    enabled: boolean,
     metadata?: IMetaData,
     store: IDataStore,
     // Vectors only

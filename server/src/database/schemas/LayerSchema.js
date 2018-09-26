@@ -50,7 +50,7 @@ const store = {
     name: String ,
     type: { type: String , uppercase: true , enum: ["RASTER", "VECTOR"]} ,      // get from the Layer page's type
     format: { type: String , uppercase: true , enum: ["GEOTIFF", "SHAPEFILE"]}, // get from the store type ('GeoTiff' or 'Shapefile')
-    enable: Boolean ,
+    enabled: Boolean ,
     _default: Boolean ,
     workspace: {
         name: String ,                              // the name of the world
@@ -94,7 +94,7 @@ const data = {
     },
     center: [Number, Number],
     projectionPolicy: String ,
-    enable: Boolean ,
+    enabled: Boolean ,
     metadata: {                                     // was translated from a map
         dirName: String ,                           // RASTERS
         recalculateBounds: String                   // VECTROS
@@ -191,7 +191,8 @@ const fileData = {
 		fileType: String,												// 'raster' or 'vector'
 		filePath: String,
 		encodeFileName: String,									// the encoded file name (differ when there is special charecters in the name)
-		encodePathName: String									// the encoded file path (differ when there is special charecters in the name)
+		encodePathName: String,									// the encoded file path (differ when there is special charecters in the name)
+		splitPath: String												// the zip path of the upload vector (for removing it later)
 };
 
 // IMAGE DATA: data from the image file

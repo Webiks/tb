@@ -1,31 +1,35 @@
-require('../fileMethods')();
+// const GsLayers  = require("../geoserverCrud/GsLayers");
+require('../fs/fileMethods')();
 require('./curlMethods')();
+// require('../../config/serverConfig')();
+// const configParams = config().configParams;
+// const configUrl = configBaseUrl().configUrl;
 
 class UploadFilesToGS {
 
     static uploadFile(workspaceName, reqFiles, name, path) {
-    		let file = reqFiles.length ? reqFiles : [reqFiles];
-				console.log("uploadFile file: " + JSON.stringify(file));
+    		let files = reqFiles.length ? reqFiles : [reqFiles];
+				console.log("uploadFile files: " + JSON.stringify(files));
 				console.log("uploadFile PATH: " + path);
 
-        // 1. create the JSON file with the desire workspace
+        // 1. create the JSON files with the desire workspace
         let importJSON = {};
 
-				console.log("file Type: " + file[0].fileType);
-        if (file[0].fileType.toLowerCase() === 'raster') {
+				console.log("files Type: " + files[0].fileType);
+        if (files[0].fileType.toLowerCase() === 'raster') {
             importJSON = createImportObject(workspaceName);
         } else {
             importJSON = createImportObjectWithData(workspaceName, path);
         }
         console.log("importJSON: " + JSON.stringify(importJSON));
 
-        // 2. get the Import object by POST the JSON file and check it
+        // 2. get the Import object by POST the JSON files and check it
         let importObj = postImportObj(JSON.stringify(importJSON));
         console.log("import: " + JSON.stringify(importObj));
 
         // 3a. for VECTORS only:
-				if (file[0].fileType.toLowerCase() === 'vector') {
-					// B. check the STATE of each task in the Task List
+				if (files[0].fileType.toLowerCase() === 'vector') {
+					// check the STATE of each task in the Task List
 					console.log("check the state of each task... ");
 					importObj.tasks.map( task => {
 						console.log(`task ${task.id} state = ${task.state}`);
@@ -37,15 +41,15 @@ class UploadFilesToGS {
 							if (task.state === 'NO_CRS') {
 								const updateLayerJson = JSON.stringify(layerSrsUpdate());
 								console.log("NO_CRS updateTaskJson: " + updateLayerJson);
-								// create the update SRS Json file and update the task
+								// create the update SRS Json files and update the task
 								updateTaskField(updateLayerJson, importObj.id, task.id, 'layer');
 							} else {
-									file = [];
+									files = [];
 							}
 						}
 					});
 				}
-				// 3b. for RASTERS only: POST the file to the tasks list, in order to create an import task for it
+				// 3b. for RASTERS only: POST the files to the tasks list, in order to create an import task for it
 				else {
 					sendToTask(path, name, importObj.id);
 				}
@@ -53,20 +57,32 @@ class UploadFilesToGS {
         // 4. execute the import task
         executeFileToGeoserver(importObj.id);
 
-        // 5. remove the file from the local store
-        removeFile(path);
-				// in ZIP file: remove the directory (after open the zip file)
-			// 	const splitPath = path.split('.');
-        // if (splitPath[1] === 'zip'){
-			// 		removeFile(splitPath[0]);
-			// 	}
+				// 5. delete all the uncompleted tasks in the import queue
+				deleteUncompleteImports();
 
-        // 6. delete all the uncompleted tasks in the import queue
-        deleteUncompleteImports();
+				// 6. remove the files from the local store
+				removeFile(path);
+				// if ZIP files:
+				// send the path in the return files object to remove the zip directory after uploading the layer in geoserver
+				const splitPath = path.split('.');
+				if (splitPath[1] === 'zip'){
+					files.map( file => {
+						if (file.fileType.toLowerCase() === 'vector'){
+							file.splitPath = splitPath[0].trim();
+						} else {
+							file.splitPath = null;
+							removeFile(splitPath[0]);
+						}
+					});
+				} else {
+					console.log("the files is no a ZIP!");
+					files[0].splitPath = null;
+					console.log("splitPath: " + files[0].splitPath);
+				}
 
-        // 7. return OK
-				console.log("return file: " + JSON.stringify(file));
-        return file;
+				// 7. return the files
+				console.log("return files: " + JSON.stringify(files));
+				return files;
     }
 }
 

@@ -10,6 +10,7 @@ export interface IFileData {
     fileType: string,
     filePath?: string,
     encodeFileName?: string,
-    encodePathName?: string
+    encodePathName?: string,
+    splitPath?: string
 }
 

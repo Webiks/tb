@@ -1,7 +1,6 @@
-const express = require('express');
 const fs = require('fs-extra');
 
-require('../config/serverConfig')();
+require('../../config/serverConfig')();
 const configParams = config().configParams;
 
 module.exports = function() {
@@ -27,15 +26,21 @@ module.exports = function() {
 
     this.renameFile = (temp_path, new_path) => fs.renameSync(temp_path, new_path);
 
-    this.removeFile = (filePath) => {
-        fs.remove(filePath, err => {
-            if (err) return console.error(err);
-            console.log(`the file '${filePath}' was removed!'`);
-        });
-    };
+	this.removeFile = (filePath) => {
+		fs.remove(filePath, err => {
+			console.log('start removing a file');
+			if (err){
+				return console.error(err);
+			} else {
+				console.log(`the file '${filePath}' was removed!'`);
+				return 'ok';
+			}
+		});
+	};
 
-    this.writeFile = (dirpath, file) => {
+	this.writeFile = (dirpath, file) => {
         fs.writeFile(dirpath, JSON.stringify(file), 'utf8', err => {
+						console.log('start writing a file');
             if (err) return console.error(err);
         });
     };

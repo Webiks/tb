@@ -200,7 +200,7 @@ router.post('/:layerName', (req, res) => {
 								.then ( world => {
 										console.log("dbLayers create layer: a. got the world: " + world.name);
 										// update the layerId list (push the new layer's Id)
-									updateWorldLayersId( world._id, newLayer._id , 'updateArray')
+										updateWorldLayersId( world._id, newLayer._id , 'updateArray')
 												.then ( updateWorld => {
 														console.log("dbLayers create layer: b. update the world layersId: " + newLayer.id);
 														res.send(newLayer);

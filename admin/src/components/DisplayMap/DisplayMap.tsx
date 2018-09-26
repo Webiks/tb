@@ -9,7 +9,6 @@ import { IState } from '../../store';
 import { IWorld } from '../../interfaces/IWorld';
 import { IWorldLayer } from '../../interfaces/IWorldLayer';
 import { ITBAction } from '../../consts/action-types';
-import { WorldService } from '../../services/WorldService';
 import { LayerService } from '../../services/LayerService';
 
 /* Prime React components */
@@ -20,6 +19,7 @@ import 'font-awesome/css/font-awesome.css';
 import { Button } from 'primereact/components/button/Button';
 import { InputText } from 'primereact/components/inputtext/InputText';
 import { Dialog } from 'primereact/components/dialog/Dialog';
+import { FileService } from '../../services/FileService';
 
 export interface IDisplayMapProps  {
     worldName: string,
@@ -40,6 +40,7 @@ class DisplayMap extends React.Component {
 
     props: IDisplayMapProps ;
     state: IMapState ;
+    vectorDirRemoved: boolean = false;
 
     layerIndex: number ;
 
@@ -61,7 +62,9 @@ class DisplayMap extends React.Component {
     // get the Capabilities XML file in JSON format
     componentDidMount(){
         this.getJsonCapabilities()
-            .then ( jsonFile => this.createMap(jsonFile))
+            .then ( jsonFile => {
+                this.createMap(jsonFile);
+            })
             .catch( error => {
                 console.error("DisplayMap ERROR: " + error);
                 return error;
@@ -132,13 +135,32 @@ class DisplayMap extends React.Component {
 
     initListeners() {
         this.map.on('moveend', () => {
-            const selectedLayer = { ...this.state.selectedLayer };
             this.updateProperty('zoom', this.map.getView().getZoom());
             // transform the center point from the ol projection to the file projection
             const center = ol.proj.transform(this.map.getView().getCenter(), this.olProjection , this.projection);
             this.updateProperty('center', center);
         });
     }
+
+    // if vector - remove the zip directory (only in the first time)
+    removeVectorZipDir = () => {
+        if (this.state.selectedLayer.fileData.splitPath){
+            console.log("removeVectorZipDir vectorDirRemoved: " + this.vectorDirRemoved);
+            if (!this.vectorDirRemoved){
+                this.removeFile(this.state.selectedLayer.fileData.splitPath);
+            }
+        }
+    };
+
+    removeFile = (filePath: string) => {
+        console.log("calling the File Service..." + filePath);
+        // this.updateProperty('splitPath', null);
+        this.vectorDirRemoved = true;
+        console.log("removeFile vectorDirRemoved: " + this.vectorDirRemoved);
+        FileService.removeFile(filePath)
+            .then( result => console.log(result))
+            .catch(error => { throw new Error(error) });
+    };
 
     onMapPropChanges(property, value) {
         // 1. update the App store
@@ -157,8 +179,9 @@ class DisplayMap extends React.Component {
     updateProperty(property, value) {
         const newLayer = { ...this.state.selectedLayer };
         switch (property){
-            case ('center'):
-                newLayer.data.center = value;
+            case 'splitPath':
+            case 'center':
+                newLayer.data[property] = value;
                 break;
             case 'zoom':
             case 'opacity':
@@ -176,7 +199,9 @@ class DisplayMap extends React.Component {
         LayerService.updateLayer(this.props.layer, this.state.selectedLayer)
             .then ( res =>  {
                 console.warn(`Succeed to update ${this.props.worldName}'s layers`);
-                // 2. update the changes in the App Store and refresh the page
+                // 2. if vector for the first time - remove the zip directory in the upload directory
+                this.removeVectorZipDir();
+                // 3. update the changes in the App Store and refresh the page
                 this.refresh(layers);
             })
             .catch( error => console.error('Failed to update the world: ' + error));
@@ -202,7 +227,10 @@ class DisplayMap extends React.Component {
                     header={`Layer '${this.props.layer.name}' map preview`}
                     footer={mapFooter}
                     responsive={true} style={{width:'35%'}}
-                    onHide={() => this.refresh(this.props.world.layers)}>
+                    onHide={() => {
+                        this.removeVectorZipDir();
+                        this.refresh(this.props.world.layers);
+                    }}>
                 <div className="ui-grid ui-grid-responsive ui-fluid">
                     <div id="map" className="map" style={{ height: '400px', width: '100%' }}/>
                 </div>

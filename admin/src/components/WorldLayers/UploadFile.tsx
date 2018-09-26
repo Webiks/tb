@@ -2,7 +2,6 @@ import * as React from 'react';
 
 import config from '../../config/config';
 import { connect } from 'react-redux';
-import { parseString } from 'xml2js';
 import * as _ from 'lodash';
 import { IState } from '../../store';
 import { IWorld } from '../../interfaces/IWorld';
@@ -14,8 +13,6 @@ import { LayerService } from '../../services/LayerService';
 import { WorldsActions } from '../../actions/world.actions';
 import { FileUpload } from 'primereact/components/fileupload/FileUpload';
 import { AFFILIATION_TYPES } from '../../consts/layer-types';
-
-// var parseString = require('xml2js').parseString;
 
 /* Prime React components */
 import 'primereact/resources/primereact.min.css';
@@ -265,30 +262,6 @@ class UploadFile extends React.Component {
                     .catch(error => this.handleError('UPLOAD: getAllLayersData ERROR: ' + error));
             })
             .catch(error => this.handleError('UPLOAD: getWorldLayersFromGeoserver ERROR: ' + error));
-    };
-
-    getCapabilities = (layer: IWorldLayer) => {
-        LayerService.getCapabilities(this.props.world.workspaceName, layer.name)
-            .then( xml => {
-                console.log("get capabilities XML");
-                // 2. convert the xml data to json
-                return parseString(xml, (err, result) => {
-                    if (err){
-                        return this.handleError('UPLOAD: getCapabilities ERROR translate XML to JS: ' + err);
-                    } else {
-                        console.log("the WMTS Object: " + JSON.stringify(result));
-                        return 'OK'
-                    }
-                });
-
-                // // change the 'localhost' to the App domain (for the remote server)
-                // if (config.isRemote) {
-                //     const oldPath = /localhost/gi;
-                //     const jsonString = JSON.stringify(this.json).replace(oldPath, config.path);  // convert to JSON
-                //     this.json = JSON.parse(jsonString);                                          // convert to Object
-                // }
-            })
-            .catch(error => { throw new Error(error) });
     };
 
     // get other data of the layer

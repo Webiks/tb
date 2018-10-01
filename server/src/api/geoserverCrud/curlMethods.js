@@ -112,8 +112,9 @@ module.exports = function() {
 			// the importer will return an import object (in Vectors - also will prepare the tasks automatically)
 			console.log("Upload File using the cURL...");
 			const curl_createEmptyImport = `${baseCurl} -XPOST ${curlContentTypeHeader} -d "${importJson}" ${configUrl.reqImportCurl}`;
-			console.log("step 1 is DONE..." + curlContentTypeHeader);
+			console.log("step 1 is DONE..." + curl_createEmptyImport);
 			const importJSON = execSync(curl_createEmptyImport);
+			console.log("importJSON: " + importJSON);
 			const importObj = JSON.parse(importJSON);
 			return importObj.import;
 	};
@@ -201,9 +202,14 @@ module.exports = function() {
 		console.log("sendToTask: curl_postToTaskList: " + curl_postToTaskList);
 		const taskJson = execSync(curl_postToTaskList);
 		console.log("taskJSON: " + taskJson);
-		const task = JSON.parse(taskJson);
-		console.log("sent to the Tasks Queue..." + JSON.stringify(task));
-		return task;
+		if (taskJson === 'File upload failed'){
+			console.error('File upload failed!!!');
+			return null;
+		} else {
+			const task = JSON.parse(taskJson);
+			console.log("sent to the Tasks Queue..." + JSON.stringify(task));
+			return task.task;
+		}
 	};
 
 	this.executeFileToGeoserver = (importId) => {

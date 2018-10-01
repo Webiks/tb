@@ -23,7 +23,7 @@ const config = {
     geoBaseUrl: `http://${ip}:${geoserverPort}`,
     authorization: 'Basic YWRtaW46Z2Vvc2VydmVy',
     geoserverUserName: 'sdf09rt2s',
-    maxFileSize: 50000 * 1024 * 1024
+    maxFileSize: 100000 * 1024 * 1024
 };
 
 console.log('Config Path: ' + config.path );

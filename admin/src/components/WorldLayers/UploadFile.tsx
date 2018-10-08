@@ -8,7 +8,6 @@ import { IWorld } from '../../interfaces/IWorld';
 import { ITBAction } from '../../consts/action-types';
 import { IWorldLayer } from '../../interfaces/IWorldLayer';
 import { IFileData } from '../../interfaces/IFileData';
-import { IImageData } from '../../interfaces/IImageData';
 import { LayerService } from '../../services/LayerService';
 import { WorldsActions } from '../../actions/world.actions';
 import { FileUpload } from 'primereact/components/fileupload/FileUpload';
@@ -44,20 +43,23 @@ export interface IReqFile {
 }
 
 export interface IStateWorld {
-    hideSpinner: boolean
+    hideSpinner: boolean;
+    fileList: IFileData[];
 }
 
 class UploadFile extends React.Component {
     props: IPropsUploadFiles;
     layersId: string[] = this.props.world.layersId ? this.props.world.layersId : [];
-    state: IStateWorld = { hideSpinner: true };
+    state: IStateWorld = {
+        hideSpinner: true,
+        fileList: []
+    };
     url: string = `${config.baseUrl}/api/upload/${this.props.world.workspaceName}`;
     growl: any;
     uploadFiles: IFileData[];
 
-    onSelect = (e: any)  => {
+    onSelect = (e: {originalEvent: Event, files: any}): void  => {
         console.log('On Select...');
-        // debugger;
         let fileType: string;
         this.uploadFiles = [];
         // get a list of the e.files (change Files Object to an Array)
@@ -135,60 +137,64 @@ class UploadFile extends React.Component {
         // 3. check the file name (of the valid files) to prevent duplicate names
         // check only if the file list is not empty
         if (this.uploadFiles.length > 0){
-            // check only if there are any layers in the world
-            if (this.props.world.layers.length > 0){
-                let selectedFileList: IFileData[];
-                if (fileType === 'raster') {
-                    selectedFileList = this.uploadFiles;
-                } else {
-                    // VECTORS - all the files are with the same name (check only the first file)
-                    selectedFileList = [this.uploadFiles[0]];
-                }
-                console.log(`selectedFileList Length(before check the name): ${selectedFileList.length}`);
-                selectedFileList.map( ( file: IFileData ) => {
-                    const name = this.getFileName(file.name);
-                    console.log("raster name: " + name);
-                    // 1. check if the name is already exist
-                    if (this.isNameExist(name)){
-                        // remove the file from the file list
-                        this.uploadFiles.splice(this.findFileIndex(name), 1);
-                        this.showError(`the '${name}' file is alredy exist! please remove it or change its name!`);
-                    }
-                    // 2. check that there are no special characters in the name
-                    else if (this.checkForSpecialChar(name)) {
-                        // remove the file from the file list
-                        this.uploadFiles.splice(this.findFileIndex(name), 1);
-                        this.showError(`one or more special characters was found! please, fix the file name!`);
-                    }
-                    else {
-                        console.log("this file name is OK!");
-                    }
-                });
-                console.log(`uploadFiles Length(after check the name): ${this.uploadFiles.length}`);
+            let selectedFileList: IFileData[];
+            if (fileType === 'raster') {
+                selectedFileList = this.uploadFiles;
+            } else {
+                // VECTORS - all the files are with the same name (check only the first file)
+                selectedFileList = [this.uploadFiles[0]];
             }
-        }
-        console.log(`uploadFiles Length(after check the name): ${this.uploadFiles.length}`);
-    };
+            console.log(`selectedFileList Length(before check the name): ${selectedFileList.length}`);
 
-    onBeforeUpload = (e: any): boolean => {
-        console.log('On Before Upload...');
+            selectedFileList.map( ( file: IFileData ) => {
+                const name = this.getFileName(file.name);
+                console.log("file name: " + name);
+                // 1. check if the name is already exist (only if there are layers in the world)
+                if (this.props.world.layers.length > 0){
+                    if (this.isNameExist(name)){
+                        this.removeFileFromList(fileType, name);
+                        this.showError(`the '${name}' file is already exist! please remove it or change its name!`);
+                    }
+                }
+                // 2. check that there are no special characters in the name
+                else if (this.checkForSpecialChar(name)) {
+                    this.removeFileFromList(fileType, name);
+                    this.showError(`one or more special characters was found! please, fix the file name!`);
+                }
+                else {
+                    console.log("this file name is OK!");
+                }
+            });
+            console.log(`uploadFiles Length(after check the name): ${this.uploadFiles.length}`);
+            e.files = this.uploadFiles;
+            this.setState( { fileList: this.uploadFiles});
+        }
+        // if the File List is empty - abort the upload operation
         if (this.uploadFiles.length === 0){
-            this.showError(`the upload was cancled!`);
-            e.xhr.returnValue = false;
-            e.xhr.abort();
-        } else {
-            e.xhr.returnValue = true;
+            // this.showError(`this operation was canceled! please choose again`);
+            event.returnValue = false;
         }
-        console.log(`onBeforeUpload returnValue: ${e.xhr.returnValue}`);
-        return e.returnValue;
     };
 
-    onProgress = (e: any) => {
+    onBeforeUpload = (e: { xhr: XMLHttpRequest, formData: any }): void => {
+        console.log('On Before Upload...');
+        e.formData = this.state.fileList;
+        console.log(`onBeforeUpload formData: ${JSON.stringify(e.formData)}`);
+        if (e.formData.length === 0) {
+            this.showError(`the upload was canceled!`);
+            e.xhr.abort();
+        }
+    };
+
+    onProgress = (e: {originalEvent: ProgressEvent, progress: any}): void => {
         this.setState({ hideSpinner: false });
         const event = e.originalEvent;
+        const percentComplete = Math.round(event.loaded * 100 / event.total);
         if (event.lengthComputable) {
-            if (event.loaded !== event.total){
-                const percentComplete = Math.round(event.loaded * 100 / event.total);
+            if (percentComplete === 0){
+                document.getElementById('progressNumber').innerHTML = 'getting File Data...';
+            }
+            else if (percentComplete < 100){
                 document.getElementById('progressNumber').innerHTML = percentComplete.toString() + '%';
             } else {
                 document.getElementById('progressNumber').innerHTML = 'saving to DataBase...';
@@ -199,7 +205,7 @@ class UploadFile extends React.Component {
         }
     };
 
-    onUpload = (e: any) => {
+    onUpload = (e: {xhr: XMLHttpRequest, files: any}): void => {
         console.log('On Upload...');
         // get the list of the upload files
         let parsingRes: IReqFile[] = JSON.parse(e.xhr.response);
@@ -256,6 +262,15 @@ class UploadFile extends React.Component {
         return this.uploadFiles.indexOf(file);
     };
 
+    removeFileFromList = (fileType, name) => {
+        // remove the file from the file list
+        if (fileType === 'raster'){
+            this.uploadFiles.splice(this.findFileIndex(name), 1);
+        } else {
+            this.uploadFiles = [];
+        }
+    };
+
     updateFilesList = (reqFiles: IReqFile[]) => {
         console.log("updateFilesList reqFiles: " + JSON.stringify(reqFiles));
         reqFiles.map((reqFile: IReqFile) => {
@@ -265,13 +280,15 @@ class UploadFile extends React.Component {
                 console.log("reqFile name: " + reqFile.name);
                 const layerIndex = this.findFileIndex(reqFile.name);
                 console.log("updateFilesList layerIndex: " + layerIndex);
-                // update the file new fields
-                this.uploadFiles[layerIndex].fileUploadDate = reqFile.mtime;
-                this.uploadFiles[layerIndex].filePath = reqFile.filePath;
-                this.uploadFiles[layerIndex].encodeFileName = reqFile.encodeFileName;
-                this.uploadFiles[layerIndex].encodePathName = reqFile.encodePathName;
-                this.uploadFiles[layerIndex].splitPath = reqFile.splitPath;
-                console.log(`updateFilesList File list[${layerIndex}]: ${JSON.stringify(this.uploadFiles[layerIndex])}`);
+                if (layerIndex !== -1){
+                    // update the file new fields
+                    this.uploadFiles[layerIndex].fileUploadDate = reqFile.mtime;
+                    this.uploadFiles[layerIndex].filePath = reqFile.filePath;
+                    this.uploadFiles[layerIndex].encodeFileName = reqFile.encodeFileName;
+                    this.uploadFiles[layerIndex].encodePathName = reqFile.encodePathName;
+                    this.uploadFiles[layerIndex].splitPath = reqFile.splitPath;
+                    console.log(`updateFilesList File list[${layerIndex}]: ${JSON.stringify(this.uploadFiles[layerIndex])}`);
+                }
             }
         });
     };
@@ -440,20 +457,3 @@ const mapDispatchToProps = (dispatch: any) => ({
 
 export default connect(mapStateToProps, mapDispatchToProps)(UploadFile);
 
-// get the Image Data of the layer from the App store
-// getImageData = (file: IFileData): IImageData => {
-//     console.log('getImageData...', file);    //
-//     return {
-//         image: {
-//             width: 0,                          // pixels
-//             height: 0,                         // pixels
-//             horizontalResolution:0,            // dpi
-//             verticalResolution: 0,             // dpi
-//             bitDepth: 0,
-//             compression: ''
-//         },
-//         photo: {
-//             photometricInterpretation: ''       // RGB
-//         }
-//     };
-// };

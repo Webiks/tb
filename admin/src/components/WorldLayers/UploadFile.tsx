@@ -59,7 +59,7 @@ class UploadFile extends React.Component {
     uploadFiles: IFileData[];
 
     onSelect = (e: {originalEvent: Event, files: any}): void  => {
-        console.log('On Select...');
+        console.log('On Select...');        
         let fileType: string;
         this.uploadFiles = [];
         // get a list of the e.files (change Files Object to an Array)
@@ -105,7 +105,7 @@ class UploadFile extends React.Component {
             // 2. for VECTORS only
             else {
                 // A. check that the mandatory .SHP file exist
-                if (this.isShpFileExist(selectedFiles)){
+                if (this.isShpFileExist(selectedFiles)){                
                     // B. check if all the Vector's files names are the same
                     const vectorName = this.getFileName(selectedFiles[0].name);
                     if (this.isNameDiffer(selectedFiles, vectorName)){
@@ -170,8 +170,7 @@ class UploadFile extends React.Component {
             this.setState( { fileList: this.uploadFiles});
         }
         // if the File List is empty - abort the upload operation
-        if (this.uploadFiles.length === 0){
-            // this.showError(`this operation was canceled! please choose again`);
+        if (this.uploadFiles.length === 0){            
             event.returnValue = false;
         }
     };

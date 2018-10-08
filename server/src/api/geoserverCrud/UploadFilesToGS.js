@@ -61,7 +61,7 @@ class UploadFilesToGS {
 							} else {
 								files = uploadToGeoserver(importObj.id);
 							}
-						}
+            }
 					} else {
 						console.log("something is wrong with the JSON file!");
 						files = [];

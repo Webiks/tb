@@ -97,7 +97,7 @@ class LayersDataTable extends React.Component {
                 // 3. update the world in the DataBase with the new list of layers
                 WorldService.updateWorldField(this.props.world, 'layers', layers)
                     .then ( res => {
-                        console.log(`Succeed to update ${this.props.worldName}'s layers`);
+                        console.log(`Succeed to update ${this.state.selectedLayer.inputData.fileName}'s layers`);
                         // 4. update the changes in the App Store and refresh the page
                         this.refresh(layers);
                     })
@@ -200,7 +200,7 @@ class LayersDataTable extends React.Component {
                         <Dialog visible={this.state.displayAlert}
                                 width="350px" modal={true} footer={alertFooter} minY={70}
                                 onHide={() => this.refresh(this.props.layers) }>
-                            <b>DELETE</b> layer <b>{this.state.selectedLayer.name}</b> ?
+                            <b>DELETE</b> layer <b>{this.state.selectedLayer.inputData.fileName}</b> ?
                         </Dialog>
                     </div>
                 }

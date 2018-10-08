@@ -112,10 +112,16 @@ module.exports = function() {
 			// the importer will return an import object (in Vectors - also will prepare the tasks automatically)
 			console.log("Upload File using the cURL...");
 			const curl_createEmptyImport = `${baseCurl} -XPOST ${curlContentTypeHeader} -d "${importJson}" ${configUrl.reqImportCurl}`;
-			console.log("step 1 is DONE..." + curlContentTypeHeader);
+			console.log("step 1 is DONE..." + curl_createEmptyImport);
 			const importJSON = execSync(curl_createEmptyImport);
-			const importObj = JSON.parse(importJSON);
-			return importObj.import;
+			console.log("importJSON: " + importJSON);
+			const importObj = this.IsJsonOK(importJSON);
+			if (!importObj){
+				console.error("the importJSON is empty!");
+				return null;
+			} else {
+				return importObj.import;
+			}
 	};
 
 	this.getImportObj = (importId) => {
@@ -123,8 +129,14 @@ module.exports = function() {
 		const curl_getImport = `${baseCurl} -XGET ${configUrl.reqImportCurl}/${importId}`;
 		console.log("Get the import object..." + curl_getImport);
 		const importJSON = execSync(curl_getImport);
-		const importObj = JSON.parse(importJSON);
-		return importObj.import;
+		const importObj = this.IsJsonOK(importJSON);
+		if (!importObj){
+			console.error("something is wrong with the JSON import file!");
+			return null;
+		} else {
+			console.log("get the import object..." + JSON.stringify(task));
+			return importObj.import;
+		}
 	};
 
 	this.getDataObj = (importId) => {
@@ -132,8 +144,14 @@ module.exports = function() {
 		const curl_getTask = `${baseCurl} -XGET ${configUrl.reqImportCurl}/${importId}/data`;
 		console.log("Get the task object..." + curl_getTask);
 		const taskJSON = execSync(curl_getTask);
-		const taskObj = JSON.parse(taskJSON);
-		return taskObj.task;
+		const task = this.IsJsonOK(taskJSON);
+		if (!task){
+			console.error("something is wrong with the JSON Data file!");
+			return null;
+		} else {
+			console.log("get the data file..." + JSON.stringify(task));
+			return task.task;
+		}
 	};
 
 	this.getFileObj = (importId, fileName) => {
@@ -141,8 +159,14 @@ module.exports = function() {
 		const curl_getTask = `${baseCurl} -XGET ${configUrl.reqImportCurl}/${importId}/data/files/${fileName}`;
 		console.log("Get the task object..." + curl_getTask);
 		const taskJSON = execSync(curl_getTask);
-		const taskObj = JSON.parse(taskJSON);
-		return taskObj.task;
+		const task = this.IsJsonOK(taskJSON);
+		if (!task){
+			console.error("something is wrong with the JSON data file!");
+			return null;
+		} else {
+			console.log("get the file data object..." + JSON.stringify(task));
+			return task.task;
+		}
 	};
 
 	this.getTaskObj = (importId, taskId) => {
@@ -150,16 +174,29 @@ module.exports = function() {
 		const curl_getTask = `${baseCurl} -XGET ${configUrl.reqImportCurl}/${importId}/tasks/${taskId}`;
 		console.log("Get the task object..." + curl_getTask);
 		const taskJSON = execSync(curl_getTask);
-		const taskObj = JSON.parse(taskJSON);
-		return taskObj.task;
+		const task = this.IsJsonOK(taskJSON);
+		if (!task){
+			console.error("something is wrong with the JSON task file!");
+			return null;
+		} else {
+			console.log("get Task object..." + JSON.stringify(task));
+			return task.task;
+		}
 	};
 
 	this.getLayerObj = (importId, taskId) => {
-		// get the task file
+		// get the layer file
 		const curl_getLayer = `${baseCurl} -XGET ${configUrl.reqImportCurl}/${importId}/tasks/${taskId}/layer`;
 		console.log("Get the layer object..." + curl_getLayer);
 		const layerJSON = execSync(curl_getLayer);
-		const layerObj = JSON.parse(layerJSON);
+		const layerObj = this.IsJsonOK(layerJSON);
+		if (!layerObj){
+			console.error("something is wrong with the JSON layer file!");
+			return null;
+		} else {
+			console.log("get layer object..." + JSON.stringify(layerObj));
+			return layerObj.layer;
+		}
 		return layerObj.layer;
 	};
 
@@ -201,9 +238,20 @@ module.exports = function() {
 		console.log("sendToTask: curl_postToTaskList: " + curl_postToTaskList);
 		const taskJson = execSync(curl_postToTaskList);
 		console.log("taskJSON: " + taskJson);
-		const task = JSON.parse(taskJson);
-		console.log("sent to the Tasks Queue..." + JSON.stringify(task));
-		return task;
+		const tasks = this.IsJsonOK(taskJson);
+		if (!tasks){
+			console.error("something is wrong with the JSON tasks file!");
+			return null;
+		} else {
+			console.log("sent to the Tasks Queue..." + JSON.stringify(tasks));
+			if (filepath.split('.')[1] === 'zip'){
+				console.log("sendToTask zip file: " + JSON.stringify(tasks.tasks));
+				return tasks.tasks;
+			} else {
+				console.log("sendToTask single file: " + JSON.stringify(tasks.task));
+				return tasks.task;
+			}
+		}
 	};
 
 	this.executeFileToGeoserver = (importId) => {
@@ -221,4 +269,12 @@ module.exports = function() {
 			console.log("Delete task from the Importer..." + deleteTasks);
 			console.log("DONE!");
 	};
+
+	this.IsJsonOK = (jsonStr) => {
+		try {
+			return JSON.parse(jsonStr);
+		} catch (e) {
+			return null;
+		}
+	}
 };

@@ -1,4 +1,3 @@
-const UploadFilesToGS = require ('./UploadFilesToGS');
 const axios  = require ('axios');
 
 require('../../config/serverConfig')();

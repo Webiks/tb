@@ -7,7 +7,7 @@ const configParams = config().configParams;
 module.exports = function() {
 	this.setOptions = (uploadDir) => {
 			return {
-					// encoding: 'utf-8',
+					encoding: 'utf-8',
 					maxFileSize: configParams.maxFileSize,
 					uploadDir: uploadDir,
 					multiples: true, // req.files to be arrays of files

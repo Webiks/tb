@@ -3,13 +3,12 @@ const router = express.Router();
 const formidable = require('express-formidable');
 const AdmZip = require('adm-zip');
 const UploadFilesToGS = require ('./UploadFilesToGS');
-const UploadFilesToFS = require ('./UploadFilesToFS');
+const UploadFilesToFS = require('./UploadFilesToFS');
 require('../fs/fileMethods')();
 
 const uploadDir = '/public/uploads/';
 const dirPath = __dirname.replace(/\\/g, "/");
 const uploadPath = `${dirPath}${uploadDir}`;
-// const jsonPath = `${dirPath}/public/json`;
 
 const opts = setOptions(uploadPath);
 router.use(formidable(opts));

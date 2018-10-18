@@ -1,8 +1,8 @@
 require('../fs/fileMethods')();
 require('../../config/serverConfig')();
-// const configParams = config().configParams;
 const configUrl = configBaseUrl().configUrl;
 
+// upload files to the File System
 class UploadFilesToFS {
 
 	static uploadFile(workspaceName, reqFiles, name, path) {

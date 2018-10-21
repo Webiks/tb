@@ -69,7 +69,7 @@ module.exports = function() {
 
 	this.removeFile = (filePath) => {
 		fs.remove(filePath, err => {
-			console.log('start removing a file');
+			console.log('start removing a file...');
 			if (err){
 				return console.error(err);
 			} else {

@@ -84,25 +84,6 @@ class UploadFilesToGS {
 			// 2. delete all the uncompleted tasks in the import queue
 			deleteUncompleteImports();
 
-			// 3. remove the files from the local store
-			removeFile(path);
-			// if ZIP files:
-			// send the path in the return files object to remove the zip directory after uploading the layer in geoserver
-			const splitPath = path.split('.');
-			if (splitPath[1] === 'zip') {
-				files.map(file => {
-					if (file.fileType.toLowerCase() === 'vector') {
-						file.splitPath = splitPath[0].trim();
-					} else {
-						file.splitPath = null;
-						removeFile(splitPath[0]);
-					}
-				});
-			} else {
-				console.log("this file is not a ZIP!");
-				files[0].splitPath = null;
-				console.log("splitPath: " + files[0].splitPath);
-			}
 			return files;
 		}
 	}

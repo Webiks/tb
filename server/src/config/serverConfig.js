@@ -21,7 +21,9 @@ module.exports = function(){
                     },
                 baseUrlAppGetLayer: "api/gsLayers/layer",
                 wmtsServiceUrl: "gwc/service/wmts?SERVICE=wmts&REQUEST=getcapabilities&VERSION=1%2E0%2E0",
-                uploadFilesUrl: "file:///D:/GeoServer/data_dir",
+                uploadGSFilesUrl: "file:///D:/GeoServer/data_dir",
+								uploadFilesDirLocal: "file:///C:/dev/Terrabiks/images",
+								uploadFilesDirRemote: "http://tb-server.webiks.com",
                 baseCurl: "curl -u admin:geoserver",
                 headers:
                     {
@@ -47,15 +49,15 @@ module.exports = function(){
         const geoserverImportsUrl = `${this.config().configParams.baseUrlGeoserver.restImports}`;
 
         let baseUrl = '';
-        let serverBaseUrl = '';
+        let uploadUrl = '';
 
         if (process.env.NODE_ENV === "production") {
             baseUrl = this.config().configParams.remoteIP;
-            // serverBaseUrl = `http${baseUrl}`;
+            uploadUrl = this.config().configParams.uploadFilesDirRemote;
         } else {
             baseUrl = this.config().configParams.localIP;
-            // serverBaseUrl = `http${baseUrl}:${this.config().configParams.serverPort}`
-        }
+						uploadUrl = this.config().configParams.uploadFilesDirLocal;
+				}
 
         // const mongoBaseUrl = `mongodb${baseUrl}:${this.config().configParams.mongoPort}`;
         serverBaseUrl = `http${baseUrl}:${this.config().configParams.serverPort}`;
@@ -65,7 +67,7 @@ module.exports = function(){
 
         return {
             configUrl: {
-                // mongoBaseUrl,
+								uploadUrl,
                 serverBaseUrl,
                 baseUrlGeoserver: `${geoserverBaseUrl}/${geoserverUrl}`,
                 baseRestUrlGeoserver: `${geoserverBaseUrl}/${geoserverRestUrl}`,

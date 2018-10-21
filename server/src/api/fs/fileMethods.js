@@ -31,41 +31,22 @@ module.exports = function() {
 			}
 	};
 
-	this.createDir = (targetDir, opts) => {
+	// this.createDir = (targetDir, opts) => {
+	this.createDir = (dirPath) => {
 		console.log('start creating a directory...');
-		console.log(`createDir: dir path = ${targetDir}`);
-		const isRelativeToScript = opts && opts.isRelativeToScript;
-		const sep = path.sep;
-		const initDir = path.isAbsolute(targetDir) ? sep : '';
-		const baseDir = isRelativeToScript ? __dirname : '.';
-
-		return targetDir.split(sep).reduce((parentDir, childDir) => {
-			const curDir = path.resolve(baseDir, parentDir, childDir);
-			try {
-				fs.mkdirSync(curDir);
-				console.log(`Directory ${curDir} created!`);
-			} catch (err) {
-				if (err.code === 'EEXIST') { // curDir already exists!
-					console.log(`Directory ${curDir} already exists!`);
-					return curDir;
-				}
-
-				// To avoid `EISDIR` error on Mac and `EACCES`-->`ENOENT` and `EPERM` on Windows
-				if (err.code === 'ENOENT') { // Throw the original parentDir error on curDir `ENOENT` failure.
-					throw new Error(`EACCES: permission denied, mkdir '${parentDir}'`);
-				}
-
-				const caughtErr = ['EACCES', 'EPERM', 'EISDIR'].indexOf(err.code) > -1;
-				if (!caughtErr || caughtErr && curDir === path.resolve(targetDir)) {
-					throw err; // Throw if it's just the last created dir.
-				}
+		console.log(`createDir: dir path = ${dirPath}`);
+		try {
+			fs.mkdirSync(dirPath);
+			console.log(`Directory ${dirPath} created!`);
+		} catch (err) {
+			if (err.code === 'EEXIST') { // dirPath already exists!
+				console.log(`Directory ${dirPath} already exists!`);
+				return dirPath;
+			} else {
+				console.log(`error occured trying to make Directory ${dirPath}! - ${err}`);
 			}
-
-			return curDir;
-		}, initDir);
+		}
 	};
-
-	this.renameFile = (temp_path, new_path) => fs.renameSync(temp_path, new_path);
 
 	this.removeFile = (filePath) => {
 		fs.remove(filePath, err => {

@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const formidable = require('express-formidable');
 const AdmZip = require('adm-zip');
+const fs = require('fs-extra');
 const UploadFilesToGS = require ('./UploadFilesToGS');
 const UploadFilesToFS = require('./UploadFilesToFS');
 require('../fs/fileMethods')();
@@ -127,7 +128,7 @@ router.post('/:workspaceName', (req, res) => {
 		};
 
 		// renaming the file full path (according to the encoded name)
-		renameFile(file.path, newFile.encodePathName);
+		fs.renameSync(file.path, newFile.encodePathName);
 
 		return newFile;
 	}

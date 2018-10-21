@@ -1,3 +1,4 @@
+const fs = require('fs-extra');
 require('../fs/fileMethods')();
 require('../../config/serverConfig')();
 const configUrl = configBaseUrl().configUrl;
@@ -17,13 +18,14 @@ class UploadFilesToFS {
 			const dirPath = `${dirName}/public/uploads/${workspaceName}`;
 			console.log(`UploadFilesToFS: dir path = ${dirPath}`);
 			createDir(dirPath);
+			// fs.mkdirSync(dirPath);
 			console.log(`the '${dirPath}' directory was created!`);
 
 			// 2. read the files and write them into the directory
 			files = files.map( file => {
 				const filePath = `${dirPath}/${file.name}`;
 				console.log(`filePath: ${filePath}`);
-				renameFile(file.filePath, filePath);
+				fs.renameSync(file.filePath, filePath);
 				console.log(`the '${file.name}' was rename!`);
 				file.filePath = filePath;
 				return {...file};

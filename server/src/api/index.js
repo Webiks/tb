@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const dbWorlds = require('./databaseCrud/dbWorlds');
 const dbLayers = require('./databaseCrud/dbLayers');
-// const gsUpload = require('./geoserverCrud/gsUpload');
 const uploadFiles = require('./upload/uploadFiles');
 const fileSystem = require('./fs/fileSystem');
 const ansyn = require('./ansyn/ansynService');

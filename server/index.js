@@ -13,7 +13,6 @@ const server = http.createServer(app);
 
 require('./src/config/serverConfig')();
 const configParams = config().configParams;
-const configUrl = configBaseUrl().configUrl;
 
 app.use(cors({ credentials: true, origin: true }));
 app.use(bodyParser.json());

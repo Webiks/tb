@@ -322,7 +322,7 @@ class UploadFile extends React.Component {
     };
 
     getImageData = () => {
-        this.setState({ hideSpinner: false });
+        this.setState({ hideSpinner: true });
         console.log("starting get Image Data...");
     };
 
@@ -447,7 +447,7 @@ class UploadFile extends React.Component {
 
                 <div className="content-section implementation">
                     <FileUpload mode="advanced" name="uploads" multiple={true} url={this.url}
-                                accept="image/tiff, .shp, .shx, .dbf, .prj, .qix, .fix, .xml, .sbn, .sbx, .cpg, .jpeg, .jpg, .xml"
+                                accept="image/tiff, .shp, .shx, .dbf, .prj, .qix, .fix, .xml, .sbn, .sbx, .cpg, .jpeg, .jpg, .dng, .xml"
                                 maxFileSize={config.maxFileSize} auto={false}
                                 chooseLabel="Choose Files (no zip)"
                                 onSelect={this.onSelect}

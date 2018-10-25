@@ -32,10 +32,12 @@ class UploadFilesToFS {
 				console.log(`the '${file.name}' was rename!`);
 				const fullPath = `${configUrl.uploadUrl}/${workspaceName}/${file.name}`;
 				file.filePath = fullPath;
-				// 3. get the metadata of the image
-				const imagefile = getMetadata(file);
-				// 4. get the geoData of the JPG
-				const geoData = setGeoData({...imagefile});
+				// 3. get the metadata of the image file
+				const layer = getMetadata(file);
+				console.log(`layer: ${JSON.stringify(layer)}`);
+				// 4. get the geoData of the image file
+				const geoData = setGeoData({...layer});
+				console.log(`geoData: ${JSON.stringify({...geoData})}`);
 				return {...geoData};
 			});
 			console.log("file: " + JSON.stringify(files));
@@ -54,23 +56,23 @@ class UploadFilesToFS {
 		function getMetadata(file) {
 			console.log("start get Metadata: " + JSON.stringify(file));
 			const buffer = fs.readFileSync(file.filePath);
-			console.log("getMetadata reading filePath: " + JSON.stringify(file.filePath));
+			console.log("getMetadata reading filePath: " + file.filePath);
 			const parser = exif.create(buffer);
 			const result = parser.parse();
-			const tags = result.tags;
-			console.log("result tags: " + JSON.stringify(tags));
+			const imageData = result.tags;
 			// exif.enableXmp(); - need to check
-			return {...file, tags};
+			console.log("getMetadata return file: " + JSON.stringify({...file, imageData}));
+			return {...file, imageData};
 		}
 
 		// set the geoData from the image GPS
 		function setGeoData(layer) {
 			// set the center point
-			const centerPoint = [ layer.GPSLongitude, layer.GPSLatitude ];
+			const centerPoint = [ layer.imageData.GPSLongitude, layer.imageData.GPSLatitude ];
 			console.log("setGeoData center point: " + JSON.stringify(centerPoint));
 			// get the Bbox
 			const bbox = getBbboxFromPoint(centerPoint, 500);
-			console.log("getLayerDetailsFromGeoserver polygon: " + JSON.stringify(bbox));
+			console.log("setGeoData polygon: " + JSON.stringify(bbox));
 			// get the footprint
 			const footprint = getFootprintFromBbox(bbox);
 			console.log("getLayerDetailsFromGeoserver footprint: " + JSON.stringify(footprint));
@@ -81,10 +83,11 @@ class UploadFilesToFS {
 		}
 
 		// get the Boundry Box from a giving Center Point using turf
-		function getBbboxFromPoint(centerPoint, recSize){
-			const distance = recSize/1000; 					// the square size in kilometers
-			const point = turf.Point(centerPoint);
-			return turf.buffer(point, distance, {units: 'kilometers'});
+		function getBbboxFromPoint(centerPoint, radius){
+			const distance = radius/1000; 					// the square size in kilometers
+			const point = turf.point(centerPoint);
+			const buffered = turf.buffer(point, distance, {units: 'kilometers', steps: 4});
+			return turf.bbox(buffered);
 		}
 
 		// get footprint from the Bbox

@@ -1,5 +1,5 @@
 const AdmZip = require('adm-zip');
-const formidable = require('express-formidable');
+// const formidable = require('express-formidable');
 const UploadFilesToGS = require('./UploadFilesToGS');
 const UploadFilesToFS = require('./UploadFilesToFS');
 const fs = require('fs-extra');
@@ -7,7 +7,7 @@ require('../fs/fileMethods')();
 
 // ========================================= private  F U N C T I O N S ============================================
 // prepare the file before uploading it to the geoserver
-const setBeforeUpload = (file, fileType) => {
+const setBeforeUpload = (file, fileType, uploadPath) => {
 	console.log("setBeforeUpload File: " + JSON.stringify(file));
 	const name = file.name;
 	const filePath = uploadPath + name;
@@ -31,11 +31,11 @@ const setBeforeUpload = (file, fileType) => {
 	return newFile;
 };
 
-
+// =====================================================================================================================
 const uploadFiles = (req, res) => {
 	const workspaceName = req.params.workspaceName;
 	let reqFiles = req.files.uploads;
-
+	const uploadPath = getUploadPath();
 	console.log("req Files: " + JSON.stringify(reqFiles));
 	console.log("req length: " + reqFiles.length);
 	console.log("uploadPath: " + uploadPath);
@@ -60,7 +60,7 @@ const uploadFiles = (req, res) => {
 		// upload a single file to GeoServer
 		console.log("uploadToGeoserver single file...");
 		console.log("req files (before): " + JSON.stringify(reqFiles));
-		reqFiles = setBeforeUpload(reqFiles, fileType);
+		reqFiles = setBeforeUpload(reqFiles, fileType, uploadPath);
 		name = reqFiles.name;
 		path = reqFiles.filePath;
 		console.log("UploadFiles SINGLE req file(after): " + JSON.stringify(reqFiles));
@@ -127,15 +127,13 @@ const uploadFiles = (req, res) => {
 
 };
 
-const getFormidable = () => {
+getUploadPath = () => {
 	const uploadDir = '/public/uploads/';
 	const dirPath = __dirname.replace(/\\/g, "/");
-	const uploadPath = `${dirPath}${uploadDir}`;
-	const opts = setOptions(uploadPath);
-	return formidable(opts);
+	return `${dirPath}${uploadDir}`;
 };
 
 module.exports = {
 	uploadFiles,
-	getFormidable
+	getUploadPath
 };

@@ -2,9 +2,9 @@ const express = require('express');
 const router = express.Router();
 const formidable = require('express-formidable');
 const AdmZip = require('adm-zip');
-const fs = require('fs-extra');
-const UploadFilesToGS = require ('./UploadFilesToGS');
+const UploadFilesToGS = require('./UploadFilesToGS');
 const UploadFilesToFS = require('./UploadFilesToFS');
+const fs = require('fs-extra');
 require('../fs/fileMethods')();
 
 const uploadDir = '/public/uploads/';
@@ -29,7 +29,7 @@ router.post('/:workspaceName', (req, res) => {
 	let name;
 	let path;
 	let file;
-	if (!reqFiles.length){
+	if (!reqFiles.length) {
 		file = reqFiles;
 	} else {
 		file = reqFiles[0];
@@ -38,7 +38,7 @@ router.post('/:workspaceName', (req, res) => {
 	const fileType = findFileType(file.type);
 
 	// check if need to make a ZIP file
-	if (!reqFiles.length){
+	if (!reqFiles.length) {
 		// upload a single file to GeoServer
 		console.log("uploadToGeoserver single file...");
 		console.log("req files (before): " + JSON.stringify(reqFiles));
@@ -58,7 +58,7 @@ router.post('/:workspaceName', (req, res) => {
 		let zip = new AdmZip();
 
 		// define the names of the files to be zipped (in Sync operation)
-		reqFiles = reqFiles.map( file => {
+		reqFiles = reqFiles.map(file => {
 			let newFile = setBeforeUpload(file, fileType);
 			console.log("newFile: " + JSON.stringify(newFile));
 
@@ -79,7 +79,7 @@ router.post('/:workspaceName', (req, res) => {
 
 	// send to the right upload handler according to the type
 	let files;
-	if (fileType === 'image' || fileType === 'xml'){
+	if (fileType === 'image' || fileType === 'xml') {
 		// save the file in the File System
 		files = UploadFilesToFS.uploadFile(workspaceName, reqFiles, name, path);
 	} else {

@@ -1,5 +1,3 @@
-const express = require('express');
-const router = express.Router();
 const layerModel = require('../../database/schemas/LayerSchema');
 const worldModel = require('../../database/schemas/WorldSchema');
 
@@ -65,6 +63,4 @@ const fetchLayers = (req, res) => {
 		});
 };
 
-router.post('/ansynService', fetchLayers);
-
-module.exports = router;
+module.exports = fetchLayers;

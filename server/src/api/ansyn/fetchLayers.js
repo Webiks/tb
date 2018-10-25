@@ -15,7 +15,7 @@ const addTimeZoneToDate = (date, timeZone) => {
 
 const findLayers = (layersId, start, end, $geometry) => {
 	console.log("before:" + JSON.stringify({ start, end }));
-	// find the world layers that are whitin the giving polygon
+	// find the world layers that are within the giving polygon
 	return layerModel.find({
 		$or: layersId.map((_id) => ({_id})),
 		'footprint.geometry': {$geoWithin: {$geometry}}

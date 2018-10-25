@@ -78,19 +78,12 @@ class DisplayMap extends React.Component {
                 console.log("1. get capabilities XML");
                 // 2. convert the xml data to json
                 this.json = this.parser.read(xml);
-                console.log("WMTS: the JSON file: " + JSON.stringify(this.json));
                 // change the 'localhost' to the App domain (for the remote server)
                 if (config.isRemote) {
                     const oldPath = /localhost/gi;
                     const jsonString = JSON.stringify(this.json).replace(oldPath, config.path);  // convert to JSON
                     this.json = JSON.parse(jsonString);                                          // convert to Object
                 }
-                // change the store name to be the original name of the file (before being encoded)
-                // const encodedName = this.props.layer.store.name;
-                // const fileName = this.props.layer.fileData.name;
-                // const jsonString = JSON.stringify(this.json).replace(encodedName, fileName);     // convert to JSON
-                // this.json = JSON.parse(jsonString);                                              // convert to Object
-
                 return this.json;
             })
             .catch(error => { throw new Error(error) });

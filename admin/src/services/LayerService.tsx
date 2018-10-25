@@ -130,22 +130,13 @@ export class LayerService {
         console.log("0. getLayerData worldLayer: ");
         // 1. get data from GeoServer
         return this.getGeoserverData(workspaceName, layer)
-            . then ( layer => layer )
-            // // 2. get the image data from the file using the Geotiff
-            // .then( layer => {
-            //     console.warn("service: File Path: " + layer.layer.filePath);
-            //     // this.getImageData(layer.layer.filePath)
-            //     this.getImageData(`file://C:/dev/Terrabiks/geoserver/rasters/SugarCane.tif`)
-            //         .then ( imageData => {
-            //             return {...layer, ...imageData };
-            //         })
-            //         .catch(error => this.handleError(error, "LAYER SERVICE: Get Image Data error: " + error));
-            // })
+            .then ( layer => layer )
             .catch(error => this.handleError(error, "LAYER SERVICE: Get Layer Data error: " + error));
     };
 
-    // 1. get data from GeoServer
+    // get data from GeoServer
     static getGeoserverData(workspaceName: string, worldLayer: IWorldLayer): Promise<any> {
+        console.log("start getGeoserverData...");
         return axios
             .get(`${this.baseUrl}/geoserver/${workspaceName}/${worldLayer.name}`)
             .then(layerData => {
@@ -153,23 +144,6 @@ export class LayerService {
             })
             .catch(error => this.handleError(error, "LAYER SERVICE: Get Geoserver Data error: " + error));
     }
-
-    // 2. get data from the image file
-    // static getImageData(url: string): Promise<any> {
-    //     console.log("geotiff: " + GeoTIFF);
-    //     return GeoTIFF.fromUrl("file://C:/dev/Terrabiks/geoserver/rasters/SugarCane.tif")
-    //         .then( tiff => {
-    //             console.log("geotiff tiff: " + JSON.stringify(tiff));
-    //             tiff.getImage()
-    //                 .then( image => {
-    //                     console.log("geotiff image: " + JSON.stringify(image));
-    //                     const raster = image.readRasters();
-    //                     console.log("geotiff raster: " + JSON.stringify(raster));
-    //                     return raster;
-    //                 })
-    //                 .catch(error => this.handleError(error, "LAYER SERVICE: Get Image Data error: " + error));
-    //         });
-    // }
 
     // get Capabilities (from Geoserver)
     static getCapabilities (workspaceName: string, layerName: string): Promise<any> {

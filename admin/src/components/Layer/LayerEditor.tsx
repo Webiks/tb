@@ -117,8 +117,8 @@ class LayerEditor extends React.Component {
 
     getFieldValue = (rowData) => {
         if (rowData.path.includes('center')) {
-            const value0 = (this.state.worldLayer.data.center[0]).toFixed(4);
-            const value1 = (this.state.worldLayer.data.center[1]).toFixed(4);
+            const value0 = (this.state.worldLayer.geoData.centerPoint[0]).toFixed(4);
+            const value1 = (this.state.worldLayer.geoData.centerPoint[1]).toFixed(4);
             return value0 + ', ' + value1;
         }
         else if (rowData.path.includes('size')){

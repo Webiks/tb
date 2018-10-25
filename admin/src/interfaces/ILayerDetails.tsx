@@ -1,41 +1,41 @@
 // Layer Data: Raster and Vector Interfaces
 export interface ILayerDetails {
-    name: string,
-    nativeName?: string,
-    nameSpace?: INameSpace,
-    title?: string,
-    description?: string,
-    keyword?: IStrings,
-    nativeCRS?: string | ICrs
-    srs: string,
-    nativeBoundingBox: INativeBoundingBox,
-    latLonBoundingBox: ILatLonBoundingBox,
-    center: [ number, number],
-    projectionPolicy?: string,
-    enabled: boolean,
-    metadata?: IMetaData,
-    store: IDataStore,
+    name: string;
+    nativeName?: string;
+    nameSpace?: INameSpace;
+    title?: string;
+    description?: string;
+    keyword?: IStrings;
+    nativeCRS?: string | ICrs ;
+    srs: string;
+    nativeBoundingBox: INativeBoundingBox;
+    latLonBoundingBox: ILatLonBoundingBox;
+    center: [ number, number];
+    projectionPolicy?: string;
+    enabled: boolean;
+    metadata?: IMetaData;
+    store: IDataStore;
     // Vectors only
-    maxFeatures: number,
-    numDecimals: number,
-    overridingServiceSRS: boolean,
-    skipNumberMatched: boolean,
-    circularArcPresent: boolean,
-    attributes: IAttributes,
+    maxFeatures: number;
+    numDecimals: number;
+    overridingServiceSRS: boolean;
+    skipNumberMatched: boolean;
+    circularArcPresent: boolean;
+    attributes: IAttributes;
     // Rasters Only
-    nativeFormat: string,
-    grid?: IGrid,
-    supportedFormats?: IStrings,
-    interpolationMethods?: IStrings,
-    defaultInterpolationMethod?: string,
-    dimensions: IDimensions,
-    requestSRS: IStrings,
-    responseSRS: IStrings,
+    nativeFormat: string;
+    grid?: IGrid;
+    supportedFormats?: IStrings;
+    interpolationMethods?: IStrings;
+    defaultInterpolationMethod?: string;
+    dimensions: IDimensions;
+    requestSRS: IStrings;
+    responseSRS: IStrings;
     parameters: IParameters
 }
 
 export interface INameSpace {
-    name: string,
+    name: string;
     href: string
 }
 
@@ -44,63 +44,63 @@ export interface IStrings {
 }
 
 export interface INativeBoundingBox {
-    minx: number,
-    maxx: number,
-    miny: number,
-    maxy: number,
+    minx: number;
+    maxx: number;
+    miny: number;
+    maxy: number;
     crs?: string | ICrs                     // define as a Map in the mongoDB
 }
 
 export interface ILatLonBoundingBox {
-    minx: number,
-    maxx: number,
-    miny: number,
-    maxy: number,
+    minx: number;
+    maxx: number;
+    miny: number;
+    maxy: number;
     crs: string
 }
 
 // define as a Map in the mongoDB
 export interface ICrs {
-    class: string,
+    class: string;
     value: string
 }
 
 // define as a Map in the mongoDB
 export interface IMetaData {
-    entry?: IEntry,
-    dirName?: string,                   // Rasters
+    entry?: IEntry;
+    dirName?: string;                  // Rasters
     recalculateBounds?: string         // Vectors
 }
 
 // define as a Map in the mongoDB
 export interface IEntry {
-    key: string,
+    key: string;
     value: any
 }
 
 export interface IDataStore {
-    class: string,
-    name: string
+    class: string;
+    name: string;
     href: string
 }
 
 export interface IGrid {
-    dimension: number,
-    range: IGridRange,
-    transform: ITransform,
+    dimension: number;
+    range: IGridRange;
+    transform: ITransform;
     crs: string
 }
 export interface IGridRange {
-    low: string,
+    low: string;
     high: string
 }
 
 export interface ITransform {
-    scaleX: number,
-    scaleY: number,
-    shearX: number,
-    shearY: number,
-    translateX: number,
+    scaleX: number;
+    scaleY: number;
+    shearX: number;
+    shearY: number;
+    translateX: number;
     translateY: number
 }
 
@@ -109,16 +109,16 @@ export interface IDimensions {
 }
 
 export interface ICoverageDimension {
-    name: string,
-    description: string,
-    range: ICoverageRange,
-    nullValues: InullValues,
-    unit: string,
+    name: string;
+    description: string;
+    range: ICoverageRange;
+    nullValues: InullValues;
+    unit: string;
     dimensionType: IDimensionType
 }
 
 export interface ICoverageRange {
-    min: number | string,
+    min: number | string;
     max: number | string
 }
 
@@ -139,10 +139,10 @@ export interface IAttributes {
 }
 
 export interface IAttribute {
-    name: string,
-    minOccurs: number,
-    maxOccurs: number,
-    nillable: boolean,
+    name: string;
+    minOccurs: number;
+    maxOccurs: number;
+    nillable: boolean;
     binding: string
 }
 

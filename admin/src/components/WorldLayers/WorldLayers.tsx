@@ -48,7 +48,9 @@ class WorldLayers extends React.Component {
                     .then (() => {
                         // 3. update the App store with the worlds' list
                         console.log(`WorldLayer: 3. update the ${world.name}'s world layers...` + world.layers.length);
+                        console.log("layersId: " + JSON.stringify(world.layersId));
                         this.refresh(world.layersId, world.layers);
+                        console.log("finished to refresh the world...");
                         return world;
                     })
                     .catch(error => {
@@ -69,6 +71,7 @@ class WorldLayers extends React.Component {
 
     // update the App store and refresh the page
     refresh = (layersId: string[], layers: IWorldLayer[]) => {
+        console.log("start refresh...");
         const name = this.props.worldName;
         this.props.updateWorld({ name, layersId, layers });
         this.setState({ hideSpinner: true } );

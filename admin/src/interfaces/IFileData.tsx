@@ -1,4 +1,4 @@
-import { ISelectedFile } from './ISelectedFile';
+import { IImageMetaData } from './IImageMetaData';
 
 export interface IFileData {
     name: string;
@@ -6,11 +6,14 @@ export interface IFileData {
     lastModified: number;
     fileCreatedDate?: Date | string;
     fileUploadDate?: Date | string;
-    fileExtension: string,
-    fileType: string,
-    filePath?: string,
-    encodeFileName?: string,
-    encodePathName?: string,
-    splitPath?: string
+    fileExtension: string;
+    fileType: string;
+    filePath?: string;
+    encodeFileName?: string;
+    encodePathName?: string;
+    splitPath?: string;
+    tags?: IImageMetaData
 }
+
+
 

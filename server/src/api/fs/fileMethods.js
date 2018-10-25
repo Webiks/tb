@@ -31,7 +31,6 @@ module.exports = function() {
 			}
 	};
 
-	// this.createDir = (targetDir, opts) => {
 	this.createDir = (dirPath) => {
 		console.log('start creating a directory...');
 		console.log(`createDir: dir path = ${dirPath}`);

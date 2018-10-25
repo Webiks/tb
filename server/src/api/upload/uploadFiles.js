@@ -2,9 +2,9 @@ const express = require('express');
 const router = express.Router();
 const formidable = require('express-formidable');
 const AdmZip = require('adm-zip');
-const fs = require('fs-extra');
 const UploadFilesToGS = require ('./UploadFilesToGS');
 const UploadFilesToFS = require('./UploadFilesToFS');
+const fs = require('fs-extra');
 require('../fs/fileMethods')();
 
 const uploadDir = '/public/uploads/';

@@ -4,23 +4,29 @@ const Schema = mongoose.Schema;
 
 // for ANSYN: get the polygon from the latLonBoundingBox field in the data using the turf.bboxPolygon(bbox) function
 const footprint = {
-    type: {
-        type: String,
-        enum: ['Feature'],
-        required: true
-    },
-    geometry: {
-        type: {
-            type: String,
-            enum: ['Polygon'],
-            required: true
-        },
-        coordinates: {
-            type: [[[Number]]], // Array of arrays of arrays of numbers
-            required: true
-        }
-    },
-    properties: {}
+	type: {
+		type: String,
+		enum: ['Feature'],
+		required: true
+	},
+	geometry: {
+		type: {
+			type: String,
+			enum: ['Polygon'],
+			required: true
+		},
+		coordinates: {
+			type: [[[Number]]], // Array of arrays of arrays of numbers
+			required: true
+		}
+	},
+	properties: {}
+};
+
+const geoData = {
+		centerPoint: [Number, Number],
+		bbox: [ Number, Number, Number, Number ] | [ Number, Number, Number, Number, Number, Number ],				// [ minx, miny, maxx, maxy ]
+		footprint
 };
 
 // LAYER: from GeoServer - Layer page
@@ -195,20 +201,62 @@ const fileData = {
 		splitPath: String												// the zip path of the upload vector (for removing it later)
 };
 
-// IMAGE DATA: data from the image file
-// const imageData = {
-//     image: {
-//         width: Number,                          // pixels
-//         height: Number,                         // pixels
-//         horizontalResolution: Number,           // dpi
-//         verticalResolution: Number,             // dpi
-//         bitDepth: Number,
-//         compression: String
-//     },
-//     photo: {
-//         photometricInterpretation: String       // RGB
-//     }
-// };
+// IMAGE DATA: metadata of the upload JPG image
+const imageData = {
+		ImageDescription: String,
+		Make: String,
+		Model: String,
+		SerialNumber: String,
+		InteropIndex: String,
+		Software: String,
+		ExifImageWidth: Number,									// the picture size in pixels
+		ExifImageHeight: Number,								// the picture size in pixels
+		Orientation: Number,
+		XResolution: Number,										// resolution
+		YResolution: Number,										// resolution
+		ResolutionUnit: Number,									// resolution
+		ModifyDate: Number,											// modified date
+		DateTimeOriginal: Number,								// original date
+		CreatedDate: Number,										// created date
+		JPGModifiedDate: Date | String,
+		JPGOriginalDate: Date | String,
+		YCbCrPosition: Number,
+		XPComment: [Number],
+		XPKeywords: [Number],
+		GPSVersionId: [Number, Number, Number, Number],
+		GPSLatitudeRef: String,									// x-point orientation (latitude)
+		GPSLatitude: Number,										// x-point (latitude)
+		GPSLongitudeRef: String,								// y-point orientation (longitude)
+		GPSLongitude: Number,										// y-point (longitude)
+		GPSAltitude: Number,										// relative altitude
+		ExposureTime: Number,
+		ExposureProgram: Number,
+		ExposureCompensation: Number,
+		ExposureIndex: String,
+		ExposureMode: Number,
+		FNumber: Number,
+		ISO: Number,
+		CompressedBitPerPixel: Number,
+		ShutterSpeedValue: Number,
+		ApertureValue: Number,
+		MaxApertureValue: Number,
+		SubjectDistance: Number,
+		SubjectDistanceRange: Number,
+		MeteringMode: Number,
+		LightSource: Number,
+		Flash: Number,
+		FocalLength: Number,
+		FocalLengthIn35mmFormat: Number,
+		ColorSpace: Number,
+		CustumRendered: Number,
+		WhiteBalance: Number,
+		DigitalZoomRatio: String,
+		SceneCaptureType: Number,
+		GainControl: Number,
+		Contrast: Number,
+		Saturation: Number,
+		Sharpness: Number
+};
 
 // INPUT DATA: data from the user
 const inputData = {
@@ -234,13 +282,14 @@ const LayerSchema = new Schema({
     href: String ,                                  // href to the Layer page
 		fileName: String,
 		filePath: String,
-    // date: Date,
-    footprint,
+		fileType: { type: String , lowercase: true , enum: ["raster", "vector", "image"]},
+		format: { type: String, uppercase: true, enum: ["GEOTIFF", "SHAPEFILE", "JPG"]},
+		geoData,
     layer,
     store,
     data,
 		fileData,
-    // imageData,
+    imageData,
     inputData
 });
 

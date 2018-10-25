@@ -62,6 +62,7 @@ const getLayerInfoFromGeoserver  = (worldLayer, workspaceName, layerName) => {
 	return GsLayers.getLayerInfoFromGeoserver(workspaceName, layerName)
 		.then( layerInfo => {
 			console.log("1. got Layer Info...");
+			console.log("1. worldLayer: " + JSON.stringify(worldLayer));
 			worldLayer.layer = layerInfo.layer;
 			worldLayer.worldLayerId = layerInfo.layer.resource.name;            // set the layer id
 			worldLayer.layer.type = layerInfo.layer.type.toUpperCase();         // set the layer type
@@ -79,8 +80,10 @@ const getLayerDetailsFromGeoserver  = (worldLayer, resourceUrl) => {
 			let latLonBoundingBox;
 			// get the layer details data according to the layer's type
 			console.log("2. got Layer Details...");
+			console.log("2. worldLayer: " + JSON.stringify(worldLayer));
 			if (worldLayer.layer.type.toLowerCase() === 'raster') {
 				worldLayer.data = parseLayerDetails(worldLayer, layerDetails.coverage);
+				console.log("getLayerDetailsFromGeoserver data: " + JSON.stringify(worldLayer.data));
 				worldLayer.data.metadata = {dirName: layerDetails.coverage.metadata.entry.$};
 			}
 			else if (worldLayer.layer.type.toLowerCase() === 'vector') {
@@ -93,10 +96,18 @@ const getLayerDetailsFromGeoserver  = (worldLayer, resourceUrl) => {
 			// set the data center point
 			worldLayer.data.center =
 				[worldLayer.data.latLonBoundingBox.minx, worldLayer.data.latLonBoundingBox.maxy];
+			console.log("getLayerDetailsFromGeoserver data center: " + JSON.stringify(worldLayer.data.center));
+			const centerPoint = worldLayer.data.center;
+			console.log("getLayerDetailsFromGeoserver center point: " + JSON.stringify(centerPoint));
 
 			// set the Polygon field for Ansyn
-			const { minx, maxx, miny, maxy } = worldLayer.data.latLonBoundingBox;
-			worldLayer.footprint = turf.bboxPolygon([ minx, miny, maxx, maxy ]);
+			const polygon = worldLayer.data.latLonBoundingBox;
+			console.log("getLayerDetailsFromGeoserver polygon: " + JSON.stringify(polygon));
+			const bbox = [ polygon.minx, polygon.miny, polygon.maxx, polygon.maxy ];
+			const footprint = turf.bboxPolygon(bbox);
+			console.log("getLayerDetailsFromGeoserver footprint: " + JSON.stringify(footprint));
+			worldLayer.geoData = { centerPoint, bbox, footprint};
+			console.log("getLayerDetailsFromGeoserver geoData: " + JSON.stringify(worldLayer.geoData));
 
 			// set the store's name
 			worldLayer.layer.storeName = (worldLayer.layer.storeId).split(':')[1];
@@ -148,6 +159,7 @@ const getStoreDataFromGeoserver = (worldLayer, storeUrl) => {
 			worldLayer.store.storeId = worldLayer.layer.storeId;
 			worldLayer.store.name = worldLayer.layer.storeName;
 			worldLayer.store.type = worldLayer.layer.type;
+			worldLayer.format = worldLayer.store.format;
 			console.log("dbLayer store data: " + worldLayer.store.storeId + ', ' + worldLayer.store.type);
 
 			// set the file name
@@ -343,19 +355,33 @@ router.put('/:layerId/:fieldName', (req, res) => {
 // delete a layer from World's Layers list in the Database and from the geoserver
 router.delete('/delete/:layerId', (req, res) => {
 	console.log(`db LAYER SERVER: start DELETE layer: ${req.params.layerId}`);
-	// 1. find the layer from the database
+	// 1. find the layer in the database
 	findLayerById(req.params.layerId)
         .then ( layer => {
 					console.log(`dbLayers remove layer: 1. got the layer: ${layer.name}`);
 					// save the layer data before remove it from the database
-					const removedLayerData = {
-						workspaceName: layer.workspaceName,
-						resourceUrl: layer.layer.resource.href,
-						storeUrl: layer.data.store.href
-					};
+					let removedLayerData;
+					if (layer.fileType !== 'image'){
+						removedLayerData = {
+							workspaceName: layer.workspaceName,
+							resourceUrl: layer.layer.resource.href,
+							storeUrl: layer.data.store.href,
+							type: layer.fileType
+						};
+					}	else {
+						removedLayerData = {
+							workspaceName: layer.workspaceName,
+							type: layer.fileType
+						};
+					}
+					console.log(`removedLayerData: ${JSON.stringify(removedLayerData)}`);
+
 					// 2. remove the layer from the Layers list in the DataBase
 					return removeLayerById(req.params.layerId)
-						.then ( response => removedLayerData )
+						.then ( response => {
+							console.log(`removeLayerById: ${req.params.layerId}`);
+							return removedLayerData;
+						})
 						.catch( error => {
 							throw new Error(`can't find the layer!`);
 						});
@@ -371,18 +397,23 @@ router.delete('/delete/:layerId', (req, res) => {
 						})
 						.then ( world => {
 							console.log("dbLayers remove layer: 3b. update the world layerID array!" + JSON.stringify(world.layersId));
-							// 4. delete the layer from GeoServer:
-							console.log("dbLayers remove layer: 4. start to delete layer from the GeoServer!");
-							return removeLayerFromGeoserver(removedLayerData.resourceUrl, removedLayerData.storeUrl)
-								.then( response => {
-									console.log("dbLayers remove layer: 4b. deleted the store: " + removedLayerData.storeUrl);
-									res.send(response);
-								})
-								.catch(error => {
-									const consoleMessage = `db LAYER: REMOVE layer's store ERROR!: ${error}`;
-									const sendMessage = `layer ${req.params.layerId} can't be found!`;
-									handleError(res, 404, consoleMessage, sendMessage);
-								})
+							if (removedLayerData.type !== 'image'){
+								// 4. delete the layer from GeoServer:
+								console.log("dbLayers remove layer: 4. start to delete layer from the GeoServer!");
+								return removeLayerFromGeoserver(removedLayerData.resourceUrl, removedLayerData.storeUrl)
+									.then( response => {
+										console.log("dbLayers remove layer: 4b. deleted the store: " + removedLayerData.storeUrl);
+										res.send(response);
+									})
+									.catch(error => {
+										const consoleMessage = `db LAYER: REMOVE layer's store ERROR!: ${error}`;
+										const sendMessage = `layer ${req.params.layerId} can't be found!`;
+										handleError(res, 404, consoleMessage, sendMessage);
+									})
+							} else {
+								console.log("succeed to remove an image file!");
+								res.send('succeed to remove an image file!');
+							}
 						})
 						.catch( error => {
 							const consoleMessage = `db LAYER: ERROR to find the World in DataBase!: ${error}`;

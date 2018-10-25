@@ -1,7 +1,6 @@
+const exif = require('exif-parser');
 const fs = require('fs-extra');
 require('../fs/fileMethods')();
-require('../../config/serverConfig')();
-const configUrl = configBaseUrl().configUrl;
 
 // upload files to the File System
 class UploadFilesToFS {
@@ -18,17 +17,18 @@ class UploadFilesToFS {
 			const dirPath = `${dirName}/public/uploads/${workspaceName}`;
 			console.log(`UploadFilesToFS: dir path = ${dirPath}`);
 			createDir(dirPath);
-			// fs.mkdirSync(dirPath);
 			console.log(`the '${dirPath}' directory was created!`);
 
-			// 2. read the files and write them into the directory
+			// 2. move the files into the directory
 			files = files.map( file => {
 				const filePath = `${dirPath}/${file.name}`;
 				console.log(`filePath: ${filePath}`);
 				fs.renameSync(file.filePath, filePath);
 				console.log(`the '${file.name}' was rename!`);
 				file.filePath = filePath;
-				return {...file};
+				// 3. get the metadata of the image
+				const imagefile = getMetadata(file);
+				return {...imagefile};
 			});
 			console.log("file: " + JSON.stringify(files));
 
@@ -40,6 +40,20 @@ class UploadFilesToFS {
 		// return the files
 		console.log("return files: " + JSON.stringify(files));
 		return files;
+
+		// ============================================= Private Functions =============================================
+		// get the metadata of the image file
+		function getMetadata(file) {
+			console.log("start get Metadata: " + JSON.stringify(file));
+			const buffer = fs.readFileSync(file.filePath);
+			const parser = exif.create(buffer);
+			const result = parser.parse();
+			const tags = result.tags;
+			console.log("result tags: " + JSON.stringify(tags));
+			// exif.enableXmp(); - need to check
+
+			return {...file, tags};
+		}
 	}
 }
 

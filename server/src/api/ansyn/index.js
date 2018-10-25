@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const fetchLayers = require('./fetchLayers');
-const uploadImage = require('./uploadImage');
+const uploadFiles = require('../upload/uploadFiles');
 
 router.post('/fetchLayers', fetchLayers);
-router.post('/uploadImage', uploadImage);
+router.use('/uploadImage', uploadFiles);
 
 module.exports = router;

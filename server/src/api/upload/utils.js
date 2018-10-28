@@ -1,37 +1,9 @@
 const AdmZip = require('adm-zip');
-// const formidable = require('express-formidable');
 const UploadFilesToGS = require('./UploadFilesToGS');
 const UploadFilesToFS = require('./UploadFilesToFS');
 const fs = require('fs-extra');
 require('../fs/fileMethods')();
 
-// ========================================= private  F U N C T I O N S ============================================
-// prepare the file before uploading it to the geoserver
-const setBeforeUpload = (file, fileType, uploadPath) => {
-	console.log("setBeforeUpload File: " + JSON.stringify(file));
-	const name = file.name;
-	const filePath = uploadPath + name;
-	const encodeFileName = encodeURI(name);
-	const encodePathName = uploadPath + encodeFileName;
-
-	const newFile = {
-		name,
-		size: file.size,
-		path: file.path,
-		mtime: new Date(file.mtime).toISOString(),
-		fileType,
-		filePath,
-		encodeFileName,
-		encodePathName
-	};
-
-	// renaming the file full path (according to the encoded name)
-	fs.renameSync(file.path, newFile.encodePathName);
-
-	return newFile;
-};
-
-// =====================================================================================================================
 const uploadFiles = (req, res) => {
 	const workspaceName = req.params.workspaceName;
 	let reqFiles = req.files.uploads;
@@ -52,10 +24,10 @@ const uploadFiles = (req, res) => {
 	} else {
 		file = reqFiles[0];
 	}
-// find the file type
+	// find the file type
 	const fileType = findFileType(file.type);
 
-// check if need to make a ZIP file
+	// check if need to make a ZIP file
 	if (!reqFiles.length) {
 		// upload a single file to GeoServer
 		console.log("uploadToGeoserver single file...");
@@ -95,7 +67,7 @@ const uploadFiles = (req, res) => {
 	}
 	console.log("UploadFiles SEND req files: " + JSON.stringify(reqFiles));
 
-// send to the right upload handler according to the type
+	// send to the right upload handler according to the type
 	let files;
 	if (fileType === 'image' || fileType === 'xml') {
 		// save the file in the File System
@@ -104,10 +76,10 @@ const uploadFiles = (req, res) => {
 		// upload the file to GeoServer
 		files = UploadFilesToGS.uploadFile(workspaceName, reqFiles, name, path);
 	}
-// remove the files from the local store
+	// remove the files from the local store
 	removeFile(path);
-// if ZIP files: remove the zip file
-// send the path in the return files object to remove the zip directory after uploading the layer in geoserver
+	// if ZIP files: remove the zip file
+	// send the path in the return files object to remove the zip directory after uploading the layer in geoserver
 	const splitPath = path.split('.');
 	if (splitPath[1] === 'zip') {
 		files.map(file => {
@@ -127,10 +99,36 @@ const uploadFiles = (req, res) => {
 
 };
 
-getUploadPath = () => {
+const getUploadPath = () => {
 	const uploadDir = '/public/uploads/';
 	const dirPath = __dirname.replace(/\\/g, "/");
 	return `${dirPath}${uploadDir}`;
+};
+
+// ========================================= private  F U N C T I O N S ============================================
+// prepare the file before uploading it to the geoserver
+const setBeforeUpload = (file, fileType, uploadPath) => {
+	console.log("setBeforeUpload File: " + JSON.stringify(file));
+	const name = file.name;
+	const filePath = uploadPath + name;
+	const encodeFileName = encodeURI(name);
+	const encodePathName = uploadPath + encodeFileName;
+
+	const newFile = {
+		name,
+		size: file.size,
+		path: file.path,
+		mtime: new Date(file.mtime).toISOString(),
+		fileType,
+		filePath,
+		encodeFileName,
+		encodePathName
+	};
+
+	// renaming the file full path (according to the encoded name)
+	fs.renameSync(file.path, newFile.encodePathName);
+
+	return newFile;
 };
 
 module.exports = {

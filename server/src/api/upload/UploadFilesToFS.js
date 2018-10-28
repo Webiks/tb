@@ -7,7 +7,6 @@ require('../../config/serverConfig')();
 const configParams = config().configParams;
 const configUrl = configBaseUrl().configUrl;
 
-
 // upload files to the File System
 class UploadFilesToFS {
 

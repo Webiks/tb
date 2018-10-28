@@ -3,8 +3,9 @@ const exif = require('exif-parser');
 const fs = require('fs-extra');
 require('../fs/fileMethods')();
 
+const createNewLayer = require('../databaseCrud/createNewLayer');
+
 require('../../config/serverConfig')();
-const configParams = config().configParams;
 const configUrl = configBaseUrl().configUrl;
 
 // upload files to the File System
@@ -30,54 +31,102 @@ class UploadFilesToFS {
 				fs.renameSync(file.filePath, filePath);
 				console.log(`the '${file.name}' was rename!`);
 				const fullPath = `${configUrl.uploadUrl}/${workspaceName}/${file.name}`;
-				file.filePath = fullPath;
-				// 3. get the metadata of the image file
-				const layer = getMetadata(file);
-				console.log(`layer: ${JSON.stringify(layer)}`);
-				// 4. get the geoData of the image file
-				const geoData = setGeoData({...layer});
-				console.log(`geoData: ${JSON.stringify({...geoData})}`);
-				return {...geoData};
+
+				// 3. set the file Data from the upload file
+				const fileData = setFileData(file);
+				console.log("1. set FileData: " + JSON.stringify(fileData));
+
+				// 4. set the world-layer data
+				let worldLayer = setLayerFields(fileData, workspaceName, fullPath);
+				console.log("2. worldLayer include Filedata: " + JSON.stringify(worldLayer));
+
+				// 5. get the metadata of the image file
+				const metadata = getMetadata(worldLayer);
+				console.log(`3. include Metadata: ${JSON.stringify(metadata)}`);
+
+				// 6. get the geoData of the image file
+				const geoData = setGeoData({...metadata});
+				const newFile = {...geoData};
+				console.log(`4. include Geodata: ${JSON.stringify(newFile)}`);
+
+				// 7. save the file to mongo database and return the new file is succeed
+				return createNewLayer(newFile)
+					.then( result => {
+						console.log("createNewLayer result: " + result);
+						return newFile;
+					})
+					.catch( error => {
+						console.error("ERROR createNewLayer: " + error);
+						return null;
+					});
 			});
-			console.log("file: " + JSON.stringify(files));
+			// return the files
+			return Promise.all(files);
 
 		} else {
 			console.log("there ara no files to upload!");
-			files = [];
+			return [];
+		}
+		// ============================================= Private Functions =================================================
+		// set the File Data from the ReqFiles
+		function setFileData(file){
+			const name = file.name;
+			const fileExtension = name.substring(name.lastIndexOf('.'));
+			return {
+				name,
+				size: file.size,
+				lastModified: file.lastModified,
+				fileUploadDate: file.fileUploadDate,
+				fileExtension,
+				fileType: 'image',
+				encodeFileName: file.encodeFileName,
+				encodePathName: file.encodePathName,
+				splitPath: null
+			}
 		}
 
-		// return the files
-		console.log("return files: " + JSON.stringify(files));
-		return files;
+		// set the world-layer main fields
+		function setLayerFields(file, workspaceName, fullPath){
+			const name = (file.name).split('.')[0];
+			const worldLayerId =`${workspaceName}:${name}`.trim();
 
-		// ============================================= Private Functions =============================================
+			return {
+				name,
+				workspaceName,
+				worldLayerId,
+				fileName: file.name,
+				filePath: fullPath,
+				fileType: 'image',
+				format: 'JPG',
+				fileData: file
+			}
+		}
+
 		// get the metadata of the image file
-		function getMetadata(file) {
-			console.log("start get Metadata: " + JSON.stringify(file));
+		function getMetadata(file){
+			console.log("start get Metadata...");
 			const buffer = fs.readFileSync(file.filePath);
-			console.log("getMetadata reading filePath: " + file.filePath);
 			const parser = exif.create(buffer);
 			const result = parser.parse();
 			const imageData = result.tags;
 			// exif.enableXmp(); - need to check
-			console.log("getMetadata return file: " + JSON.stringify({...file, imageData}));
 			return {...file, imageData};
 		}
 
 		// set the geoData from the image GPS
-		function setGeoData(layer) {
+		function setGeoData(layer){
 			// set the center point
 			const centerPoint = [ layer.imageData.GPSLongitude, layer.imageData.GPSLatitude ];
 			console.log("setGeoData center point: " + JSON.stringify(centerPoint));
 			// get the Bbox
-			const bbox = getBbboxFromPoint(centerPoint, 500);
+			const bbox = getBbboxFromPoint(centerPoint, 200);
 			console.log("setGeoData polygon: " + JSON.stringify(bbox));
 			// get the footprint
 			const footprint = getFootprintFromBbox(bbox);
-			console.log("getLayerDetailsFromGeoserver footprint: " + JSON.stringify(footprint));
+			console.log("setGeoData footprint: " + JSON.stringify(footprint));
 			// set the geoData
 			const geoData = {centerPoint, bbox, footprint};
-			console.log("getLayerDetailsFromGeoserver geoData: " + JSON.stringify(layer.geoData));
+			console.log("setGeoData: " + JSON.stringify(geoData));
 			return {...layer, geoData};
 		}
 

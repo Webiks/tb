@@ -4,6 +4,12 @@ const UploadFilesToFS = require('./UploadFilesToFS');
 const fs = require('fs-extra');
 require('../fs/fileMethods')();
 
+const getUploadPath = () => {
+	const uploadDir = '/public/uploads/';
+	const dirPath = __dirname.replace(/\\/g, "/");
+	return `${dirPath}${uploadDir}`;
+};
+
 const uploadFiles = (req, res) => {
 	const workspaceName = req.params.workspaceName;
 	let reqFiles = req.files.uploads;
@@ -29,9 +35,7 @@ const uploadFiles = (req, res) => {
 
 	// check if need to make a ZIP file
 	if (!reqFiles.length) {
-		// upload a single file to GeoServer
-		console.log("uploadToGeoserver single file...");
-		console.log("req files (before): " + JSON.stringify(reqFiles));
+		// set a single file before upload
 		reqFiles = setBeforeUpload(reqFiles, fileType, uploadPath);
 		name = reqFiles.name;
 		path = reqFiles.filePath;
@@ -69,7 +73,7 @@ const uploadFiles = (req, res) => {
 
 	// send to the right upload handler according to the type
 	let files;
-	if (fileType === 'image' || fileType === 'xml') {
+	if (fileType === 'image') {
 		// save the file in the File System
 		files = UploadFilesToFS.uploadFile(workspaceName, reqFiles, name, path);
 	} else {
@@ -99,14 +103,8 @@ const uploadFiles = (req, res) => {
 
 };
 
-const getUploadPath = () => {
-	const uploadDir = '/public/uploads/';
-	const dirPath = __dirname.replace(/\\/g, "/");
-	return `${dirPath}${uploadDir}`;
-};
-
 // ========================================= private  F U N C T I O N S ============================================
-// prepare the file before uploading it to the geoserver
+// prepare the file before uploading it
 const setBeforeUpload = (file, fileType, uploadPath) => {
 	console.log("setBeforeUpload File: " + JSON.stringify(file));
 	const name = file.name;
@@ -118,7 +116,7 @@ const setBeforeUpload = (file, fileType, uploadPath) => {
 		name,
 		size: file.size,
 		path: file.path,
-		mtime: new Date(file.mtime).toISOString(),
+		fileUploadDate: new Date(file.mtime).toISOString(),
 		fileType,
 		filePath,
 		encodeFileName,

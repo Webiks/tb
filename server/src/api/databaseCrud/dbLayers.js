@@ -6,6 +6,7 @@ const worldModel = require('../../database/schemas/WorldSchema');
 const layerModel = require('../../database/schemas/LayerSchema');
 const MongoCrud = require('../../database/MongoCrud');
 const GsLayers = require("../geoserverCrud/GsLayers");
+const createNewLayer = require('./createNewLayer');
 
 require('../../config/serverConfig')();
 const configParams = config().configParams;
@@ -197,42 +198,9 @@ const removeLayerFromGeoserver = (resourceUrl, storeUrl) => {
 // ==============
 // create a new layer in the DataBase(passing a new worldLayer object in the req.body)
 router.post('/:layerName', (req, res) => {
-	console.log('db LAYER SERVER: start to CREATE new Layer in the DataBase...' + req.body.name);
-	// 1. create the new layer in the Layers list and get the layer id (from mongoDB)
-	dbLayerCrud.add(req.body)
-		.then(newLayer => {
-			// 2. add the layer Id to the layersId list in the world
-			return findWorldByWorkspaceName(req.body.workspaceName)
-				.then(world => {
-					if (!world) {
-						throw new Error('No Workspace!');
-					}
-					return world;
-				})
-				.then(world => {
-					console.log("dbLayers create layer: a. got the world: " + world.name);
-					// update the layerId list (push the new layer's Id)
-					updateWorldLayersId(world._id, newLayer._id, 'updateArray')
-						.then(updateWorld => {
-							console.log("dbLayers create layer: b. update the world layersId: " + newLayer.id);
-							res.send(newLayer);
-						})
-						.catch(error => {
-							const consoleMessage = `db LAYER: ERROR to update the World in DataBase!: ${error}`;
-							const sendMessage = `Failed to update ${req.body.workspaceName} layersId field!`;
-							handleError(res, 500, consoleMessage, sendMessage);
-						})
-				})
-				.catch(error => {
-					console.error(`db LAYER: ERROR to find the World in DataBase!: ${error}`);
-					res.status(404).send(`Failed to find ${req.body.workspaceName} workspace!`);
-				})
-		})
-		.catch(error => {
-			const consoleMessage = `db LAYER: ERROR to CREATE New LAYER in DataBase!: ${error}`;
-			const sendMessage = `Failed to create ${req.params.layerName} layer!`;
-			handleError(res, 500, consoleMessage, sendMessage);
-		});
+	createNewLayer(req.body)
+		.then( newLayer => res.send(newLayer))
+		.catch ( error => handleError(res, 500, 'failed to create new layer!', message));
 });
 
 // ============

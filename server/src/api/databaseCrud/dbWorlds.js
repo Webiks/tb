@@ -31,13 +31,15 @@ const handleError = (res, status, consoleMessage, sendMessage) => {
 // ==============
 // create a new world (passing a new world object in the req.body)
 router.post('/:worldName', (req, res) => {
-    console.log('db WORLD SERVER: start to CREATE new World: ' + req.params.worldName + ' in Geoserver');
+    const world = req.body;
+    world._id = req.params.worldName;
+		console.log('db WORLD SERVER: start to CREATE new World: ' + world._id + ' in Geoserver');
     // 1. in GeoServer
-    GsWorlds.createNewWorldOnGeoserver(req.params.worldName)
+    GsWorlds.createNewWorldOnGeoserver(world._id)
         .then( response => {
             // 2. in the DataBase
             console.log('db WORLD SERVER: start to CREATE new World in the DataBase...');
-            dbWorldCrud.add(req.body)
+            dbWorldCrud.add(world)
                 .then( response => res.send(response))
                 .catch( error => {
 									const consoleMessage = `db WORLD: ERROR in CREATE a New World in DataBase!: ${error}`;
@@ -122,10 +124,10 @@ router.put('/:worldName/:fieldName', (req, res) => {
 //  REMOVE
 // =========
 // delete a world
-router.delete('/delete/:workspaceName/:worldId', (req, res) => {
-    console.log("dbWorlds: delete world params: " + req.params.workspaceName + ", id: " + req.params.worldId);
+router.delete('/delete/:worldId', (req, res) => {
+    console.log("dbWorlds: delete world id: " + req.params.worldId);
     // 1. delete the world(workspace) from GeoServer:
-    GsWorlds.deleteWorldFromGeoserver(req.params.workspaceName)
+    GsWorlds.deleteWorldFromGeoserver(req.params.worldId)
         .then( response => {
 					// 2. get the world
 					findWorldById(req.params.worldId)

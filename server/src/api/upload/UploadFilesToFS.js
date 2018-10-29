@@ -37,7 +37,7 @@ class UploadFilesToFS {
 				console.log("1. set FileData: " + JSON.stringify(fileData));
 
 				// 4. set the world-layer data
-				let worldLayer = setLayerFields(fileData, workspaceName, fullPath);
+				let worldLayer = setLayerFields(fileData, fullPath);
 				console.log("2. worldLayer include Filedata: " + JSON.stringify(worldLayer));
 
 				// 5. get the metadata of the image file
@@ -50,7 +50,7 @@ class UploadFilesToFS {
 				console.log(`4. include Geodata: ${JSON.stringify(newFile)}`);
 
 				// 7. save the file to mongo database and return the new file is succeed
-				return createNewLayer(newFile)
+				return createNewLayer(newFile, workspaceName)
 					.then( result => {
 						console.log("createNewLayer result: " + result);
 						return newFile;
@@ -86,14 +86,11 @@ class UploadFilesToFS {
 		}
 
 		// set the world-layer main fields
-		function setLayerFields(file, workspaceName, fullPath){
+		function setLayerFields(file, fullPath){
 			const name = (file.name).split('.')[0];
-			const worldLayerId =`${workspaceName}:${name}`.trim();
 
 			return {
 				name,
-				workspaceName,
-				worldLayerId,
 				fileName: file.name,
 				filePath: fullPath,
 				fileType: 'image',

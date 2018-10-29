@@ -29,8 +29,6 @@ const handleError = (res, status, consoleMessage, sendMessage) => {
 // ==========
 const findWorldById = (_id) => dbWorldCrud.get({_id});
 
-const findWorldByWorkspaceName = (workspaceName) => dbWorldCrud.get({workspaceName});
-
 const updateWorldLayersId = (_id, layerId, operation) =>
 	dbWorldCrud.updateField({_id}, {layersId: layerId}, operation);
 // ===========
@@ -59,13 +57,12 @@ const parseLayerDetails = (worldLayer, data) => {
 };
 
 // 1. get the layer's info (resource)
-const getLayerInfoFromGeoserver = (worldLayer, workspaceName, layerName) => {
-	return GsLayers.getLayerInfoFromGeoserver(workspaceName, layerName)
+const getLayerInfoFromGeoserver = (worldLayer, worldId, layerName) => {
+	return GsLayers.getLayerInfoFromGeoserver(worldId, layerName)
 		.then(layerInfo => {
 			console.log("1. got Layer Info...");
 			console.log("1. worldLayer: " + JSON.stringify(worldLayer));
 			worldLayer.layer = layerInfo.layer;
-			worldLayer.worldLayerId = layerInfo.layer.resource.name;            // set the layer id
 			worldLayer.layer.type = layerInfo.layer.type.toUpperCase();         // set the layer type
 			return layerInfo.layer.resource.href;
 		})
@@ -122,7 +119,7 @@ const getLayerDetailsFromGeoserver = (worldLayer, resourceUrl) => {
 // 3. get the store's data
 const getStoreDataFromGeoserver = (worldLayer, storeUrl) => {
 	return GsLayers.getStoreDataFromGeoserver(storeUrl)
-		.then(store => {
+		.then( store => {
 			console.log("3. got Store Data...");
 			// get the store data according to the layer's type
 			let url;
@@ -137,7 +134,7 @@ const getStoreDataFromGeoserver = (worldLayer, storeUrl) => {
 				};
 				worldLayer.filePath = store.coverageStore.url;                          // for the file path
 				console.log("dbLayer RASTER url = " + worldLayer.filePath);
-				worldLayer.store.format = store.coverageStore.type.toUpperCase();       // set the store format
+				worldLayer.format = store.coverageStore.type.toUpperCase();       			// set the format
 			}
 			else if (worldLayer.layer.type.toLowerCase() === 'vector') {
 				console.log("dbLayer get VECTOR data...");
@@ -151,7 +148,7 @@ const getStoreDataFromGeoserver = (worldLayer, storeUrl) => {
 				};
 				worldLayer.filePath = worldLayer.store.connectionParameters.url;        // for the file path
 				console.log("dbLayer VECTOR url = " + worldLayer.filePath);
-				worldLayer.store.format = store.dataStore.type.toUpperCase();           // set the store format
+				worldLayer.format = store.dataStore.type.toUpperCase();           			// set the format
 			}
 			else {
 				res.status(500).send('ERROR: unknown layer TYPE!');
@@ -160,7 +157,7 @@ const getStoreDataFromGeoserver = (worldLayer, storeUrl) => {
 			worldLayer.store.storeId = worldLayer.layer.storeId;
 			worldLayer.store.name = worldLayer.layer.storeName;
 			worldLayer.store.type = worldLayer.layer.type;
-			worldLayer.format = worldLayer.store.format;
+
 			console.log("dbLayer store data: " + worldLayer.store.storeId + ', ' + worldLayer.store.type);
 
 			// set the file name
@@ -197,8 +194,10 @@ const removeLayerFromGeoserver = (resourceUrl, storeUrl) => {
 //  CREATE (add)
 // ==============
 // create a new layer in the DataBase(passing a new worldLayer object in the req.body)
-router.post('/:layerName', (req, res) => {
-	createNewLayer(req.body)
+router.post(':/worldId/:layerName', (req, res) => {
+	console.log("create Layer: req.body = " + JSON.stringify(req.body));
+	console.log("create Layer: worldId = " + req.params.worldId);
+	createNewLayer(req.body, req.params.worldId)
 		.then( newLayer => res.send(newLayer))
 		.catch ( error => handleError(res, 500, 'failed to create new layer!', message));
 });
@@ -234,9 +233,9 @@ router.get('/:layerId', (req, res) => {
 //  GET from GEOSERVER
 // ====================
 // get all the World's Layers list from GeoServer
-router.get('/geoserver/:workspaceName', (req, res) => {
-	console.log(`geo LAYER SERVER: start GET ALL ${req.params.workspaceName} World's Layers...`);
-	GsLayers.getWorldLayerListFromGeoserver(req.params.workspaceName)
+router.get('/geoserver/:worldId', (req, res) => {
+	console.log(`geo LAYER SERVER: start GET ALL ${req.params.worldId} World's Layers...`);
+	GsLayers.getWorldLayerListFromGeoserver(req.params.worldId)
 		.then(response => res.send(response.layers.layer))
 		.catch(error => {
 			const consoleMessage = `db LAYER: GET-ALL from GeoServer ERROR!: ${error}`;
@@ -246,12 +245,12 @@ router.get('/geoserver/:workspaceName', (req, res) => {
 });
 
 // get World's Layer DATA from GeoServer
-router.get('/geoserver/:workspaceName/:layerName', (req, res) => {
+router.get('/geoserver/:worldId/:layerName', (req, res) => {
 	const layerName = req.params.layerName;
 	const worldLayer = {name: layerName};
 	console.log(`geo LAYER SERVER: start GET ${layerName} layer DATA...`);
 	// 1. get the layer's info
-	getLayerInfoFromGeoserver(worldLayer, req.params.workspaceName, layerName)
+	getLayerInfoFromGeoserver(worldLayer, req.params.worldId, layerName)
 		.then(resourceUrl => {
 			// 2. get the layer's details
 			return getLayerDetailsFromGeoserver(worldLayer, resourceUrl)
@@ -270,8 +269,8 @@ router.get('/geoserver/:workspaceName/:layerName', (req, res) => {
 });
 
 // get Capabilities XML file - WMTS Request for display the selected layer
-router.get('/geoserver/wmts/:workspaceName/:layerName', (req, res) => {
-	const capabilitiesUrl = `${configUrl.baseUrlGeoserver}/${req.params.workspaceName}/${req.params.layerName}/${configParams.wmtsServiceUrl}`;
+router.get('/geoserver/wmts/:worldId/:layerName', (req, res) => {
+	const capabilitiesUrl = `${configUrl.baseUrlGeoserver}/${req.params.worldId}/${req.params.layerName}/${configParams.wmtsServiceUrl}`;
 	console.log("geo LAYER SERVER: start GetCapabilities url = " + capabilitiesUrl);
 	GsLayers.getCapabilitiesFromGeoserver(capabilitiesUrl)
 		.then(response => res.send(response))
@@ -321,7 +320,7 @@ router.put('/:layerId/:fieldName', (req, res) => {
 //  REMOVE layer
 // ==============
 // delete a layer from World's Layers list in the Database and from the geoserver
-router.delete('/delete/:layerId', (req, res) => {
+router.delete('/delete/:/worldId/:layerId', (req, res) => {
 	console.log(`db LAYER SERVER: start DELETE layer: ${req.params.layerId}`);
 	// 1. find the layer in the database
 	findLayerById(req.params.layerId)
@@ -331,14 +330,14 @@ router.delete('/delete/:layerId', (req, res) => {
 			let removedLayerData;
 			if (layer.fileType !== 'image') {
 				removedLayerData = {
-					workspaceName: layer.workspaceName,
+					worldId: req.params.worldId,
 					resourceUrl: layer.layer.resource.href,
 					storeUrl: layer.data.store.href,
 					type: layer.fileType
 				};
 			} else {
 				removedLayerData = {
-					workspaceName: layer.workspaceName,
+					worldId: req.params.worldId,
 					type: layer.fileType
 				};
 			}
@@ -357,7 +356,7 @@ router.delete('/delete/:layerId', (req, res) => {
 		.then(removedLayerData => {
 			console.log(`db LAYER SERVER: 2. removed the layer from the layers list in MongoDB!`);
 			// 3. remove the layer's Id from the world's layersId array
-			return findWorldByWorkspaceName(removedLayerData.workspaceName)
+			return findWorldById(removedLayerData._id)
 				.then(world => {
 					console.log("dbLayers remove layer: 3a. got the world: " + world.name);
 					// update the layerId list (pull the layer's Id from the layersId field in the world)
@@ -385,7 +384,7 @@ router.delete('/delete/:layerId', (req, res) => {
 				})
 				.catch(error => {
 					const consoleMessage = `db LAYER: ERROR to find the World in DataBase!: ${error}`;
-					const sendMessage = `Failed to find ${removedLayerData.workspaceName} workspace!`;
+					const sendMessage = `Failed to find ${removedLayerData.worldId} world!`;
 					handleError(res, 404, consoleMessage, sendMessage);
 				})
 		})

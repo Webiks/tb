@@ -11,15 +11,15 @@ const configUrl = configBaseUrl().configUrl;
 // upload files to the File System
 class UploadFilesToFS {
 
-	static uploadFile(workspaceName, reqFiles, name, path) {
+	static uploadFile(worldId, reqFiles, name, path) {
 		let files = reqFiles.length ? reqFiles : [reqFiles];
 		console.log("starting to uploadFile to FS...");
 		console.log("uploadFile to FS files: " + JSON.stringify(files));
 		console.log("uploadFile PATH: " + path);
 
 		if (files.length !== 0) {
-			// 1. creating a new directory by the name of the workspace (if not exist)
-			const dirPath = `${configUrl.uploadUrlRelativy}/${workspaceName}`;
+			// 1. creating a new directory by the name of the workspace(form geoserver - if not exist)
+			const dirPath = `${configUrl.uploadUrlRelativy}/${worldId}`;
 			console.log(`UploadFilesToFS: dir path = ${dirPath}`);
 			createDir(dirPath);
 			console.log(`the '${dirPath}' directory was created!`);
@@ -30,7 +30,7 @@ class UploadFilesToFS {
 				console.log(`filePath: ${filePath}`);
 				fs.renameSync(file.filePath, filePath);
 				console.log(`the '${file.name}' was rename!`);
-				const fullPath = `${configUrl.uploadUrl}/${workspaceName}/${file.name}`;
+				const fullPath = `${configUrl.uploadUrl}/${worldId}/${file.name}`;
 
 				// 3. set the file Data from the upload file
 				const fileData = setFileData(file);
@@ -50,7 +50,7 @@ class UploadFilesToFS {
 				console.log(`4. include Geodata: ${JSON.stringify(newFile)}`);
 
 				// 7. save the file to mongo database and return the new file is succeed
-				return createNewLayer(newFile, workspaceName)
+				return createNewLayer(newFile, worldId)
 					.then( result => {
 						console.log("createNewLayer result: " + result);
 						return newFile;

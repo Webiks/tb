@@ -16,25 +16,10 @@ const dbWorldCrud = new MongoCrud(worldModel);
 const dbLayerCrud = new MongoCrud(layerModel);
 
 // ============== F U N C T I O N ======================
-// ===========
-// E R R O R S
-// ===========
 const handleError = (res, status, consoleMessage, sendMessage) => {
 	console.error('db Layer: ' + consoleMessage);
 	res.status(status).send(sendMessage);
 };
-
-// ==========
-// W O R L D
-// ==========
-const findWorldById = (_id) => dbWorldCrud.get({_id});
-
-const updateWorldLayersId = (_id, layerId, operation) =>
-	dbWorldCrud.updateField({_id}, {layersId: layerId}, operation);
-// ===========
-// L A Y E R S
-// ===========
-const findLayerById = (_id) => dbLayerCrud.get({_id});
 
 // parse layer data
 const parseLayerDetails = (worldLayer, data) => {
@@ -66,9 +51,6 @@ const getLayerInfoFromGeoserver = (worldLayer, worldId, layerName) => {
 			worldLayer.layer.type = layerInfo.layer.type.toUpperCase();         // set the layer type
 			return layerInfo.layer.resource.href;
 		})
-		.catch(error => {
-			throw new Error(`can't find the Layer's Info page!`);
-		});
 };
 
 // 2. get the layer's details
@@ -111,9 +93,6 @@ const getLayerDetailsFromGeoserver = (worldLayer, resourceUrl) => {
 			worldLayer.layer.storeName = (worldLayer.layer.storeId).split(':')[1];
 			return worldLayer.data.store.href;
 		})
-		.catch(error => {
-			throw new Error(`can't find the Layer's Details page!`);
-		});
 };
 
 // 3. get the store's data
@@ -169,25 +148,14 @@ const getStoreDataFromGeoserver = (worldLayer, storeUrl) => {
 			// return the world-layer with all the data from GeoServer
 			return worldLayer;
 		})
-		.catch(error => {
-			throw new Error(`can't find the Store page!`);
-		});
 };
-
-const removeLayerById = (_id) => dbLayerCrud.remove({_id});
 
 // delete the layer from GeoServer
 const removeLayerFromGeoserver = (resourceUrl, storeUrl) => {
 	// 1. delete the layer according to the resource Url
+	// 2. delete the store
 	return GsLayers.deleteLayerFromGeoserver(resourceUrl)
-		.then(success => {
-			console.log("dbLayers remove layer: 4a. deleted the layer resource: " + resourceUrl);
-			// 2. delete the store
-			return GsLayers.deleteLayerFromGeoserver(storeUrl)
-		})
-		.catch(error => {
-			throw new Error(`can't delete layer from geoserver!`);
-		});
+		.then(() => GsLayers.deleteLayerFromGeoserver(storeUrl));
 };
 
 // ==============
@@ -199,7 +167,11 @@ router.post(':/worldId/:layerName', (req, res) => {
 	console.log("create Layer: worldId = " + req.params.worldId);
 	createNewLayer(req.body, req.params.worldId)
 		.then( newLayer => res.send(newLayer))
-		.catch ( error => handleError(res, 500, 'failed to create new layer!', message));
+		.catch ( error => {
+			const consoleMessage = `db LAYER: ERROR to CREATE a new Layer!: ${error}`;
+			const sendMessage = `ERROR: failed to create new layer!: ${error}`;
+			handleError(res, 500, consoleMessage, sendMessage);
+		});
 });
 
 // ============
@@ -212,7 +184,7 @@ router.get('/', (req, res) => {
 		.then(response => res.send(response))
 		.catch(error => {
 			const consoleMessage = `db LAYER: ERROR in GET-ALL Layers!: ${error}`;
-			const sendMessage = `there are no layers!`;
+			const sendMessage = `ERROR: there are no layers!: ${error}`;
 			handleError(res, 404, consoleMessage, sendMessage);
 		});
 });
@@ -220,11 +192,11 @@ router.get('/', (req, res) => {
 // get a Layer from the Database by id
 router.get('/:layerId', (req, res) => {
 	console.log(`db LAYER SERVER: start GET ${req.params.layerId} Layer by id...`);
-	findLayerById(req.params.layerId)
+	dbLayerCrud.get(req.params.layerId)
 		.then(response => res.send(response))
 		.catch(error => {
 			const consoleMessage = `db LAYER: ERROR in GET a LAYER!: ${error}`;
-			const sendMessage = `layer ${req.params.layerId} can't be found!`;
+			const sendMessage = `ERROR: layer ${req.params.layerId} can't be found!: ${error}`;
 			handleError(res, 404, consoleMessage, sendMessage);
 		});
 });
@@ -239,7 +211,7 @@ router.get('/geoserver/:worldId', (req, res) => {
 		.then(response => res.send(response.layers.layer))
 		.catch(error => {
 			const consoleMessage = `db LAYER: GET-ALL from GeoServer ERROR!: ${error}`;
-			const sendMessage = `there are no layers!`;
+			const sendMessage = `ERROR: there are no layers!: ${error}`;
 			handleError(res, 404, consoleMessage, sendMessage);
 		});
 });
@@ -263,7 +235,7 @@ router.get('/geoserver/:worldId/:layerName', (req, res) => {
 		.then(worldLayer => res.send(worldLayer))
 		.catch(error => {
 			const consoleMessage = `db LAYER: ERROR Get Layer Data From Geoserver!: ${error}`;
-			const sendMessage = `can't get Layer's Data From Geoserver!`;
+			const sendMessage = `ERROR: can't get Layer's Data From Geoserver!: ${error}`;
 			handleError(res, 404, consoleMessage, sendMessage);
 		});
 });
@@ -275,8 +247,9 @@ router.get('/geoserver/wmts/:worldId/:layerName', (req, res) => {
 	GsLayers.getCapabilitiesFromGeoserver(capabilitiesUrl)
 		.then(response => res.send(response))
 		.catch(error => {
-			console.error(`db LAYER: GetCapabilities ERROR!: ${error}`);
-			res.status(404).send(`Capabilities XML file of ${req.params.layerName} can't be found!`);
+			const consoleMessage = `db LAYER: GetCapabilities ERROR!: ${error}`;
+			const sendMessage = `ERROR: Capabilities XML file of ${req.params.layerName} can't be found!: ${error}`;
+			handleError(res, 404, consoleMessage, sendMessage);
 		});
 });
 
@@ -289,8 +262,9 @@ router.put('/:layerName', (req, res) => {
 	dbLayerCrud.update(req.body)
 		.then(response => res.send(response))
 		.catch(error => {
-			console.error(`db LAYER: UPDATE Layer ERROR!: ${error}`);
-			res.status(500).send(`Failed to update ${req.body.name} layer!`);
+			const consoleMessage = `db LAYER: UPDATE Layer ERROR!: ${error}`;
+			const sendMessage = `ERROR: Failed to update ${req.body.name} layer!: ${error}`;
+			handleError(res, 500, consoleMessage, sendMessage);
 		});
 });
 
@@ -311,8 +285,9 @@ router.put('/:layerId/:fieldName', (req, res) => {
 	dbWorldCrud.updateField(entityId, updatedField, operation)
 		.then(response => res.send(response))
 		.catch(error => {
-			console.error(`db LAYER: UPDATE-FIELD Layer ERROR!: ${error}`);
-			res.status(500).send(`Failed to update layer id: ${req.params.layerId}!`);
+			const consoleMessage = `db LAYER:  UPDATE-FIELD Layer ERROR!: ${error}`;
+			const sendMessage = `ERROR: Failed to update layer id: ${req.params.layerId}!: ${error}`;
+			handleError(res, 500, consoleMessage, sendMessage);
 		});
 });
 
@@ -323,7 +298,7 @@ router.put('/:layerId/:fieldName', (req, res) => {
 router.delete('/delete/:/worldId/:layerId', (req, res) => {
 	console.log(`db LAYER SERVER: start DELETE layer: ${req.params.layerId}`);
 	// 1. find the layer in the database
-	findLayerById(req.params.layerId)
+	dbLayerCrud.get(req.params.layerId)
 		.then(layer => {
 			console.log(`dbLayers remove layer: 1. got the layer: ${layer.name}`);
 			// save the layer data before remove it from the database
@@ -344,23 +319,20 @@ router.delete('/delete/:/worldId/:layerId', (req, res) => {
 			console.log(`removedLayerData: ${JSON.stringify(removedLayerData)}`);
 
 			// 2. remove the layer from the Layers list in the DataBase
-			return removeLayerById(req.params.layerId)
-				.then(response => {
+			return dbLayerCrud.remove(req.params.layerId)
+				.then(() => {
 					console.log(`removeLayerById: ${req.params.layerId}`);
 					return removedLayerData;
 				})
-				.catch(error => {
-					throw new Error(`can't find the layer!`);
-				});
 		})
 		.then(removedLayerData => {
 			console.log(`db LAYER SERVER: 2. removed the layer from the layers list in MongoDB!`);
 			// 3. remove the layer's Id from the world's layersId array
-			return findWorldById(removedLayerData._id)
+			return dbWorldCrud.get(removedLayerData._id)
 				.then(world => {
 					console.log("dbLayers remove layer: 3a. got the world: " + world.name);
 					// update the layerId list (pull the layer's Id from the layersId field in the world)
-					return updateWorldLayersId(world._id, req.params.layerId, 'removeFromArray');
+					return dbWorldCrud.updateField(world._id, req.params.layerId, 'removeFromArray');
 				})
 				.then(world => {
 					console.log("dbLayers remove layer: 3b. update the world layerID array!" + JSON.stringify(world.layersId));
@@ -372,25 +344,15 @@ router.delete('/delete/:/worldId/:layerId', (req, res) => {
 								console.log("dbLayers remove layer: 4b. deleted the store: " + removedLayerData.storeUrl);
 								res.send(response);
 							})
-							.catch(error => {
-								const consoleMessage = `db LAYER: REMOVE layer's store ERROR!: ${error}`;
-								const sendMessage = `layer ${req.params.layerId} can't be found!`;
-								handleError(res, 404, consoleMessage, sendMessage);
-							})
 					} else {
 						console.log("succeed to remove an image file!");
 						res.send('succeed to remove an image file!');
 					}
 				})
-				.catch(error => {
-					const consoleMessage = `db LAYER: ERROR to find the World in DataBase!: ${error}`;
-					const sendMessage = `Failed to find ${removedLayerData.worldId} world!`;
-					handleError(res, 404, consoleMessage, sendMessage);
-				})
 		})
 		.catch(error => {
 			const consoleMessage = `db LAYER: ERROR to REMOVE LAYER from DataBase!: ${error}`;
-			const sendMessage = `Failed to delete layer id: ${req.params.layerId}!`;
+			const sendMessage = `ERROR: Failed to delete layer id: ${req.params.layerId}!: ${error}`;
 			handleError(res, 500, consoleMessage, sendMessage);
 		});
 });

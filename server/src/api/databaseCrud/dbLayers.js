@@ -192,7 +192,7 @@ router.get('/', (req, res) => {
 // get a Layer from the Database by id
 router.get('/:layerId', (req, res) => {
 	console.log(`db LAYER SERVER: start GET ${req.params.layerId} Layer by id...`);
-	dbLayerCrud.get(req.params.layerId)
+	dbLayerCrud.get({ _id: req.params.layerId })
 		.then(response => res.send(response))
 		.catch(error => {
 			const consoleMessage = `db LAYER: ERROR in GET a LAYER!: ${error}`;
@@ -273,7 +273,7 @@ router.put('/:layerId/:fieldName', (req, res) => {
 	console.log("db LAYER SERVER: start to UPDATE-FIELD layer " + req.params.layerId);
 	const fieldName = req.params.fieldName;
 	const fieldValue = req.body['newValue'];
-	const entityId = {_id: req.params.layerId};
+	const entityId = {_id: req.params.layerId };
 
 	let updatedField = {};
 	updatedField[fieldName] = fieldValue;
@@ -298,7 +298,7 @@ router.put('/:layerId/:fieldName', (req, res) => {
 router.delete('/delete/:/worldId/:layerId', (req, res) => {
 	console.log(`db LAYER SERVER: start DELETE layer: ${req.params.layerId}`);
 	// 1. find the layer in the database
-	dbLayerCrud.get(req.params.layerId)
+	dbLayerCrud.get({ _id: req.params.layerId })
 		.then(layer => {
 			console.log(`dbLayers remove layer: 1. got the layer: ${layer.name}`);
 			// save the layer data before remove it from the database
@@ -319,7 +319,7 @@ router.delete('/delete/:/worldId/:layerId', (req, res) => {
 			console.log(`removedLayerData: ${JSON.stringify(removedLayerData)}`);
 
 			// 2. remove the layer from the Layers list in the DataBase
-			return dbLayerCrud.remove(req.params.layerId)
+			return dbLayerCrud.remove({ _id: req.params.layerId })
 				.then(() => {
 					console.log(`removeLayerById: ${req.params.layerId}`);
 					return removedLayerData;
@@ -328,11 +328,11 @@ router.delete('/delete/:/worldId/:layerId', (req, res) => {
 		.then(removedLayerData => {
 			console.log(`db LAYER SERVER: 2. removed the layer from the layers list in MongoDB!`);
 			// 3. remove the layer's Id from the world's layersId array
-			return dbWorldCrud.get(removedLayerData._id)
+			return dbWorldCrud.get({ _id: removedLayerData._id })
 				.then(world => {
 					console.log("dbLayers remove layer: 3a. got the world: " + world.name);
 					// update the layerId list (pull the layer's Id from the layersId field in the world)
-					return dbWorldCrud.updateField(world._id, req.params.layerId, 'removeFromArray');
+					return dbWorldCrud.updateField({ _id: world._id }, { layersId: req.params.layerId }, 'removeFromArray');
 				})
 				.then(world => {
 					console.log("dbLayers remove layer: 3b. update the world layerID array!" + JSON.stringify(world.layersId));

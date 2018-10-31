@@ -28,7 +28,7 @@ router.post('/:worldName', (req, res) => {
 			// 2. in the DataBase
 			console.log('db WORLD SERVER: start to CREATE new World in the DataBase...');
 			dbWorldCrud.add(world)
-				.then(response => res.send(response))
+				.then(response => res.send(response));
 		})
 		.catch(error => {
 			const consoleMessage = `db WORLD: ERROR in CREATE a New World in GeoServer!: ${error}`;
@@ -55,7 +55,7 @@ router.get('/', (req, res) => {
 // get One World from the Database by its Name
 router.get('/:worldId', (req, res) => {
 	console.log(`db WORLD SERVER: start GET ${req.params.worldId} World by id...`);
-	dbWorldCrud.get(req.params.worldId)
+	dbWorldCrud.get({ _id: req.params.worldId })
 		.then(response => res.send(response))
 		.catch(error => {
 			const consoleMessage = `db WORLD: ERROR in GET the World!: ${error}`;
@@ -113,14 +113,14 @@ router.delete('/delete/:worldId', (req, res) => {
 	GsWorlds.deleteWorldFromGeoserver(req.params.worldId)
 		.then(response => {
 			// 2. get the world
-			dbWorldCrud.get(req.params.worldId)
+			dbWorldCrud.get({ _id: req.params.worldId })
 				.then(world => {
 					// 3. remove the world's layers from the DataBase
 					dbLayerCrud.remove({ $or: world.layersId.map((_id) => ({ _id })) });
 				})
 				.then(() => {
 					// 4. delete the world from the DataBase
-					dbWorldCrud.remove(req.params.worldId)
+					dbWorldCrud.remove({ _id: req.params.worldId })
 						.then((layers) => res.send(layers));
 				});
 		})

@@ -9,9 +9,15 @@ const router = express.Router();
 const dbWorldCrud = new MongoCrud(worldModel);
 const dbLayerCrud = new MongoCrud(layerModel);
 
+// ============== F U N C T I O N =================================
 const handleError = (res, status, consoleMessage, sendMessage) => {
 	console.error('db WORLD: ' + consoleMessage);
 	res.status(status).send(sendMessage);
+};
+
+// check if a giving layer exists in another world
+const isLayerExistInAnotherWorld = (id, layersId) => {
+	return layersId.some(layerId => id === layerId);
 };
 
 // ==============
@@ -112,21 +118,34 @@ router.delete('/delete/:worldId', (req, res) => {
 	// 1. delete the world(workspace) from GeoServer:
 	GsWorlds.deleteWorldFromGeoserver(req.params.worldId)
 		.then(response => {
-			// 2. get the world
+			// 2. get the world's layersId Array
 			dbWorldCrud.get({ _id: req.params.worldId })
-				.then(world => {
-					// 3. remove the world's layers from the DataBase
-					dbLayerCrud.remove({ $or: world.layersId.map((_id) => ({ _id })) });
-				})
-				.then(() => {
-					// 4. delete the world from the DataBase
+				.then(({ layersId }) => {
+					// 3. delete the world from the DataBase
 					dbWorldCrud.remove({ _id: req.params.worldId })
-						.then((layers) => res.send(layers));
+						.then(() => {
+							// 4. check if world's layers exist in another worlds
+							layersId.forEach(worldLayerId => {
+								// a. get all the worlds that left
+								dbWorldCrud.getAll().then(worlds => {
+									console.log('dbWorld get all worlds: ' + JSON.stringify(worlds));
+									// b. check if the world's layers exist in another worlds
+									const isLayerExist = worlds.some(world => isLayerExistInAnotherWorld(worldLayerId, world.layersId));
+									console.log('isLayerExist: ', isLayerExist);
+									// c. remove the layer from the DataBase only if it doesn't exist in another world
+									if (!isLayerExist) {
+										console.log('start to remove layer: ', worldLayerId);
+										dbLayerCrud.remove({ _id: worldLayerId });
+									}
+								});
+							});
+						});
+					res.send(`succeed to delete ${req.params.worldId} world!`);
 				});
 		})
 		.catch((error) => {
 			const consoleMessage = `db WORLD: ERROR in DELETE World from GeoServer!: ${error}`;
-			const sendMessage = `ERROR: Failed to delete ${req.params.geoserverName} world from GeoServer!: ${error}`;
+			const sendMessage = `ERROR: Failed to delete ${req.params.worldId} world from GeoServer!: ${error}`;
 			handleError(res, 404, consoleMessage, sendMessage);
 		});
 });

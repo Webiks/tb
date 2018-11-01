@@ -114,6 +114,7 @@ const setBeforeUpload = (file, fileType, uploadPath) => {
 	const encodePathName = uploadPath + encodeFileName;
 
 	const newFile = {
+		_id: name,
 		name,
 		size: file.size,
 		path: file.path,

@@ -46,7 +46,7 @@ const getLayerInfoFromGeoserver = (worldLayer, worldId, layerName) => {
 	return GsLayers.getLayerInfoFromGeoserver(worldId, layerName)
 		.then(layerInfo => {
 			console.log("1. got Layer Info...");
-			console.log("1. worldLayer: " + JSON.stringify(worldLayer));
+			console.log("1. worldLayer: ", JSON.stringify(worldLayer));
 			worldLayer.layer = layerInfo.layer;
 			worldLayer.layer.type = layerInfo.layer.type.toUpperCase();         // set the layer type
 			return layerInfo.layer.resource.href;
@@ -60,10 +60,10 @@ const getLayerDetailsFromGeoserver = (worldLayer, resourceUrl) => {
 			let latLonBoundingBox;
 			// get the layer details data according to the layer's type
 			console.log("2. got Layer Details...");
-			console.log("2. worldLayer: " + JSON.stringify(worldLayer));
+			console.log("2. worldLayer: ", JSON.stringify(worldLayer));
 			if (worldLayer.layer.type.toLowerCase() === 'raster') {
 				worldLayer.data = parseLayerDetails(worldLayer, layerDetails.coverage);
-				console.log("getLayerDetailsFromGeoserver data: " + JSON.stringify(worldLayer.data));
+				console.log("getLayerDetailsFromGeoserver data: ", JSON.stringify(worldLayer.data));
 				worldLayer.data.metadata = {dirName: layerDetails.coverage.metadata.entry.$};
 			}
 			else if (worldLayer.layer.type.toLowerCase() === 'vector') {
@@ -76,18 +76,18 @@ const getLayerDetailsFromGeoserver = (worldLayer, resourceUrl) => {
 			// set the data center point
 			worldLayer.data.center =
 				[worldLayer.data.latLonBoundingBox.minx, worldLayer.data.latLonBoundingBox.maxy];
-			console.log("getLayerDetailsFromGeoserver data center: " + JSON.stringify(worldLayer.data.center));
+			console.log("getLayerDetailsFromGeoserver data center: ", JSON.stringify(worldLayer.data.center));
 			const centerPoint = worldLayer.data.center;
-			console.log("getLayerDetailsFromGeoserver center point: " + JSON.stringify(centerPoint));
+			console.log("getLayerDetailsFromGeoserver center point: ", JSON.stringify(centerPoint));
 
 			// set the Polygon field for Ansyn
 			const polygon = worldLayer.data.latLonBoundingBox;
-			console.log("getLayerDetailsFromGeoserver polygon: " + JSON.stringify(polygon));
+			console.log("getLayerDetailsFromGeoserver polygon: ", JSON.stringify(polygon));
 			const bbox = [polygon.minx, polygon.miny, polygon.maxx, polygon.maxy];
 			const footprint = turf.bboxPolygon(bbox);
-			console.log("getLayerDetailsFromGeoserver footprint: " + JSON.stringify(footprint));
+			console.log("getLayerDetailsFromGeoserver footprint: ", JSON.stringify(footprint));
 			worldLayer.geoData = {centerPoint, bbox, footprint};
-			console.log("getLayerDetailsFromGeoserver geoData: " + JSON.stringify(worldLayer.geoData));
+			console.log("getLayerDetailsFromGeoserver geoData: ", JSON.stringify(worldLayer.geoData));
 
 			// set the store's name
 			worldLayer.layer.storeName = (worldLayer.layer.storeId).split(':')[1];
@@ -112,7 +112,7 @@ const getStoreDataFromGeoserver = (worldLayer, storeUrl) => {
 					}
 				};
 				worldLayer.filePath = store.coverageStore.url;                          // for the file path
-				console.log("dbLayer RASTER url = " + worldLayer.filePath);
+				console.log("dbLayer RASTER url = ", worldLayer.filePath);
 				worldLayer.format = store.coverageStore.type.toUpperCase();       			// set the format
 			}
 			else if (worldLayer.layer.type.toLowerCase() === 'vector') {
@@ -126,7 +126,7 @@ const getStoreDataFromGeoserver = (worldLayer, storeUrl) => {
 					}
 				};
 				worldLayer.filePath = worldLayer.store.connectionParameters.url;        // for the file path
-				console.log("dbLayer VECTOR url = " + worldLayer.filePath);
+				console.log("dbLayer VECTOR url = ", worldLayer.filePath);
 				worldLayer.format = store.dataStore.type.toUpperCase();           			// set the format
 			}
 			else {
@@ -137,14 +137,14 @@ const getStoreDataFromGeoserver = (worldLayer, storeUrl) => {
 			worldLayer.store.name = worldLayer.layer.storeName;
 			worldLayer.store.type = worldLayer.layer.type;
 
-			console.log("dbLayer store data: " + worldLayer.store.storeId + ', ' + worldLayer.store.type);
+			console.log(`dbLayer store data: ${worldLayer.store.storeId}, ${worldLayer.store.type}`);
 
 			// set the file name
 			const path = worldLayer.filePath;
-			console.log("dbLayer filePath: " + worldLayer.filePath);
+			console.log("dbLayer filePath: ", worldLayer.filePath);
 			const extension = path.substring(path.lastIndexOf('.'));
 			worldLayer.fileName = `${worldLayer.store.name}${extension}`;
-			console.log("dbLayer fileName: " + worldLayer.fileName);
+			console.log("dbLayer fileName: ", worldLayer.fileName);
 			// return the world-layer with all the data from GeoServer
 			return worldLayer;
 		})
@@ -162,9 +162,9 @@ const removeLayerFromGeoserver = (resourceUrl, storeUrl) => {
 //  CREATE (add)
 // ==============
 // create a new layer in the DataBase(passing a new worldLayer object in the req.body)
-router.post(':/worldId/:layerName', (req, res) => {
-	console.log("create Layer: req.body = " + JSON.stringify(req.body));
-	console.log("create Layer: worldId = " + req.params.worldId);
+router.post('/:worldId/:layerName', (req, res) => {
+	console.log("create Layer: req.body = ", JSON.stringify(req.body));
+	console.log("create Layer: worldId = ", req.params.worldId);
 	createNewLayer(req.body, req.params.worldId)
 		.then( newLayer => res.send(newLayer))
 		.catch ( error => {
@@ -229,7 +229,7 @@ router.get('/geoserver/:worldId/:layerName', (req, res) => {
 		})
 		.then(storeUrl => {
 			// 3. get the store's data
-			console.log("dbLayer storeUrl: " + storeUrl);
+			console.log("dbLayer storeUrl: ", storeUrl);
 			return getStoreDataFromGeoserver(worldLayer, storeUrl)
 		})
 		.then(worldLayer => res.send(worldLayer))
@@ -243,7 +243,7 @@ router.get('/geoserver/:worldId/:layerName', (req, res) => {
 // get Capabilities XML file - WMTS Request for display the selected layer
 router.get('/geoserver/wmts/:worldId/:layerName', (req, res) => {
 	const capabilitiesUrl = `${configUrl.baseUrlGeoserver}/${req.params.worldId}/${req.params.layerName}/${configParams.wmtsServiceUrl}`;
-	console.log("geo LAYER SERVER: start GetCapabilities url = " + capabilitiesUrl);
+	console.log("geo LAYER SERVER: start GetCapabilities url = ", capabilitiesUrl);
 	GsLayers.getCapabilitiesFromGeoserver(capabilitiesUrl)
 		.then(response => res.send(response))
 		.catch(error => {
@@ -258,7 +258,7 @@ router.get('/geoserver/wmts/:worldId/:layerName', (req, res) => {
 // =========
 // update all the Layer's fields (passing a new layer object in the req.body)
 router.put('/:layerName', (req, res) => {
-	console.log("db WORLD SERVER: start to UPDATE layer " + req.params.layerName);
+	console.log("db WORLD SERVER: start to UPDATE layer ", req.params.layerName);
 	dbLayerCrud.update(req.body)
 		.then(response => res.send(response))
 		.catch(error => {
@@ -270,7 +270,7 @@ router.put('/:layerName', (req, res) => {
 
 // update a single field in the Layer (passing the new value of the field in the req.body)
 router.put('/:layerId/:fieldName', (req, res) => {
-	console.log("db LAYER SERVER: start to UPDATE-FIELD layer " + req.params.layerId);
+	console.log("db LAYER SERVER: start to UPDATE-FIELD layer ", req.params.layerId);
 	const fieldName = req.params.fieldName;
 	const fieldValue = req.body['newValue'];
 	const entityId = {_id: req.params.layerId };
@@ -295,7 +295,7 @@ router.put('/:layerId/:fieldName', (req, res) => {
 //  REMOVE layer
 // ==============
 // delete a layer from World's Layers list in the Database and from the geoserver
-router.delete('/delete/:/worldId/:layerId', (req, res) => {
+router.delete('/delete/:worldId/:layerId', (req, res) => {
 	console.log(`db LAYER SERVER: start DELETE layer: ${req.params.layerId}`);
 	// 1. find the layer in the database
 	dbLayerCrud.get({ _id: req.params.layerId })
@@ -328,20 +328,20 @@ router.delete('/delete/:/worldId/:layerId', (req, res) => {
 		.then(removedLayerData => {
 			console.log(`db LAYER SERVER: 2. removed the layer from the layers list in MongoDB!`);
 			// 3. remove the layer's Id from the world's layersId array
-			return dbWorldCrud.get({ _id: removedLayerData._id })
+			return dbWorldCrud.get({ _id: removedLayerData.worldId })
 				.then(world => {
-					console.log("dbLayers remove layer: 3a. got the world: " + world.name);
+					console.log("dbLayers remove layer: 3a. got the world: ", world.name);
 					// update the layerId list (pull the layer's Id from the layersId field in the world)
 					return dbWorldCrud.updateField({ _id: world._id }, { layersId: req.params.layerId }, 'removeFromArray');
 				})
 				.then(world => {
-					console.log("dbLayers remove layer: 3b. update the world layerID array!" + JSON.stringify(world.layersId));
+					console.log("dbLayers remove layer: 3b. update the world layerID array! ", JSON.stringify(world.layersId));
 					if (removedLayerData.type !== 'image') {
 						// 4. delete the layer from GeoServer:
 						console.log("dbLayers remove layer: 4. start to delete layer from the GeoServer!");
 						return removeLayerFromGeoserver(removedLayerData.resourceUrl, removedLayerData.storeUrl)
 							.then(response => {
-								console.log("dbLayers remove layer: 4b. deleted the store: " + removedLayerData.storeUrl);
+								console.log("dbLayers remove layer: 4b. deleted the store: ", removedLayerData.storeUrl);
 								res.send(response);
 							})
 					} else {

@@ -275,6 +275,7 @@ const inputData = {
 
 // create the World-Layer Schema
 const LayerSchema = new Schema({
+	// _id: { type: String },       			 		 		 // the original layer name (?)
 	name: String,                                  // from GeoServer
 	href: String,                                  // href to the Layer page
 	fileName: String,

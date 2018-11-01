@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const formidable = require('express-formidable');
-const utils = require('./utils');
+const utils = require('./uploadUtils');
 
 const uploadPath = utils.getUploadPath();
 const opts = setOptions(uploadPath);

@@ -11,7 +11,7 @@ const getUploadPath = () => {
 };
 
 const uploadFiles = (req, res) => {
-	const workspaceName = req.params.workspaceName;
+	const worldId = req.params.worldId;
 	let reqFiles = req.files.uploads;
 	const uploadPath = getUploadPath();
 	console.log('req Files: ', JSON.stringify(reqFiles));
@@ -73,14 +73,44 @@ const uploadFiles = (req, res) => {
 	console.log('UploadFiles SEND req files: ', JSON.stringify(reqFiles));
 
 	// send to the right upload handler according to the type
-	let files;
 	if (fileType === 'image') {
 		// save the file in the File System
-		files = UploadFilesToFS.uploadFile(workspaceName, reqFiles, name, path);
+		UploadFilesToFS.uploadFile(worldId, reqFiles, name, path)
+			.then ( files => res.send(returnFiles(files, path)));
 	} else {
 		// upload the file to GeoServer
-		files = UploadFilesToGS.uploadFile(workspaceName, reqFiles, name, path);
+		UploadFilesToGS.uploadFile(worldId, reqFiles, name, path)
+			.then ( files => res.send(returnFiles(files, path)));
 	}
+};
+
+// ========================================= private  F U N C T I O N S ============================================
+// prepare the file before uploading it
+const setBeforeUpload = (file, fileType, uploadPath) => {
+	console.log('setBeforeUpload File: ', JSON.stringify(file));
+	const name = file.name;
+	const filePath = uploadPath + name;
+	const encodeFileName = encodeURI(name);
+	const encodePathName = uploadPath + encodeFileName;
+
+	const newFile = {
+		name,
+		size: file.size,
+		path: file.path,
+		fileUploadDate: new Date(file.mtime).toISOString(),
+		fileType,
+		filePath,
+		encodeFileName,
+		encodePathName
+	};
+
+	// renaming the file full path (according to the encoded name)
+	fs.renameSync(file.path, newFile.encodePathName);
+
+	return newFile;
+};
+
+const returnFiles = (files, path) => {
 	console.log('upload files: ', JSON.stringify(files));
 	// remove the files from the local store
 	removeFile(path);
@@ -101,35 +131,8 @@ const uploadFiles = (req, res) => {
 		files[0].splitPath = null;
 		console.log('splitPath: ', files[0].splitPath);
 	}
-	res.send(files);
-
-};
-
-// ========================================= private  F U N C T I O N S ============================================
-// prepare the file before uploading it
-const setBeforeUpload = (file, fileType, uploadPath) => {
-	console.log('setBeforeUpload File: ', JSON.stringify(file));
-	const name = file.name;
-	const filePath = uploadPath + name;
-	const encodeFileName = encodeURI(name);
-	const encodePathName = uploadPath + encodeFileName;
-
-	const newFile = {
-		_id: name,
-		name,
-		size: file.size,
-		path: file.path,
-		fileUploadDate: new Date(file.mtime).toISOString(),
-		fileType,
-		filePath,
-		encodeFileName,
-		encodePathName
-	};
-
-	// renaming the file full path (according to the encoded name)
-	fs.renameSync(file.path, newFile.encodePathName);
-
-	return newFile;
+	console.log('return files: ', JSON.stringify(files));
+	return files;
 };
 
 module.exports = {

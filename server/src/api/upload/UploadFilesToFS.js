@@ -2,7 +2,6 @@ const turf = require('@turf/turf');
 const exif = require('exif-parser');
 const fs = require('fs-extra');
 require('../fs/fileMethods')();
-
 const createNewLayer = require('../databaseCrud/createNewLayer');
 
 require('../../config/serverConfig')();
@@ -25,7 +24,7 @@ class UploadFilesToFS {
 			console.log(`the '${dirPath}' directory was created!`);
 
 			// 2. move the files into the directory
-			return files.map(file => {
+			const images = files.map(file => {
 				const filePath = `${dirPath}/${file.name}`;
 				console.log(`filePath: ${filePath}`);
 				fs.renameSync(file.filePath, filePath);
@@ -55,15 +54,16 @@ class UploadFilesToFS {
 
 				// 8. save the file to mongo database and return the new file is succeed
 				return createNewLayer(newFile, worldId)
-					.then(result => {
-						console.log('createNewLayer result: ' + result);
-						return newFile;
+					.then(newLayer => {
+						console.log('createNewLayer result: ' + newLayer);
+						return newLayer;
 					})
 					.catch(error => {
 						console.error('ERROR createNewLayer: ' + error);
 						return null;
 					});
 			});
+			return Promise.all(images);
 		} else {
 			console.log('there ara no files to upload!');
 			return [];

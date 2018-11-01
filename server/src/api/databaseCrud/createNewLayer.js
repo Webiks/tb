@@ -9,14 +9,11 @@ const createNewLayer = (layer, worldId) => {
 	// create the new layer in the Layers list and get the layer id (from mongoDB)
 	return dbLayerCrud.add(layer)
 		.then(newLayer => {
-			return addLayerIdToWorld(worldId, newLayer._id).then(() => newLayer);
+			// add the layer's Id to the the layersId List in the world
+			console.log('createNewLayer: add the layer Id to the layersId list in the world...', newLayer._id);
+			return dbWorldCrud.updateField({ _id: worldId }, { layersId: newLayer._id }, 'updateArray')
+				.then(() => newLayer);
 		});
-};
-
-// ========================================= private  F U N C T I O N S ================================================
-// add the layer Id to the layersId list in the world
-const addLayerIdToWorld = (worldId, layerId) => {
-	return dbWorldCrud.updateField({ _id: worldId }, { layersId: layerId }, 'updateArray');
 };
 
 module.exports = createNewLayer;

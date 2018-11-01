@@ -47,13 +47,14 @@ const uploadFiles = (req, res) => {
 		const splitName = (reqFiles[0].name).split('.');
 		name = `${splitName[0]}.zip`;
 		path = uploadPath + name;
+		console.log('zip path: ', path);
 
 		// creating archives
 		let zip = new AdmZip();
 
 		// define the names of the files to be zipped (in Sync operation)
 		reqFiles = reqFiles.map(file => {
-			let newFile = setBeforeUpload(file, fileType);
+			let newFile = setBeforeUpload(file, fileType, uploadPath);
 			console.log('newFile: ', JSON.stringify(newFile));
 
 			// add the local file to the zip file

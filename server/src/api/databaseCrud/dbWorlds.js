@@ -125,17 +125,17 @@ router.delete('/delete/:worldId', (req, res) => {
 					dbWorldCrud.remove({ _id: req.params.worldId })
 						.then(() => {
 							// 4. check if world's layers exist in another worlds
-							layersId.forEach(worldLayerId => {
+							layersId.forEach(layerId => {
 								// a. get all the worlds that left
 								dbWorldCrud.getAll().then(worlds => {
 									console.log('dbWorld get all worlds: ' + JSON.stringify(worlds));
 									// b. check if the world's layers exist in another worlds
-									const isLayerExist = worlds.some(world => isLayerExistInAnotherWorld(worldLayerId, world.layersId));
+									const isLayerExist = worlds.some(world => isLayerExistInAnotherWorld(layerId, world.layersId));
 									console.log('isLayerExist: ', isLayerExist);
 									// c. remove the layer from the DataBase only if it doesn't exist in another world
 									if (!isLayerExist) {
-										console.log('start to remove layer: ', worldLayerId);
-										dbLayerCrud.remove({ _id: worldLayerId });
+										console.log('start to remove layer: ', layerId);
+										dbLayerCrud.remove({ _id: layerId });
 									}
 								});
 							});

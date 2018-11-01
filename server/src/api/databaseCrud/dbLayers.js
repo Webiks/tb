@@ -21,6 +21,11 @@ const handleError = (res, status, consoleMessage, sendMessage) => {
 	res.status(status).send(sendMessage);
 };
 
+// check if a giving layer exists in another world
+const isLayerExistInAnotherWorld = (id, layersId) => {
+	return layersId.some(layerId => id === layerId);
+};
+
 // parse layer data
 const parseLayerDetails = (worldLayer, data) => {
 	worldLayer.data = data;
@@ -297,64 +302,72 @@ router.put('/:layerId/:fieldName', (req, res) => {
 // delete a layer from World's Layers list in the Database and from the geoserver
 router.delete('/delete/:worldId/:layerId', (req, res) => {
 	console.log(`db LAYER SERVER: start DELETE layer: ${req.params.layerId}`);
-	// 1. find the layer in the database
-	dbLayerCrud.get({ _id: req.params.layerId })
-		.then(layer => {
-			console.log(`dbLayers remove layer: 1. got the layer: ${layer.name}`);
-			// save the layer data before remove it from the database
-			let removedLayerData;
-			if (layer.fileType !== 'image') {
-				removedLayerData = {
-					worldId: req.params.worldId,
-					resourceUrl: layer.layer.resource.href,
-					storeUrl: layer.data.store.href,
-					type: layer.fileType
-				};
-			} else {
-				removedLayerData = {
-					worldId: req.params.worldId,
-					type: layer.fileType
-				};
-			}
-			console.log(`removedLayerData: ${JSON.stringify(removedLayerData)}`);
-
-			// 2. remove the layer from the Layers list in the DataBase
-			return dbLayerCrud.remove({ _id: req.params.layerId })
-				.then(() => {
-					console.log(`removeLayerById: ${req.params.layerId}`);
-					return removedLayerData;
-				})
-		})
-		.then(removedLayerData => {
-			console.log(`db LAYER SERVER: 2. removed the layer from the layers list in MongoDB!`);
-			// 3. remove the layer's Id from the world's layersId array
-			return dbWorldCrud.get({ _id: removedLayerData.worldId })
-				.then(world => {
-					console.log("dbLayers remove layer: 3a. got the world: ", world.name);
-					// update the layerId list (pull the layer's Id from the layersId field in the world)
-					return dbWorldCrud.updateField({ _id: world._id }, { layersId: req.params.layerId }, 'removeFromArray');
-				})
-				.then(world => {
-					console.log("dbLayers remove layer: 3b. update the world layerID array! ", JSON.stringify(world.layersId));
-					if (removedLayerData.type !== 'image') {
-						// 4. delete the layer from GeoServer:
-						console.log("dbLayers remove layer: 4. start to delete layer from the GeoServer!");
-						return removeLayerFromGeoserver(removedLayerData.resourceUrl, removedLayerData.storeUrl)
-							.then(response => {
-								console.log("dbLayers remove layer: 4b. deleted the store: ", removedLayerData.storeUrl);
-								res.send(response);
+	const layerId = req.params.layerId;
+	const worldId = req.params.worldId;
+	// 1. remove the layer's Id from the world's layersId array
+	dbWorldCrud.updateField({ _id: worldId }, { layersId: layerId }, 'removeFromArray')
+		.then (() => {
+			// 2. check if the layers exist in another worlds
+			// a. get all the worlds except to the current world
+			dbWorldCrud.getAll().then(worlds => worlds.filter(world => world._id !== worldId))
+				.then (worlds => {
+					// b. check if the world's layers exist in another worlds
+					const isLayerExist = worlds.some(world => isLayerExistInAnotherWorld(layerId, world.layersId));
+					console.log('isLayerExist: ', isLayerExist);
+					// 3. remove the layer only if it doesn't exist in another world (from the DataBase and from Geosewrver)
+					if (!isLayerExist) {
+						console.log('start to remove layer: ', layerId);
+						// a. find the layer in the database
+						dbLayerCrud.get({ _id: layerId })
+							.then(layer => {
+								console.log(`dbLayers remove layer: 1. got the layer: ${layer.name}`);
+								// b. save the layer data before remove it from the database
+								let removedLayerData;
+								if (layer.fileType !== 'image') {
+									removedLayerData = {
+										worldId: req.params.worldId,
+										resourceUrl: layer.layer.resource.href,
+										storeUrl: layer.data.store.href,
+										type: layer.fileType
+									};
+								} else {
+									removedLayerData = {
+										worldId: req.params.worldId,
+										type: layer.fileType
+									};
+								}
+								console.log(`removedLayerData: ${JSON.stringify(removedLayerData)}`);
+								// c. remove the layer from the Layers list in the DataBase
+								return dbLayerCrud.remove({ _id: layerId })
+									.then(() => {
+										console.log(`removeLayerById: ${req.params.layerId}`);
+										return removedLayerData;
+									})
+									.then(removedLayerData => {
+										if (removedLayerData.type !== 'image') {
+											// d. delete the layer from GeoServer:
+											console.log("dbLayers remove layer: 3d. start to delete layer from the GeoServer!");
+											return removeLayerFromGeoserver(removedLayerData.resourceUrl, removedLayerData.storeUrl)
+												.then(response => {
+													console.log("dbLayers remove layer: 3e. deleted the store: ", removedLayerData.storeUrl);
+													res.send(response);
+												})
+										} else {
+											console.log("succeed to remove an image file!");
+											res.send('succeed to remove an image file!');
+										}
+									})
 							})
 					} else {
-						console.log("succeed to remove an image file!");
-						res.send('succeed to remove an image file!');
+						res.send(`succeed to remove '${layerId} layer from '${worldId} world!`);
 					}
 				})
+				.catch(error => {
+					const consoleMessage = `db LAYER: ERROR to REMOVE LAYER from DataBase!: ${error}`;
+					const sendMessage = `ERROR: Failed to delete layer id: ${req.params.layerId}!: ${error}`;
+					handleError(res, 500, consoleMessage, sendMessage);
+				});
 		})
-		.catch(error => {
-			const consoleMessage = `db LAYER: ERROR to REMOVE LAYER from DataBase!: ${error}`;
-			const sendMessage = `ERROR: Failed to delete layer id: ${req.params.layerId}!: ${error}`;
-			handleError(res, 500, consoleMessage, sendMessage);
-		});
 });
 
 module.exports = router;

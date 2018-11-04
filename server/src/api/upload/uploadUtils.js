@@ -79,8 +79,8 @@ const uploadFiles = (req, res) => {
 			.then(files => res.send(returnFiles(files, path)));
 	} else {
 		// upload the file to GeoServer
-		UploadFilesToGS.uploadFile(worldId, reqFiles, name, path)
-			.then(files => res.send(returnFiles(files, path)));
+		const files = UploadFilesToGS.uploadFile(worldId, reqFiles, name, path);
+		res.send(returnFiles(files, path));
 	}
 };
 

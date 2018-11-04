@@ -4,7 +4,7 @@ require('../geoserverCrud/curlMethods')();
 // upload files to GeoServer
 class UploadFilesToGS {
 
-	static uploadFile(workspaceName, reqFiles, name, path) {
+	static uploadFile(worldId, reqFiles, name, path) {
 		let files = reqFiles.length ? reqFiles : [reqFiles];
 		console.log('starting to uploadFile to GeoServer...');
 		console.log('uploadFile files: ' + JSON.stringify(files));
@@ -16,9 +16,9 @@ class UploadFilesToGS {
 
 			console.log('files Type: ' + files[0].fileType);
 			if (files[0].fileType.toLowerCase() === 'raster') {
-				importJSON = createImportObject(workspaceName);
+				importJSON = createImportObject(worldId);
 			} else {
-				importJSON = createImportObjectWithData(workspaceName, path);
+				importJSON = createImportObjectWithData(worldId, path);
 			}
 			console.log('importJSON: ' + JSON.stringify(importJSON));
 

@@ -72,7 +72,7 @@ class UploadFilesToFS {
 		// set the File Data from the ReqFiles
 		function setFileData(file) {
 			const name = file.name;
-			const fileExtension = name.substring(name.lastIndexOf('.'));
+			const fileExtension = name.substring(name.lastIndexOf('.')).toLowerCase();
 			return {
 				name,
 				size: file.size,
@@ -108,6 +108,7 @@ class UploadFilesToFS {
 			const result = parser.parse();
 			const imageData = result.tags;
 			// exif.enableXmp(); - need to check
+			file.fileData.fileCreatedDate = new Date(imageData.ModifyDate).toISOString();
 			return { ...file, imageData };
 		}
 
@@ -131,16 +132,18 @@ class UploadFilesToFS {
 		function setInputData(layer) {
 			return {
 				...layer,
-				fileName: layer.fileData.name,
-				affiliation: 'UNKNOWN',
-				GSD: 0,
-				sensor: {
-					maker: layer.imageData.Make,
-					name: layer.imageData.Model,
-					bands: []
-				},
-				flightAltitude: layer.imageData.GPSAltitude,
-				cloudCoveragePercentage: 0
+				inputData: {
+					fileName: layer.fileData.name,
+					affiliation: 'UNKNOWN',
+					GSD: 0,
+					sensor: {
+						maker: layer.imageData.Make,
+						name: layer.imageData.Model,
+						bands: []
+					},
+					flightAltitude: layer.imageData.GPSAltitude,
+					cloudCoveragePercentage: 0
+				}
 			};
 		}
 

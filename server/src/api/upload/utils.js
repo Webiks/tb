@@ -8,9 +8,9 @@ const uploadFiles = (req, res) => {
 	const workspaceName = req.params.workspaceName;
 	let reqFiles = req.files.uploads;
 	const uploadPath = getUploadPath();
-	console.log("req Files: " + JSON.stringify(reqFiles));
-	console.log("req length: " + reqFiles.length);
-	console.log("uploadPath: " + uploadPath);
+	console.log('req Files: ' + JSON.stringify(reqFiles));
+	console.log('req length: ' + reqFiles.length);
+	console.log('uploadPath: ' + uploadPath);
 
 	// convert the request Files to JSON and back to an Object
 	const jsonFiles = JSON.stringify(reqFiles);
@@ -30,15 +30,15 @@ const uploadFiles = (req, res) => {
 	// check if need to make a ZIP file
 	if (!reqFiles.length) {
 		// upload a single file to GeoServer
-		console.log("uploadToGeoserver single file...");
-		console.log("req files (before): " + JSON.stringify(reqFiles));
+		console.log('uploadToGeoserver single file...');
+		console.log('req files (before): ' + JSON.stringify(reqFiles));
 		reqFiles = setBeforeUpload(reqFiles, fileType, uploadPath);
 		name = reqFiles.name;
 		path = reqFiles.filePath;
-		console.log("UploadFiles SINGLE req file(after): " + JSON.stringify(reqFiles));
+		console.log('UploadFiles SINGLE req file(after): ' + JSON.stringify(reqFiles));
 	} else {
 		// creating a ZIP file
-		console.log("uploadToGeoserver multi files...");
+		console.log('uploadToGeoserver multi files...');
 		// set the ZIP name according to the first file name
 		const splitName = (reqFiles[0].name).split('.');
 		name = `${splitName[0]}.zip`;
@@ -50,7 +50,7 @@ const uploadFiles = (req, res) => {
 		// define the names of the files to be zipped (in Sync operation)
 		reqFiles = reqFiles.map(file => {
 			let newFile = setBeforeUpload(file, fileType);
-			console.log("newFile: " + JSON.stringify(newFile));
+			console.log('newFile: ' + JSON.stringify(newFile));
 
 			// add the local file to the zip file
 			zip.addLocalFile(newFile.encodePathName);
@@ -62,10 +62,10 @@ const uploadFiles = (req, res) => {
 		});
 
 		// write everything to disk
-		console.log("write zip file: " + path);
+		console.log('write zip file: ' + path);
 		zip.writeZip(path);
 	}
-	console.log("UploadFiles SEND req files: " + JSON.stringify(reqFiles));
+	console.log('UploadFiles SEND req files: ' + JSON.stringify(reqFiles));
 
 	// send to the right upload handler according to the type
 	let files;
@@ -91,9 +91,9 @@ const uploadFiles = (req, res) => {
 			}
 		});
 	} else {
-		console.log("this file is not a ZIP!");
+		console.log('this file is not a ZIP!');
 		files[0].splitPath = null;
-		console.log("splitPath: " + files[0].splitPath);
+		console.log('splitPath: ' + files[0].splitPath);
 	}
 	res.send(files);
 
@@ -101,14 +101,14 @@ const uploadFiles = (req, res) => {
 
 const getUploadPath = () => {
 	const uploadDir = '/public/uploads/';
-	const dirPath = __dirname.replace(/\\/g, "/");
+	const dirPath = __dirname.replace(/\\/g, '/');
 	return `${dirPath}${uploadDir}`;
 };
 
 // ========================================= private  F U N C T I O N S ============================================
 // prepare the file before uploading it to the geoserver
 const setBeforeUpload = (file, fileType, uploadPath) => {
-	console.log("setBeforeUpload File: " + JSON.stringify(file));
+	console.log('setBeforeUpload File: ' + JSON.stringify(file));
 	const name = file.name;
 	const filePath = uploadPath + name;
 	const encodeFileName = encodeURI(name);

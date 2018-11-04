@@ -4,31 +4,31 @@ const path = require('path');
 require('../../config/serverConfig')();
 const configParams = config().configParams;
 
-module.exports = function() {
+module.exports = function () {
 	this.setOptions = (uploadDir) => {
-			return {
-					encoding: 'utf-8',
-					maxFileSize: configParams.maxFileSize,
-					uploadDir: uploadDir,
-					multiples: true, // req.files to be arrays of files
-					keepExtensions: true
-			};
+		return {
+			encoding: 'utf-8',
+			maxFileSize: configParams.maxFileSize,
+			uploadDir: uploadDir,
+			multiples: true, // req.files to be arrays of files
+			keepExtensions: true
+		};
 	};
 
 	this.findFileType = (reqType) => {
-			const extension = (reqType).split('/')[1].toLowerCase();
-			if ( extension.includes('tif')){
-					return 'raster';
-			}
-			else if ( extension === 'jpg' || extension === 'jpeg' || extension === 'dng'){
-					return 'image';
-			}
-			else if ( extension === 'xml'){
-				return 'xml';
-			}
-			else {
-				return 'vector';
-			}
+		const extension = (reqType).split('/')[1].toLowerCase();
+		if (extension.includes('tif')) {
+			return 'raster';
+		}
+		else if (extension === 'jpg' || extension === 'jpeg' || extension === 'dng') {
+			return 'image';
+		}
+		else if (extension === 'xml') {
+			return 'xml';
+		}
+		else {
+			return 'vector';
+		}
 	};
 
 	// this.createDir = (targetDir, opts) => {
@@ -51,7 +51,7 @@ module.exports = function() {
 	this.removeFile = (filePath) => {
 		fs.remove(filePath, err => {
 			console.log('start removing a file...');
-			if (err){
+			if (err) {
 				return console.error(err);
 			} else {
 				console.log(`the file '${filePath}' was removed!'`);
@@ -61,19 +61,20 @@ module.exports = function() {
 	};
 
 	this.fileToZip = (filename, uploadPath) => {
-			// define the layers parameters for the zip operation
-			return [
-					{
-							content: '',
-							name: filename,
-							mode: 0o755,
-							comment: '',
-							date: new Date(),
-							type: 'file' },
-					{
-							path: uploadPath,
-							name: 'uploads'
-					}
-			];
+		// define the layers parameters for the zip operation
+		return [
+			{
+				content: '',
+				name: filename,
+				mode: 0o755,
+				comment: '',
+				date: new Date(),
+				type: 'file'
+			},
+			{
+				path: uploadPath,
+				name: 'uploads'
+			}
+		];
 	};
 };

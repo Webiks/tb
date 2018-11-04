@@ -15,8 +15,10 @@ const handleError = (res, status, consoleMessage, sendMessage) => {
 // remove the layer only if it doesn't exist in another world (from the DataBase and from Geosewrver)
 const removeLayer = (layerId, worldId) => {
 	// 1. get all the worlds except to the current world
-	return dbWorldCrud.getAll().then(worlds => worlds.filter(world => world._id !== worldId))
+	// return dbWorldCrud.getAll().then(worlds => worlds.filter(world => world._id !== worldId))
+	return dbWorldCrud.getworlds({ _id: !worldId })
 		.then(worlds => {
+			console.log("removeLayer worlds: " + JSON.stringify(worlds));
 			// 2. check if a giving layer exists in another world
 			const isLayerExist = worlds.some(world => world.layersId.some(id => id === layerId));
 			console.log('isLayerExist: ', isLayerExist);
@@ -24,7 +26,7 @@ const removeLayer = (layerId, worldId) => {
 			if (!isLayerExist) {
 				console.log('start to remove layer: ', layerId);
 				// a. find the layer in the database
-				dbLayerCrud.get({ _id: layerId })
+				return dbLayerCrud.get({ _id: layerId })
 					.then(layer => {
 						console.log(`dbLayers removeLayer: a. got the layer: ${layer.name}`);
 						// b. save the layer data before remove it from the database

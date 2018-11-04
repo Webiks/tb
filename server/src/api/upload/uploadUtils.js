@@ -12,6 +12,7 @@ const getUploadPath = () => {
 
 const uploadFiles = (req, res) => {
 	const worldId = req.params.worldId;
+	console.log('worldId: ', worldId);
 	let reqFiles = req.files.uploads;
 	const uploadPath = getUploadPath();
 	console.log('req Files: ', JSON.stringify(reqFiles));

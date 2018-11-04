@@ -9,18 +9,20 @@ import { ITBAction } from '../../consts/action-types';
 import { IWorldLayer } from '../../interfaces/IWorldLayer';
 import { IFileData } from '../../interfaces/IFileData';
 import { IImageMetaData } from '../../interfaces/IImageMetaData';
+import { IInputdata } from '../../interfaces/IInputData';
 import { LayerService } from '../../services/LayerService';
 import { WorldsActions } from '../../actions/world.actions';
-import { FileUpload } from 'primereact/components/fileupload/FileUpload';
 import { AFFILIATION_TYPES } from '../../consts/layer-types';
+
 /* Prime React components */
 import 'primereact/resources/primereact.min.css';
 import 'primereact/resources/themes/omega/theme.css';
 import 'primeicons/primeicons.css';
 import 'font-awesome/css/font-awesome.css';
+import { FileUpload } from 'primereact/components/fileupload/FileUpload';
 import { ProgressSpinner } from 'primereact/components/progressspinner/ProgressSpinner';
 import { Growl } from 'primereact/components/growl/Growl';
-import { IInputdata } from '../../interfaces/IInputData';
+
 
 export interface IPropsUploadFiles {
     worldName: string,
@@ -47,7 +49,7 @@ export interface IStateWorld {
     fileList: IFileData[];
 }
 
-class UploadFile extends React.Component {
+class UploadFiles extends React.Component {
     props: IPropsUploadFiles;
     layersId: string[] = this.props.world.layersId ? this.props.world.layersId : [];
     state: IStateWorld = {
@@ -500,4 +502,4 @@ const mapDispatchToProps = (dispatch: any) => ({
     updateWorld: (payload: Partial<IWorld>) => dispatch(WorldsActions.updateWorldAction(payload))
 });
 
-export default connect(mapStateToProps, mapDispatchToProps)(UploadFile);
+export default connect(mapStateToProps, mapDispatchToProps)(UploadFiles);

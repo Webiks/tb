@@ -11,7 +11,6 @@ import { IWorldLayer } from '../../interfaces/IWorldLayer';
 import { ITBAction } from '../../consts/action-types';
 import { LayerService } from '../../services/LayerService';
 import { FileService } from '../../services/FileService';
-
 /* Prime React components */
 import 'primereact/resources/themes/omega/theme.css';
 import 'primereact/resources/primereact.min.css';
@@ -21,7 +20,7 @@ import { Button } from 'primereact/components/button/Button';
 import { InputText } from 'primereact/components/inputtext/InputText';
 import { Dialog } from 'primereact/components/dialog/Dialog';
 
-export interface IDisplayMapProps  {
+export interface IDisplayMapProps {
     worldName: string,
     world: IWorld,
     layer: IWorldLayer,
@@ -38,11 +37,11 @@ export interface IMapState {
 
 class DisplayMap extends React.Component {
 
-    props: IDisplayMapProps ;
-    state: IMapState ;
+    props: IDisplayMapProps;
+    state: IMapState;
     vectorDirRemoved: boolean = false;
 
-    layerIndex: number ;
+    layerIndex: number;
 
     parser = new ol.format.WMTSCapabilities();
     projection: string = this.props.layer.data.latLonBoundingBox.crs;
@@ -53,20 +52,22 @@ class DisplayMap extends React.Component {
     frontLayer: any;
 
     componentWillMount() {
-        this.setState({ selectedLayer: cloneDeep(this.props.layer),
-            displayMapWindow: true});
+        this.setState({
+            selectedLayer: cloneDeep(this.props.layer),
+            displayMapWindow: true
+        });
         this.layerIndex = this.props.world.layers.indexOf(this.props.layer);
         this.olCenter = ol.proj.transform(this.props.layer.data.center, this.projection, this.olProjection);
     }
 
     // get the Capabilities XML file in JSON format
-    componentDidMount(){
+    componentDidMount() {
         this.getJsonCapabilities()
-            .then ( jsonFile => {
+            .then(jsonFile => {
                 this.createMap(jsonFile);
             })
-            .catch( error => {
-                console.error("DisplayMap ERROR: " + error);
+            .catch(error => {
+                console.error('DisplayMap ERROR: ' + error);
                 return error;
             });
     }
@@ -74,8 +75,8 @@ class DisplayMap extends React.Component {
     // 1. get the Capabilities XML file
     getJsonCapabilities = () => {
         return LayerService.getCapabilities(this.props.world._id, this.props.layer.name)
-            .then( xml => {
-                console.log("1. get capabilities XML");
+            .then(xml => {
+                console.log('1. get capabilities XML');
                 // 2. convert the xml data to json
                 this.json = this.parser.read(xml);
                 // change the 'localhost' to the App domain (for the remote server)
@@ -86,11 +87,13 @@ class DisplayMap extends React.Component {
                 }
                 return this.json;
             })
-            .catch(error => { throw new Error(error) });
+            .catch(error => {
+                throw new Error(error);
+            });
     };
 
     // 2. create the map
-    createMap = (jsonFile : any) => {
+    createMap = (jsonFile: any) => {
         // 1. define the map options
         const options = ol.source.WMTS.optionsFromCapabilities(jsonFile,
             {
@@ -98,7 +101,7 @@ class DisplayMap extends React.Component {
                 layer: this.props.layer.name,
                 matrixSet: this.projection
             });
-        console.log("3. finished to define the options");
+        console.log('3. finished to define the options');
 
         // 2. define the map's layers:
         // the world's map background layer
@@ -113,9 +116,9 @@ class DisplayMap extends React.Component {
         });
 
         // 3. draw the map
-        console.log("4. draw the OL Map...");
+        console.log('4. draw the OL Map...');
         this.map = new ol.Map({
-            layers: [ backLayer, this.frontLayer ],
+            layers: [backLayer, this.frontLayer],
             target: 'map',
             view: new ol.View({
                 projection: this.olProjection,
@@ -130,29 +133,31 @@ class DisplayMap extends React.Component {
         this.map.on('moveend', () => {
             this.updateProperty('zoom', this.map.getView().getZoom());
             // transform the center point from the ol projection to the file projection
-            const center = ol.proj.transform(this.map.getView().getCenter(), this.olProjection , this.projection);
+            const center = ol.proj.transform(this.map.getView().getCenter(), this.olProjection, this.projection);
             this.updateProperty('center', center);
         });
     }
 
     // if vector - remove the zip directory (only in the first time)
     removeVectorZipDir = () => {
-        if (this.state.selectedLayer.fileData.splitPath){
-            console.log("removeVectorZipDir vectorDirRemoved: " + this.vectorDirRemoved);
-            if (!this.vectorDirRemoved){
+        if (this.state.selectedLayer.fileData.splitPath) {
+            console.log('removeVectorZipDir vectorDirRemoved: ', this.vectorDirRemoved);
+            if (!this.vectorDirRemoved) {
                 this.removeFile(this.state.selectedLayer.fileData.splitPath);
             }
         }
     };
 
     removeFile = (filePath: string) => {
-        console.log("calling the File Service..." + filePath);
+        console.log('calling the File Service...', filePath);
         // this.updateProperty('splitPath', null);
         this.vectorDirRemoved = true;
-        console.log("removeFile vectorDirRemoved: " + this.vectorDirRemoved);
+        console.log('removeFile vectorDirRemoved: ', this.vectorDirRemoved);
         FileService.removeFile(filePath)
-            .then( result => console.log(result))
-            .catch(error => { throw new Error(error) });
+            .then(result => console.log(result))
+            .catch(error => {
+                throw new Error(error);
+            });
     };
 
     onMapPropChanges(property, value) {
@@ -171,7 +176,7 @@ class DisplayMap extends React.Component {
     // save the App state when the field's value is been changed (zoom or opacity) and refresh the map
     updateProperty(property, value) {
         const newLayer = { ...this.state.selectedLayer };
-        switch (property){
+        switch (property) {
             case 'splitPath':
             case 'center':
                 newLayer.data[property] = value;
@@ -190,14 +195,14 @@ class DisplayMap extends React.Component {
         layers[this.layerIndex] = this.state.selectedLayer;
         // 1. update the changes in the database
         LayerService.updateLayer(this.props.layer, this.state.selectedLayer)
-            .then ( res =>  {
+            .then(res => {
                 console.warn(`Succeed to update ${this.props.worldName}'s layers`);
                 // 2. if vector for the first time - remove the zip directory in the upload directory
                 this.removeVectorZipDir();
                 // 3. update the changes in the App Store and refresh the page
                 this.refresh(layers);
             })
-            .catch( error => console.error('Failed to update the world: ' + error));
+            .catch(error => console.error('Failed to update the world: ' + error));
     };
 
     // update the App store and refresh the page
@@ -210,8 +215,10 @@ class DisplayMap extends React.Component {
 
         const mapFooter = (
             <div className="ui-dialog-buttonpane ui-helper-clearfix">
-                <Button label="Reset" icon="fa fa-undo" onClick={() => this.reset()} style={{ float: 'left', padding: '5px 10px', width: '30%'}}/>
-                <Button label="Save" icon="fa fa-check" onClick={() => this.save()} style={{ padding: '5px 10px', width: '30%'}}/>
+                <Button label="Reset" icon="fa fa-undo" onClick={() => this.reset()}
+                        style={{ float: 'left', padding: '5px 10px', width: '30%' }}/>
+                <Button label="Save" icon="fa fa-check" onClick={() => this.save()}
+                        style={{ padding: '5px 10px', width: '30%' }}/>
             </div>
         );
 
@@ -219,7 +226,7 @@ class DisplayMap extends React.Component {
             <Dialog visible={this.props.displayMapWindow} modal={true}
                     header={`Layer '${this.props.layer.name}' map preview`}
                     footer={mapFooter}
-                    responsive={true} style={{width:'35%'}}
+                    responsive={true} style={{ width: '35%' }}
                     onHide={() => {
                         this.removeVectorZipDir();
                         this.refresh(this.props.world.layers);
@@ -230,7 +237,8 @@ class DisplayMap extends React.Component {
                 {
                     this.state.selectedLayer.inputData &&
                     <div>
-                        <div className="content-section implementation" style={{ textAlign: 'left', width: '70%', margin: '15px' }}>
+                        <div className="content-section implementation"
+                             style={{ textAlign: 'left', width: '70%', margin: '15px' }}>
                             <div className="ui-grid-row">
                                 <div className="ui-grid-col-4" style={{ textAlign: 'left', padding: '5px' }}>
                                     <label htmlFor="zoom">Zoom Level</label>
@@ -238,7 +246,9 @@ class DisplayMap extends React.Component {
                                 <div className="ui-grid-col-8" style={{ textAlign: 'left', padding: '5px' }}>
                                     <InputText type="number" min="1" id="zoom"
                                                value={this.state.selectedLayer.inputData.zoom}
-                                               onChange={(e: any) => { this.onMapPropChanges('zoom', e.target.value)}}/>
+                                               onChange={(e: any) => {
+                                                   this.onMapPropChanges('zoom', e.target.value);
+                                               }}/>
                                 </div>
                             </div>
                             <div className="ui-grid-row">
@@ -248,7 +258,9 @@ class DisplayMap extends React.Component {
                                 <div className="ui-grid-col-8" style={{ textAlign: 'left', padding: '5px' }}>
                                     <InputText type="number" min="0" max="1" step="0.05" id="opacity"
                                                value={this.state.selectedLayer.inputData.opacity}
-                                               onChange={(e: any) => { this.onMapPropChanges('opacity', e.target.value)}}/>
+                                               onChange={(e: any) => {
+                                                   this.onMapPropChanges('opacity', e.target.value);
+                                               }}/>
                                 </div>
                             </div>
                             <div className="ui-grid-row">
@@ -256,11 +268,11 @@ class DisplayMap extends React.Component {
                                     <label htmlFor="center">Center</label>
                                 </div>
                                 <div className="ui-grid-col-8" style={{ textAlign: 'left', padding: '5px' }}>
-                                    lon : { this.state.selectedLayer.data.center[0].toFixed(4) }
+                                    lon : {this.state.selectedLayer.data.center[0].toFixed(4)}
                                 </div>
                                 <div className="ui-grid-col-4" style={{ textAlign: 'left', padding: '5px' }}/>
                                 <div className="ui-grid-col-8" style={{ textAlign: 'left', padding: '5px' }}>
-                                    lat : { this.state.selectedLayer.data.center[1].toFixed(4) }
+                                    lat : {this.state.selectedLayer.data.center[1].toFixed(4)}
                                 </div>
                             </div>
                             <div className="ui-grid-row">
@@ -268,21 +280,22 @@ class DisplayMap extends React.Component {
                                     Projection:
                                 </div>
                                 <div className="ui-grid-col-8" style={{ textAlign: 'left', padding: '5px' }}>
-                                    { this.projection }
+                                    {this.projection}
                                 </div>
                             </div>
                         </div>
                     </div>
                 }
             </Dialog>
-        )
+        );
     }
 }
+
 const mapStateToProps = (state: IState, { worldName, ...props }: any) => {
     return {
         world: state.worlds.list.find(({ name, layers }: IWorld) => worldName === name),
         worldName, ...props
-    }
+    };
 };
 const mapDispatchToProps = (dispatch: any) => ({
     updateWorld: (payload: Partial<IWorld>) => dispatch(WorldsActions.updateWorldAction(payload))

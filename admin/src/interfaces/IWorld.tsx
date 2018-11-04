@@ -1,4 +1,4 @@
-import { IWorldLayer } from "./IWorldLayer";
+import { IWorldLayer } from './IWorldLayer';
 
 export interface IWorld {
     _id: string,

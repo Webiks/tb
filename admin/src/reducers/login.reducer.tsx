@@ -13,7 +13,7 @@ const initialState: ILoginState = {
 const reducer = (state: ILoginState = initialState, action: ILoginAction) => {
     switch (action.type) {
         case LoginActionTypes.SET_AUTH:
-            return { ...state, isAuthenticated: action.payload, loaded: true  };
+            return { ...state, isAuthenticated: action.payload, loaded: true };
 
         default:
             return state;

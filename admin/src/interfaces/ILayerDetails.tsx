@@ -10,7 +10,7 @@ export interface ILayerDetails {
     srs: string,
     nativeBoundingBox: INativeBoundingBox,
     latLonBoundingBox: ILatLonBoundingBox,
-    center: [ number, number],
+    center: [number, number],
     projectionPolicy?: string,
     enabled: boolean,
     metadata?: IMetaData,
@@ -90,6 +90,7 @@ export interface IGrid {
     transform: ITransform,
     crs: string
 }
+
 export interface IGridRange {
     low: string,
     high: string
@@ -123,7 +124,7 @@ export interface ICoverageRange {
 }
 
 export interface InullValues {
-    double: [ number ]
+    double: [number]
 }
 
 export interface IDimensionType {

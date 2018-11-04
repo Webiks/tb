@@ -1,4 +1,4 @@
-console.log("NODE_ENV: " + process.env.NODE_ENV);
+console.log('NODE_ENV: ' + process.env.NODE_ENV);
 
 let ip: string;
 let isRemote: boolean;
@@ -26,6 +26,6 @@ const config = {
     maxFileSize: 100000 * 1024 * 1024
 };
 
-console.log('Config Path: ' + config.path );
+console.log('Config Path: ' + config.path);
 
 export default config;

@@ -9,7 +9,6 @@ import WorldsDataTable from './WorldsDataTable';
 import { WorldService } from '../../services/WorldService';
 import { Route, withRouter } from 'react-router';
 import World from '../World/World';
-
 /* Prime React components */
 import 'primereact/resources/themes/omega/theme.css';
 import 'primereact/resources/primereact.min.css';
@@ -33,12 +32,12 @@ class Worlds extends React.Component {
 
     // GET: get all worlds on startUp (from mongo Database)
     componentDidMount() {
-        this.setState({ hideSpinner: false } );
+        this.setState({ hideSpinner: false });
         WorldService.getWorlds()
             .then((worlds: IWorld[]) => {
                 // update the App store with the worlds' list
                 this.props.setWorlds(worlds);
-                this.setState({ hideSpinner: true } );
+                this.setState({ hideSpinner: true });
             })
             .catch(error => this.props.setWorlds([]));
     };
@@ -50,16 +49,17 @@ class Worlds extends React.Component {
                 {
                     this.props.match.isExact
                         ? this.props.worldsList &&
+                        <div>
                             <div>
-                                <div>
-                                    <div style={{ width: '70%', margin: 'auto' }}>
-                                        <WorldsDataTable/>
-                                    </div>
-                                </div>
-                                <div hidden={this.state.hideSpinner}>
-                                    <ProgressSpinner style={{width: '50px', height: '50px'}} strokeWidth="8" fill="#EEEEEE" animationDuration=".5s"/>
+                                <div style={{ width: '70%', margin: 'auto' }}>
+                                    <WorldsDataTable/>
                                 </div>
                             </div>
+                            <div hidden={this.state.hideSpinner}>
+                                <ProgressSpinner style={{ width: '50px', height: '50px' }} strokeWidth="8"
+                                                 fill="#EEEEEE" animationDuration=".5s"/>
+                            </div>
+                        </div>
                         : null
                 }
             </div>

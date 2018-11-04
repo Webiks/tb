@@ -7,7 +7,7 @@ import { IWorldLayer } from '../../interfaces/IWorldLayer';
 import LayerEditor from './LayerEditor';
 import Title from '../Title/Title';
 
-export interface ILayerComponentProps  {
+export interface ILayerComponentProps {
     selectedLayer: IWorldLayer,
     world: IWorld;
     worldName: string,
@@ -20,18 +20,18 @@ const Layer = ({ worldName, world, layerName, selectedLayer, push }: ILayerCompo
     <div>
         <Title title={`${layerName} layer`} isExist={Boolean(selectedLayer)}/>
         <div>
-            { selectedLayer && <LayerEditor worldName={worldName} layer={selectedLayer}/> }
+            {selectedLayer && <LayerEditor worldName={worldName} layer={selectedLayer}/>}
         </div>
     </div>
 );
-const mapStateToProps = (state: IState, { match }:any ) => {
+const mapStateToProps = (state: IState, { match }: any) => {
     const world: IWorld = state.worlds.list.find(({ name, layers }: IWorld) => match.params.worldName === name);
-    const selectedLayer: IWorldLayer = world.layers.find(( { name } : IWorldLayer) => match.params.layerName === name);
+    const selectedLayer: IWorldLayer = world.layers.find(({ name }: IWorldLayer) => match.params.layerName === name);
     return {
         world,
         selectedLayer,
-        layerName:  match.params.layerName,
+        layerName: match.params.layerName,
         worldName: match.params.worldName
-    }
+    };
 };
 export default connect(mapStateToProps)(Layer);

@@ -1,7 +1,6 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
 import { IState } from '../../store';
-
 /* Prime React components */
 import 'primereact/resources/themes/omega/theme.css';
 import 'primereact/resources/primereact.min.css';
@@ -12,7 +11,7 @@ import { InputText } from 'primereact/components/inputtext/InputText';
 
 export interface IPropsHeader {
     title: string,
-    setGlobalFilter: (e:any) => void
+    setGlobalFilter: (e: any) => void
 }
 
 export interface IStateDetails {
@@ -26,11 +25,11 @@ class DataTableHeader extends React.Component {
     render() {
         return (
             <header>
-                <h2 style={{'textAlign':'center'}}>
+                <h2 style={{ 'textAlign': 'center' }}>
                     {this.props.title}
                 </h2>
-                <div style={{'textAlign':'center'}}>
-                    <i className="fa fa-search" style={{margin:'4px 4px 0 0'}}/>
+                <div style={{ 'textAlign': 'center' }}>
+                    <i className="fa fa-search" style={{ margin: '4px 4px 0 0' }}/>
                     <InputText id='search' type="search"
                                onChange={this.props.setGlobalFilter} placeholder="Search" size={30}/>
                 </div>

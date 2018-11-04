@@ -1,5 +1,3 @@
-import { ISelectedFile } from './ISelectedFile';
-
 export interface IFileData {
     name: string;
     size: number;

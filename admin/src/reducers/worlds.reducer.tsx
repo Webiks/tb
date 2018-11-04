@@ -19,7 +19,7 @@ const reducer = (state: IWorldsState = initialState, action: ITBAction) => {
         case ActionTypes.UPDATE_WORLD: {
             const list = state.list.map((world) => {
                 if (world.name === action.payload.name) {
-                    return { ...world, ...action.payload }
+                    return { ...world, ...action.payload };
                 }
                 return world;
             });

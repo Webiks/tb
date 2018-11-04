@@ -6,13 +6,16 @@
     padding: 20px;
     color: white;
 }
+
 .root {
     flexGrow: 1;
 }
+
 .flex {
     text-align: left;
     flex: 1;
 }
+
 .menuButton {
     margin-left: -12px;
     margin-right: 20px;

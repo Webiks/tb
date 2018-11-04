@@ -4,21 +4,21 @@ import { IState } from '../../store';
 import { SetAuth } from '../../actions/login.actions';
 import { bindActionCreators } from 'redux';
 import LoginService from '../Login/LoginService';
-import { Popper, Manager, Target } from 'react-popper';
+import { Manager, Popper, Target } from 'react-popper';
 import { push } from 'react-router-redux';
-
 /* Material-ui components */
 import {
     AppBar,
     ClickAwayListener,
-    Fade, Grow,
+    Grow,
     Icon,
     IconButton,
-    Menu,
-    MenuItem, MenuList, Paper,
+    MenuItem,
+    MenuList,
+    Paper,
     Toolbar,
-    Typography,
-    Tooltip
+    Tooltip,
+    Typography
 } from '@material-ui/core';
 import { Home } from '@material-ui/icons';
 import { connect } from 'react-redux';
@@ -36,7 +36,7 @@ class Navbar extends React.Component {
     render() {
         const open = Boolean(this.state.open);
 
-        return <AppBar color="primary" >
+        return <AppBar color="primary">
             <Toolbar className="root">
                 {
                     this.props.isAuthenticated ?
@@ -57,7 +57,9 @@ class Navbar extends React.Component {
                         <div>
                             <Manager>
                                 <Target>
-                                    <div ref={node => { this.target1 = node; }}>
+                                    <div ref={node => {
+                                        this.target1 = node;
+                                    }}>
                                         <Tooltip title="Menu">
                                             <IconButton color="inherit"
                                                         aria-label="Logout"

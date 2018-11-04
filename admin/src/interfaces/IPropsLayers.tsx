@@ -5,5 +5,5 @@ export interface IPropsLayers {
     match?: any,
     worldName: string,
     world: IWorld,
-    updateWorld:  (worlds: Partial<IWorld>) => ITBAction
+    updateWorld: (worlds: Partial<IWorld>) => ITBAction
 }

@@ -12,7 +12,6 @@ import DataTableHeader from '../DataTable/DataTableHeader';
 import { cloneDeep, get } from 'lodash';
 import LayerPropertiesList from './LayerPropertiesList';
 import { LayerService } from '../../services/LayerService';
-
 /* Prime React components */
 import 'primereact/resources/themes/omega/theme.css';
 import 'primereact/resources/primereact.min.css';
@@ -65,7 +64,7 @@ class LayerEditor extends React.Component {
             case ('layer'):
                 const layer = { ...this.state.worldLayer };
                 layer.layer[property] = value;
-                this.setState({ worldLayer: { ...layer }});
+                this.setState({ worldLayer: { ...layer } });
 
             case ('inputData'):
                 const inputData = { ...this.state.worldLayer };
@@ -81,12 +80,12 @@ class LayerEditor extends React.Component {
                 } else {
                     inputData.inputData[property] = value;
                 }
-                this.setState({ worldLayer: { ...inputData }});
+                this.setState({ worldLayer: { ...inputData } });
 
             case ('fileData'):
                 const fileData = { ...this.state.worldLayer };
                 fileData.fileData[property] = value;
-                this.setState({ worldLayer: { ...fileData }});
+                this.setState({ worldLayer: { ...fileData } });
         }
     };
 
@@ -121,11 +120,11 @@ class LayerEditor extends React.Component {
             const value1 = (this.state.worldLayer.geoData.centerPoint[1]).toFixed(4);
             return value0 + ', ' + value1;
         }
-        else if (rowData.path.includes('size')){
+        else if (rowData.path.includes('size')) {
             return (this.state.worldLayer.fileData.size / 1000).toFixed(0);
         }
         else {
-            return get(this.state, rowData.path)
+            return get(this.state, rowData.path);
         }
     };
 
@@ -145,17 +144,17 @@ class LayerEditor extends React.Component {
     save = () => {
         const layers = [...this.props.world.layers];
         layers[this.layerIndex] = this.state.worldLayer;
-        console.warn("SAVE: update layer : " + this.props.layer.name);
+        console.warn('SAVE: update layer : ' + this.props.layer.name);
         // 1. update the changes in the database
         LayerService.updateLayer(this.props.layer, this.state.worldLayer)
-            .then ( res =>  {
+            .then(res => {
                 console.warn(`Succeed to update ${res.name} layer`);
                 // 2. update the changes in the App Store and refresh the page
                 this.refresh(layers);
                 // 3. close the editor page and go back to the layers table page
                 this.backToWorldPage();
             })
-            .catch( error => this.handleError(error));
+            .catch(error => this.handleError(error));
     };
 
     handleError = (error) => {
@@ -170,7 +169,7 @@ class LayerEditor extends React.Component {
         this.props.updateWorld({ name, layers });
     };
 
-    setGlobalFilter = (e: any) => this.setState({globalFilter: e.target.value});
+    setGlobalFilter = (e: any) => this.setState({ globalFilter: e.target.value });
 
     render() {
         const editorFooter =
@@ -186,7 +185,8 @@ class LayerEditor extends React.Component {
                     this.state.worldLayer && <div className="content-section implementation"
                                                   style={{ textAlign: 'left', width: '70%', margin: 'auto' }}>
                         <DataTable value={LayerPropertiesList} paginator={true} rows={30} responsive={false}
-                                   header={<DataTableHeader title={'File Editor'} setGlobalFilter={this.setGlobalFilter}/>}
+                                   header={<DataTableHeader title={'File Editor'}
+                                                            setGlobalFilter={this.setGlobalFilter}/>}
                                    globalFilter={this.state.globalFilter}
                                    footer={editorFooter} style={{ margin: '10px 20px' }}>
                             <Column field="label" header="Property" sortable={true}
@@ -198,7 +198,7 @@ class LayerEditor extends React.Component {
                     </div>
                 }
             </div>
-        )
+        );
     }
 
 }

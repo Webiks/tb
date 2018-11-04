@@ -76,7 +76,6 @@ class UploadFilesToFS {
 			return {
 				name,
 				size: file.size,
-				// lastModified: file.lastModified,
 				fileUploadDate: file.fileUploadDate,
 				fileExtension,
 				fileType: 'image',
@@ -107,6 +106,7 @@ class UploadFilesToFS {
 			const parser = exif.create(buffer);
 			const result = parser.parse();
 			const imageData = result.tags;
+			file.fileData.fileCreatedDate = new Date(imageData.ModifyDate).toISOString();
 			// exif.enableXmp(); - need to check
 			return { ...file, imageData };
 		}
@@ -131,16 +131,18 @@ class UploadFilesToFS {
 		function setInputData(layer) {
 			return {
 				...layer,
-				fileName: layer.fileData.name,
-				affiliation: 'UNKNOWN',
-				GSD: 0,
-				sensor: {
-					maker: layer.imageData.Make,
-					name: layer.imageData.Model,
-					bands: []
-				},
-				flightAltitude: layer.imageData.GPSAltitude,
-				cloudCoveragePercentage: 0
+				inputData: {
+					fileName: layer.fileData.name,
+					affiliation: 'UNKNOWN',
+					GSD: 0,
+					sensor: {
+						maker: layer.imageData.Make,
+						name: layer.imageData.Model,
+						bands: []
+					},
+					flightAltitude: layer.imageData.GPSAltitude,
+					cloudCoveragePercentage: 0
+				}
 			};
 		}
 

@@ -244,7 +244,7 @@ module.exports = function () {
 			return null;
 		} else {
 			console.log('sent to the Tasks Queue...' + JSON.stringify(tasks));
-			if (filepath.split('.')[ 1 ] === 'zip') {
+			if (filepath.split('.')[1] === 'zip') {
 				console.log('sendToTask zip file: ' + JSON.stringify(tasks.tasks));
 				return tasks.tasks;
 			} else {

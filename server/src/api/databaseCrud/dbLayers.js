@@ -95,7 +95,7 @@ const getLayerDetailsFromGeoserver = (worldLayer, resourceUrl) => {
 			}
 			// set the data center point
 			worldLayer.data.center =
-				[ worldLayer.data.latLonBoundingBox.minx, worldLayer.data.latLonBoundingBox.maxy ];
+				[worldLayer.data.latLonBoundingBox.minx, worldLayer.data.latLonBoundingBox.maxy];
 			console.log('getLayerDetailsFromGeoserver data center: ' + JSON.stringify(worldLayer.data.center));
 			const centerPoint = worldLayer.data.center;
 			console.log('getLayerDetailsFromGeoserver center point: ' + JSON.stringify(centerPoint));
@@ -103,14 +103,14 @@ const getLayerDetailsFromGeoserver = (worldLayer, resourceUrl) => {
 			// set the Polygon field for Ansyn
 			const polygon = worldLayer.data.latLonBoundingBox;
 			console.log('getLayerDetailsFromGeoserver polygon: ' + JSON.stringify(polygon));
-			const bbox = [ polygon.minx, polygon.miny, polygon.maxx, polygon.maxy ];
+			const bbox = [polygon.minx, polygon.miny, polygon.maxx, polygon.maxy];
 			const footprint = turf.bboxPolygon(bbox);
 			console.log('getLayerDetailsFromGeoserver footprint: ' + JSON.stringify(footprint));
 			worldLayer.geoData = { centerPoint, bbox, footprint };
 			console.log('getLayerDetailsFromGeoserver geoData: ' + JSON.stringify(worldLayer.geoData));
 
 			// set the store's name
-			worldLayer.layer.storeName = (worldLayer.layer.storeId).split(':')[ 1 ];
+			worldLayer.layer.storeName = (worldLayer.layer.storeId).split(':')[1];
 			return worldLayer.data.store.href;
 		})
 		.catch(error => {
@@ -144,8 +144,8 @@ const getStoreDataFromGeoserver = (worldLayer, storeUrl) => {
 				// translate map to an object
 				worldLayer.store = {
 					connectionParameters: {
-						namespace: store.dataStore.connectionParameters.entry[ 0 ].$,
-						url: store.dataStore.connectionParameters.entry[ 1 ].$
+						namespace: store.dataStore.connectionParameters.entry[0].$,
+						url: store.dataStore.connectionParameters.entry[1].$
 					}
 				};
 				worldLayer.filePath = worldLayer.store.connectionParameters.url;        // for the file path
@@ -331,11 +331,11 @@ router.put('/:layerName', (req, res) => {
 router.put('/:layerId/:fieldName', (req, res) => {
 	console.log('db LAYER SERVER: start to UPDATE-FIELD layer ' + req.params.layerId);
 	const fieldName = req.params.fieldName;
-	const fieldValue = req.body[ 'newValue' ];
+	const fieldValue = req.body['newValue'];
 	const entityId = { _id: req.params.layerId };
 
 	let updatedField = {};
-	updatedField[ fieldName ] = fieldValue;
+	updatedField[fieldName] = fieldValue;
 	let operation = 'update';
 	if (Array.isArray(updatedField)) {
 		operation = 'updateArray';

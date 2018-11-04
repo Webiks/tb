@@ -13,8 +13,8 @@ function isEqual(str1 = '', srt2 = '') {
 }
 
 router.post('/login', (req, res) => {
-	const correctUsername = isEqual(req.body.username, process.env[ configParams.login.usernameKey ]);
-	const correctPassword = isEqual(req.body.password, process.env[ configParams.login.passwordKey ]);
+	const correctUsername = isEqual(req.body.username, process.env[configParams.login.usernameKey]);
+	const correctPassword = isEqual(req.body.password, process.env[configParams.login.passwordKey]);
 	const isAuthenticated = correctUsername && correctPassword;
 	req.session.authenticated = isAuthenticated;
 	if (isAuthenticated) {

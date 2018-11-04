@@ -22,7 +22,7 @@ const uploadFiles = (req, res) => {
 	if (!reqFiles.length) {
 		file = reqFiles;
 	} else {
-		file = reqFiles[ 0 ];
+		file = reqFiles[0];
 	}
 	// find the file type
 	const fileType = findFileType(file.type);
@@ -40,8 +40,8 @@ const uploadFiles = (req, res) => {
 		// creating a ZIP file
 		console.log('uploadToGeoserver multi files...');
 		// set the ZIP name according to the first file name
-		const splitName = (reqFiles[ 0 ].name).split('.');
-		name = `${splitName[ 0 ]}.zip`;
+		const splitName = (reqFiles[0].name).split('.');
+		name = `${splitName[0]}.zip`;
 		path = uploadPath + name;
 
 		// creating archives
@@ -81,19 +81,19 @@ const uploadFiles = (req, res) => {
 	// if ZIP files: remove the zip file
 	// send the path in the return files object to remove the zip directory after uploading the layer in geoserver
 	const splitPath = path.split('.');
-	if (splitPath[ 1 ] === 'zip') {
+	if (splitPath[1] === 'zip') {
 		files.map(file => {
 			if (file.fileType.toLowerCase() === 'vector') {
-				file.splitPath = splitPath[ 0 ].trim();
+				file.splitPath = splitPath[0].trim();
 			} else {
 				file.splitPath = null;
-				removeFile(splitPath[ 0 ]);
+				removeFile(splitPath[0]);
 			}
 		});
 	} else {
 		console.log('this file is not a ZIP!');
-		files[ 0 ].splitPath = null;
-		console.log('splitPath: ' + files[ 0 ].splitPath);
+		files[0].splitPath = null;
+		console.log('splitPath: ' + files[0].splitPath);
 	}
 	res.send(files);
 

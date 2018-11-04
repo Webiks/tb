@@ -8,7 +8,7 @@ const WorldSchema = new Schema({
 	password: { type: String, unique: true },         // the user's (world) password
 	desc: String,
 	country: String,
-	layersId: [ String ],                                 // list of the Layers's Id from the DataBase Layers list
+	layersId: [String],                                 // list of the Layers's Id from the DataBase Layers list
 	workspaceName: { type: String, unique: true }     // the original world name
 });
 

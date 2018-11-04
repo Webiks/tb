@@ -16,7 +16,7 @@ module.exports = function () {
 	};
 
 	this.findFileType = (reqType) => {
-		const extension = (reqType).split('/')[ 1 ].toLowerCase();
+		const extension = (reqType).split('/')[1].toLowerCase();
 		if (extension.includes('tif')) {
 			return 'raster';
 		}

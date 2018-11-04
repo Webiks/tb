@@ -5,7 +5,7 @@ require('../geoserverCrud/curlMethods')();
 class UploadFilesToGS {
 
 	static uploadFile(workspaceName, reqFiles, name, path) {
-		let files = reqFiles.length ? reqFiles : [ reqFiles ];
+		let files = reqFiles.length ? reqFiles : [reqFiles];
 		console.log('starting to uploadFile to GeoServer...');
 		console.log('uploadFile files: ' + JSON.stringify(files));
 		console.log('uploadFile PATH: ' + path);
@@ -14,8 +14,8 @@ class UploadFilesToGS {
 			// 1. create the JSON files with the desire workspace
 			let importJSON = {};
 
-			console.log('files Type: ' + files[ 0 ].fileType);
-			if (files[ 0 ].fileType.toLowerCase() === 'raster') {
+			console.log('files Type: ' + files[0].fileType);
+			if (files[0].fileType.toLowerCase() === 'raster') {
 				importJSON = createImportObject(workspaceName);
 			} else {
 				importJSON = createImportObjectWithData(workspaceName, path);
@@ -28,7 +28,7 @@ class UploadFilesToGS {
 
 			if (importObj) {
 				// 3a. for VECTORS only:
-				if (files[ 0 ].fileType.toLowerCase() === 'vector') {
+				if (files[0].fileType.toLowerCase() === 'vector') {
 					// check the STATE of each task in the Task List
 					console.log('check the state of each task... ');
 					importObj.tasks.map(task => {

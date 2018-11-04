@@ -11,7 +11,7 @@ const configUrl = configBaseUrl().configUrl;
 class UploadFilesToFS {
 
 	static uploadFile(workspaceName, reqFiles, name, path) {
-		let files = reqFiles.length ? reqFiles : [ reqFiles ];
+		let files = reqFiles.length ? reqFiles : [reqFiles];
 		console.log('starting to uploadFile to FS...');
 		console.log('uploadFile to FS files: ' + JSON.stringify(files));
 		console.log('uploadFile PATH: ' + path);
@@ -67,7 +67,7 @@ class UploadFilesToFS {
 		// set the geoData from the image GPS
 		function setGeoData(layer) {
 			// set the center point
-			const centerPoint = [ layer.imageData.GPSLongitude, layer.imageData.GPSLatitude ];
+			const centerPoint = [layer.imageData.GPSLongitude, layer.imageData.GPSLatitude];
 			console.log('setGeoData center point: ' + JSON.stringify(centerPoint));
 			// get the Bbox
 			const bbox = getBbboxFromPoint(centerPoint, 500);

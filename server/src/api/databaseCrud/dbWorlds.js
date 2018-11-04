@@ -98,11 +98,11 @@ router.put('/:worldName', (req, res) => {
 router.put('/:worldName/:fieldName', (req, res) => {
 	console.log('db WORLD SERVER: start to UPDATE-FIELD world ' + req.params.worldName);
 	const fieldName = req.params.fieldName;
-	const fieldValue = req.body[ 'newValue' ];
-	const entityId = { _id: req.body[ '_id' ] };
+	const fieldValue = req.body['newValue'];
+	const entityId = { _id: req.body['_id'] };
 
 	let updatedField = {};
-	updatedField[ fieldName ] = fieldValue;
+	updatedField[fieldName] = fieldValue;
 	console.log('dbWorld updatedField: ' + JSON.stringify(updatedField));
 	let operation = 'update';
 	if (Array.isArray(updatedField)) {

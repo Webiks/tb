@@ -39,7 +39,7 @@ export class WorldService {
     // ====================
     static createWorld(newWorld: IWorld): Promise<any> {
         console.log("start the CREATE WORLD service..." + `${this.baseUrl}/${name}`);
-        newWorld.workspaceName = newWorld.name;
+        newWorld._id = newWorld.name;
         return axios
             .post(`${this.baseUrl}/${newWorld.name}`, newWorld)
             .then(res => res.data)
@@ -78,14 +78,14 @@ export class WorldService {
     // ==============
     // DELETE Request
     // ==============
-    static deleteWorld(world: IWorld): Promise<any> {
-        console.log("start the DELETE WORLD service for world: " + world.name + ', ' + world._id);
+    static deleteWorld(worldId: string): Promise<any> {
+        console.log("start the DELETE WORLD service for world: " + worldId);
         return axios
-            .delete(`${this.baseUrl}/delete/${world.workspaceName}/${world._id}`)
+            .delete(`${this.baseUrl}/delete/${worldId}`)
             .then(res => {
-                console.log("WORLD SERVICE: SUCCEED to delete World: " + world.name);
+                console.log("WORLD SERVICE: SUCCEED to delete World: " + worldId);
                 return res.data;
             })
-            .catch(error => this.handleError(error,"WORLD SERVICE: FAILED to delete World: " + world.name + " error: " + error));
+            .catch(error => this.handleError(error,"WORLD SERVICE: FAILED to delete World: " + worldId + " error: " + error));
     }
 }

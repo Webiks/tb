@@ -49,12 +49,12 @@ class WorldEditor extends React.Component {
             this.setState({
                 displayDialog: true,
                 world: {
+                    _id: '',
                     name: '',
                     password: '',
                     desc: '',
                     country: '',
-                    layers: [],
-                    workspaceName: ''
+                    layers: []
                 }
             });
         } else {
@@ -75,8 +75,8 @@ class WorldEditor extends React.Component {
     }
 
     isNameExist = (name: string): any => {
-        // check if the name exists in the worldName list or in the workspaceName list
-        return (this.props.worldsList.find( world => world.name === name || world.workspaceName === name));
+        // check if the name exists in the worldName list or in the Id's list
+        return (this.props.worldsList.find( world => world.name === name || world._id === name));
     };
 
     isPasswordExist = (password: string): any => {
@@ -242,10 +242,10 @@ class WorldEditor extends React.Component {
                             </div>
                         </div>
                         <div className="ui-grid-row">
-                            <div className="ui-grid-col-4" style={{padding:'4px 10px'}}><label htmlFor="workspaceName">WorkSpace Name</label></div>
+                            <div className="ui-grid-col-4" style={{padding:'4px 10px'}}><label htmlFor="worldId">World ID</label></div>
                             <div className="ui-grid-col-8" style={{padding:'4px 10px'}}>
-                                <InputText id="workspaceName"
-                                           value={this.state.world.workspaceName}
+                                <InputText id="worldId"
+                                           value={this.state.world._id}
                                            readOnly={true}/>
                             </div>
                         </div>

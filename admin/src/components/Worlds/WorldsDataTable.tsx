@@ -88,8 +88,7 @@ class WorldsDataTable extends React.Component {
     };
 
     delete = () => {
-        const index = this.props.worldsList.indexOf(this.state.selectedWorld);
-        WorldService.deleteWorld(this.state.selectedWorld)
+        WorldService.deleteWorld(this.state.selectedWorld._id)
             .then(res => {
                 const worlds =
                     this.props.worldsList.filter( world => world.name !== this.state.selectedWorld.name);

@@ -19,10 +19,11 @@ export class LayerService {
     // ====================
     //  CREATE a new Layer
     // ====================
-    static createLayer(newLayer: IWorldLayer): Promise<any> {
-        console.log("start the CREATE LAYER service..." + `${this.baseUrl}/${name}`);
+    static createLayer(newLayer: IWorldLayer, worldId: string): Promise<any> {
+        console.log("start the CREATE LAYER service..." + `${this.baseUrl}/${worldId}/${newLayer.name}`);
+        console.log("newLayer: " + JSON.stringify(newLayer));
         return axios
-            .post(`${this.baseUrl}/${newLayer.name}`, newLayer)
+            .post(`${this.baseUrl}/${worldId}/${newLayer.name}`, newLayer)
             .then(res => res.data)
             .catch(error => this.handleError(error, "LAYER SERVICE: FAILED to create a new Layer: " + error));
     }
@@ -89,10 +90,10 @@ export class LayerService {
     // DELETE Request
     // ==============
     // delete a layer from the Database (remove from the 'layres' array-field inside the World Model)
-    static deleteWorldLayer(layerId: string): Promise<any> {
+    static deleteWorldLayer(worldId: string, layerId: string): Promise<any> {
         console.log("start the DELETE LAYER service for layer id: " + layerId);
         return axios
-            .delete(`${this.baseUrl}/delete/${layerId}`)
+            .delete(`${this.baseUrl}/delete/${worldId}/${layerId}`)
             .then(res => {
                 console.log("LAYER SERVICE: SUCCEED to delete Layer id: " + layerId);
                 return res.data;
@@ -104,78 +105,50 @@ export class LayerService {
     //  GEOSERVER METHODS
     // ===================
     // get a List of all the world's layers (IWorldLayer: name + href) from Geoserver
-    static getWorldLayersFromGeoserver(workspaceName: string): Promise<any> {
-        console.log("start the GET LAYERS service..." + workspaceName);
+    static getWorldLayersFromGeoserver(worldId: string): Promise<any> {
+        console.log("start the GET LAYERS service..." + worldId);
         return axios
-            .get(`${this.baseUrl}/geoserver/${workspaceName}`)
+            .get(`${this.baseUrl}/geoserver/${worldId}`)
             .then(layers => layers.data)
             .catch(error => this.handleError(error, "LAYER SERVICE: Get WorldLayers From Geoserver error: " + error));
     }
 
     // get the data of each layer in the world from Geoserver
-    static getAllLayersData(workspaceName: string, list: IWorldLayer[]): Promise<any> {
+    static getAllLayersData(worldId: string, list: IWorldLayer[]): Promise<any> {
         console.log("start the getLayersDataByList...");
         const promises = list.map((worldLayer: IWorldLayer) => {
             console.log("start the getLayersDataByList map..." + worldLayer.name);
-            return this.getLayerData(workspaceName, worldLayer)
+            return this.getLayerData(worldId, worldLayer)
         });
         return Promise.all(promises);
     }
 
     // get all the layer's Data (from Geoserver and from the image file)
-    static getLayerData(workspaceName: string, worldLayer: IWorldLayer): Promise<any> {
-        console.warn("start the GET LAYERS service..." + worldLayer.name);
+    static getLayerData(worldId: string, worldLayer: IWorldLayer): Promise<any> {
+        console.warn("start the GET LAYERS DATA service..." + worldLayer.name);
         const layer = worldLayer;
-        layer.workspaceName = workspaceName;                                      // set the workspace name
         console.log("0. getLayerData worldLayer: ");
         // 1. get data from GeoServer
-        return this.getGeoserverData(workspaceName, layer)
+        return this.getGeoserverData(worldId, layer)
             . then ( layer => layer )
-            // // 2. get the image data from the file using the Geotiff
-            // .then( layer => {
-            //     console.warn("service: File Path: " + layer.layer.filePath);
-            //     // this.getImageData(layer.layer.filePath)
-            //     this.getImageData(`file://C:/dev/Terrabiks/geoserver/rasters/SugarCane.tif`)
-            //         .then ( imageData => {
-            //             return {...layer, ...imageData };
-            //         })
-            //         .catch(error => this.handleError(error, "LAYER SERVICE: Get Image Data error: " + error));
-            // })
             .catch(error => this.handleError(error, "LAYER SERVICE: Get Layer Data error: " + error));
     };
 
     // 1. get data from GeoServer
-    static getGeoserverData(workspaceName: string, worldLayer: IWorldLayer): Promise<any> {
+    static getGeoserverData(worldId: string, worldLayer: IWorldLayer): Promise<any> {
         return axios
-            .get(`${this.baseUrl}/geoserver/${workspaceName}/${worldLayer.name}`)
+            .get(`${this.baseUrl}/geoserver/${worldId}/${worldLayer.name}`)
             .then(layerData => {
                 return {...worldLayer, ...layerData.data}
             })
             .catch(error => this.handleError(error, "LAYER SERVICE: Get Geoserver Data error: " + error));
     }
 
-    // 2. get data from the image file
-    // static getImageData(url: string): Promise<any> {
-    //     console.log("geotiff: " + GeoTIFF);
-    //     return GeoTIFF.fromUrl("file://C:/dev/Terrabiks/geoserver/rasters/SugarCane.tif")
-    //         .then( tiff => {
-    //             console.log("geotiff tiff: " + JSON.stringify(tiff));
-    //             tiff.getImage()
-    //                 .then( image => {
-    //                     console.log("geotiff image: " + JSON.stringify(image));
-    //                     const raster = image.readRasters();
-    //                     console.log("geotiff raster: " + JSON.stringify(raster));
-    //                     return raster;
-    //                 })
-    //                 .catch(error => this.handleError(error, "LAYER SERVICE: Get Image Data error: " + error));
-    //         });
-    // }
-
     // get Capabilities (from Geoserver)
-    static getCapabilities (workspaceName: string, layerName: string): Promise<any> {
-        console.log("start the GET CAPABILITIES service..." + `${this.baseUrl}/geoserver/wmts/${workspaceName}/${layerName}`);
+    static getCapabilities (worldId: string, layerName: string): Promise<any> {
+        console.log("start the GET CAPABILITIES service..." + `${this.baseUrl}/geoserver/wmts/${worldId}/${layerName}`);
         return axios
-            .get(`${this.baseUrl}/geoserver/wmts/${workspaceName}/${layerName}`)
+            .get(`${this.baseUrl}/geoserver/wmts/${worldId}/${layerName}`)
             .then(xml => xml.data )
             .catch(error => this.handleError(error, "LAYER SERVICE: Get Capabilities error: " + error));
     }

@@ -3,15 +3,18 @@ import * as React from 'react';
 import config from '../../config/config';
 import { connect } from 'react-redux';
 import * as _ from 'lodash';
+import * as turf from '@turf/turf';
 import { IState } from '../../store';
 import { IWorld } from '../../interfaces/IWorld';
 import { ITBAction } from '../../consts/action-types';
 import { IWorldLayer } from '../../interfaces/IWorldLayer';
 import { IFileData } from '../../interfaces/IFileData';
+import { IImageMetaData } from '../../interfaces/IImageMetaData';
 import { LayerService } from '../../services/LayerService';
 import { WorldsActions } from '../../actions/world.actions';
 import { FileUpload } from 'primereact/components/fileupload/FileUpload';
 import { AFFILIATION_TYPES } from '../../consts/layer-types';
+
 
 /* Prime React components */
 import 'primereact/resources/primereact.min.css';
@@ -21,6 +24,7 @@ import 'font-awesome/css/font-awesome.css';
 import { ProgressSpinner } from 'primereact/components/progressspinner/ProgressSpinner';
 import { Growl } from 'primereact/components/growl/Growl';
 import { IInputdata } from '../../interfaces/IInputData';
+import { BBox } from 'geojson';
 
 export interface IPropsUploadFiles {
     worldName: string,
@@ -33,12 +37,13 @@ export interface IReqFile {
     size: number;
     type: string;
     path: string;
-    mtime: Date | string;
+    fileUploadDate: Date | string;
     fileType: string;
     filePath: string;
     encodeFileName: string;
     encodePathName: string;
     splitPath: string;
+    tags?: IImageMetaData
 }
 
 export interface IStateWorld {
@@ -53,12 +58,12 @@ class UploadFile extends React.Component {
         hideSpinner: true,
         fileList: []
     };
-    url: string = `${config.baseUrl}/api/upload/${this.props.world.workspaceName}`;
+    url: string = `${config.baseUrl}/api/upload/${this.props.world._id}`;
     growl: any;
     uploadFiles: IFileData[];
 
     onSelect = (e: {originalEvent: Event, files: any}): void  => {
-        console.log('On Select...');        
+        console.log('On Select...');
         let fileType: string;
         this.uploadFiles = [];
         // get a list of the e.files (change Files Object to an Array)
@@ -68,8 +73,7 @@ class UploadFile extends React.Component {
             console.log(`fileExtension: ${fileExtension}`);
             if (fileExtension.includes('tif')) {
                 fileType = 'raster';
-            } else if (fileExtension === '.jpg' || fileExtension === '.jpeg'
-                        || fileExtension === '.dng' || fileExtension === '.xml') {
+            } else if (fileExtension === '.jpg' || fileExtension === '.jpeg') {
                 fileType = 'image';
             } else {
                 fileType = 'vector';
@@ -92,7 +96,7 @@ class UploadFile extends React.Component {
             let imageCounter: number = 0;
             let vectorCounter: number = 0;
             selectedFiles.forEach( ( file: IFileData ) => {
-                console.log("file type = " + file.fileType);
+                console.log('file type = ' + file.fileType);
                 switch (file.fileType){
                     case 'raster':
                         rasterCounter++;
@@ -119,7 +123,7 @@ class UploadFile extends React.Component {
                     // B. check if all the Vector's files names are the same
                     const vectorName = this.getFileName(selectedFiles[0].name);
                     if (this.isNameDiffer(selectedFiles, vectorName)){
-                        this.showError("all the Vector's files must have the same name!");
+                        this.showError('all the Vector\'s files must have the same name!');
                     } else {
                         // add the files to the Files List
                         selectedFiles.map( ( file: IFileData ) : any => this.uploadFiles.push(file));
@@ -127,13 +131,13 @@ class UploadFile extends React.Component {
                     console.log(`uploadFiles Length(vector validation): ${this.uploadFiles.length}`);
                 }
             } else {
-                this.showError("all the files must be from the same type!");
+                this.showError('all the files must be from the same type!');
             }
         }
         // of a SINGLE file
         else {
             // if Vector - must have a .SHP file
-            console.log("single file type = " + selectedFiles[0].fileType);
+            console.log('single file type = ' + selectedFiles[0].fileType);
             if (selectedFiles[0].fileType === 'vector') {
                 // check that the mandatory file: .SHP exist
                 if (this.isShpFileExist(selectedFiles)){
@@ -161,7 +165,7 @@ class UploadFile extends React.Component {
 
             selectedFileList.map( ( file: IFileData ) => {
                 const name = this.getFileName(file.name);
-                console.log("file name: " + name);
+                console.log('file name: ' + name);
                 // 1. check if the name is already exist (only if there are layers in the world)
                 if (this.props.world.layers.length > 0){
                     if (this.isNameExist(name)){
@@ -175,7 +179,7 @@ class UploadFile extends React.Component {
                     this.showError(`one or more special characters was found! please, fix the file name!`);
                 }
                 else {
-                    console.log("this file name is OK!");
+                    console.log('this file name is OK!');
                 }
             });
             console.log(`uploadFiles Length(after check the name): ${this.uploadFiles.length}`);
@@ -183,7 +187,7 @@ class UploadFile extends React.Component {
             this.setState( { fileList: this.uploadFiles});
         }
         // if the File List is empty - abort the upload operation
-        if (this.uploadFiles.length === 0){            
+        if (this.uploadFiles.length === 0){
             event.returnValue = false;
         }
     };
@@ -225,27 +229,25 @@ class UploadFile extends React.Component {
         console.log('upload response: ' + JSON.stringify(parsingRes));
         if (parsingRes.length === 0){
             this.setState({ hideSpinner: true });
-            this.showError("the upload was a failure!");
+            this.showError('the upload was a failure!');
         } else {
             this.updateFilesList(parsingRes);
-            console.log("onUpload: " +  JSON.stringify(this.uploadFiles));
+            console.log('onUpload: ' +  JSON.stringify(this.uploadFiles));
             if (parsingRes[0].fileType === 'raster' || parsingRes[0].fileType === 'vector'){
                 this.getNewLayersData();
-            } else {
-               this.getImageData();
             }
         }
     };
 
     // get the name of the file (without the extension)
-    getFileName = (name: string): any => name.split('.')[0];
+    getFileName = (name: string): string => name.split('.')[0];
 
     // get the extension of the file (include the point)
     getExtension = (name: string): any => name.substring(name.lastIndexOf('.'));
 
     // check if tne name contain special characters
     checkForSpecialChar = (name: string): boolean => {
-        console.warn("checkForSpecialChar...");
+        console.warn('checkForSpecialChar...');
         const specialChars  = /[!@#$%^&*()+\=\[\]{};':"\\|,.<>\/?]+/;
         console.warn(`checkForSpecialChar result: ${specialChars.test(name)}`);
         return specialChars.test(name);
@@ -257,23 +259,23 @@ class UploadFile extends React.Component {
 
     // in VECTORS - check if there is a different name among all the Vector's files
     isNameDiffer = (fileList: IFileData[], name) : any =>
-                    fileList.find( ( file: IFileData ): any => this.getFileName(file.name) !== name);
+        fileList.find( ( file: IFileData ): any => this.getFileName(file.name) !== name);
 
     // in VECTORS - check if the .SHP file exist in the file list
     isShpFileExist = (fileList: IFileData[]): boolean => {
         if (this.isExtensionExist(fileList,'.shp')){
             return true;
         } else {
-            this.showError("can't upload Vector without a .SHP file!");
+            this.showError('can\'t upload Vector without a .SHP file!');
             return false;
         }
     };
 
     isExtensionExist = (fileList: IFileData[], ext: string): any =>
-                        fileList.find( (file: IFileData): boolean => file.fileExtension.toLowerCase() === ext);
+        fileList.find( (file: IFileData): boolean => file.fileExtension.toLowerCase() === ext);
 
     findFileIndex = (name: string): number => {
-        console.log("findFileIndex name: " + name);
+        console.log('findFileIndex name: ' + name);
         const file = this.uploadFiles.find( (file: IFileData) => file.name === name);
         return this.uploadFiles.indexOf(file);
     };
@@ -288,18 +290,19 @@ class UploadFile extends React.Component {
     };
 
     updateFilesList = (reqFiles: IReqFile[]) => {
-        console.log("updateFilesList reqFiles: " + JSON.stringify(reqFiles));
+        console.log('updateFilesList reqFiles: ' + JSON.stringify(reqFiles));
         reqFiles.map((reqFile: IReqFile) => {
             // find the match layer
-            const extension = this.getExtension(reqFile.name);
-            if (extension.toLowerCase().includes('tif') || extension === '.shp'){
-                console.log("reqFile name: " + reqFile.name);
+            const extension = this.getExtension(reqFile.name).toLowerCase();
+            if (extension.includes('tif') || extension === '.shp' || extension === '.jpg' || extension === '.jpeg'){
+                console.log('reqFile name: ' + reqFile.name);
                 const layerIndex = this.findFileIndex(reqFile.name);
-                console.log("updateFilesList layerIndex: " + layerIndex);
+                console.log('updateFilesList layerIndex: ' + layerIndex);
                 if (layerIndex !== -1){
                     // update the file new fields
-                    this.uploadFiles[layerIndex].fileUploadDate = reqFile.mtime;
+                    this.uploadFiles[layerIndex].fileUploadDate = reqFile.fileUploadDate;
                     this.uploadFiles[layerIndex].filePath = reqFile.filePath;
+                    this.uploadFiles[layerIndex].fileType = reqFile.fileType;
                     this.uploadFiles[layerIndex].encodeFileName = reqFile.encodeFileName;
                     this.uploadFiles[layerIndex].encodePathName = reqFile.encodePathName;
                     this.uploadFiles[layerIndex].splitPath = reqFile.splitPath;
@@ -309,60 +312,70 @@ class UploadFile extends React.Component {
         });
     };
 
+    getBboxFromPoint = (centerPoint: number[]): BBox => {
+        const polygonSize = 400;                            // in meters
+        const distance: number = polygonSize/1000;          // convert to kilometers
+        const point = turf.point(centerPoint);
+        const buffer = turf.buffer(point, distance, {units: 'kilometers'});
+        return turf.bbox(buffer);
+    };
+
     getNewLayersList = (geolayers: IWorldLayer[]): IWorldLayer[] => {
-        console.log('app layers length: ' + this.props.world.layers.length);
+        // get only the non-image layers
+        const appLayers: IWorldLayer[] = this.props.world.layers.filter( (layer: IWorldLayer) => layer.fileType !== 'image');
+        console.log('app layers length: ' + appLayers.length);
         console.log('geo layers length: ' + geolayers.length);
         // check if there is a difference between the App Store layers's list to the GeoServer layers's list
-        const newLayers = (this.props.world.layers.length && this.props.world.layers[0] !== null)
-            ? _.differenceWith(geolayers, this.props.world.layers,
+        const newLayers = (appLayers.length && appLayers[0] !== null)
+            ? _.differenceWith(geolayers, appLayers,
                 (geoLayer: IWorldLayer, appLayer: IWorldLayer) => geoLayer.name === appLayer.name)
             : geolayers;
         console.log('diff layers length: ' + newLayers.length);
         return newLayers;
     };
 
-    getImageData = () => {
-        this.setState({ hideSpinner: true });
-        console.log("starting get Image Data...");
-    };
-
     getNewLayersData = () => {
         this.setState({ hideSpinner: false });
         console.log('getNewLayersData...');
         // 1. get an Array of all the world's layers from the GeoServer
-        LayerService.getWorldLayersFromGeoserver(this.props.world.workspaceName)
+        LayerService.getWorldLayersFromGeoserver(this.props.world._id)
             .then((geolayers: IWorldLayer[]) => this.getNewLayersList(geolayers))
             // 2. get all the layers data from GeoServer (only for the new upload files)
             .then((newLayers: IWorldLayer[]) => {
-                LayerService.getAllLayersData(this.props.world.workspaceName, newLayers)
-                    .then((layers: IWorldLayer[]): Promise<any> => {
-                        // 3. set the final layers list and save it in the DataBase
-                        const promises = layers.map((layer: IWorldLayer) =>
-                                                    this.createLayer(this.getOtherLayerData(layer)));
-                        return Promise.all(promises);
-                    })
-                    .then((layersList: IWorldLayer[]) => {
-                        // 4. update the App Store with the new layer
-                        const newLayers = [...this.props.world.layers, ...layersList];
-                        console.log('getLayersDataByList refreshing...');
-                        this.refresh(this.layersId, newLayers);
+                LayerService.getAllLayersData(this.props.world._id, newLayers)
+                    .then((layers: IWorldLayer[]) => {
+                        this.saveLayersToDataBase(layers);
                     })
                     .catch(error => this.handleError('UPLOAD: getAllLayersData ERROR: ' + error));
             })
             .catch(error => this.handleError('UPLOAD: getWorldLayersFromGeoserver ERROR: ' + error));
     };
 
+    saveLayersToDataBase = (layers: IWorldLayer[]) => {
+        // 1. set the final layers list and save it in the DataBase
+        const promises = layers.map((layer: IWorldLayer) =>
+            this.createLayer(this.getOtherLayerData(layer)));
+        Promise.all(promises)
+            .then((layersList: IWorldLayer[]) => {
+                // 2. update the App Store with the new layer
+                const newLayers = [...this.props.world.layers, ...layersList];
+                console.log('getLayersDataByList refreshing...');
+                this.refresh(this.layersId, newLayers);
+            })
+            .catch(error => this.handleError('UPLOAD: saveLayersToDataBase ERROR: ' + error));
+    };
+
     // get other data of the layer
     getOtherLayerData = (layer: IWorldLayer): IWorldLayer => {
         // set the fileData field with the upload layer data
-        console.log("layer name: " + layer.fileName);
-        console.log("encode name: " + this.uploadFiles[0].encodeFileName);
+        console.log('layer name: ' + layer.fileName);
+        console.log('encode name: ' + this.uploadFiles[0].encodeFileName);
         const currentFile = this.uploadFiles.find(file => file.encodeFileName === layer.fileName);
+        layer.fileType = currentFile.fileType;
         layer.fileData = this.setFileData(currentFile);
         // set the inputData to be EMPTY for the new layer
         layer.inputData = this.setInitInputData(layer);
-        console.log("uploadFile fileData: " + JSON.stringify(layer.fileData));
-        // layer.imageData = this.getImageData(uploadLayer);
+        console.log('uploadFile fileData: ' + JSON.stringify(layer.fileData));
         return { ...layer };
     };
 
@@ -387,25 +400,39 @@ class UploadFile extends React.Component {
     // get the input Data of the layer from the App store
     setInitInputData = (layer: IWorldLayer): IInputdata => {
         console.log('setInitInputData...' + layer.name);
-        return {
-            fileName: layer.fileData.name,
-            affiliation: AFFILIATION_TYPES.AFFILIATION_UNKNOWN,
-            GSD: 0,
-            sensor: {
-                maker: '',
-                name: '',
-                bands: []
-            },
-            flightAltitude: 0,
-            cloudCoveragePercentage: 0,
-            zoom: 14,
-            opacity: 0.6
-        };
+        let inputData: IInputdata;
+        if (layer.fileType === 'image'){
+            inputData = {
+                fileName: layer.fileData.name,
+                affiliation: AFFILIATION_TYPES.AFFILIATION_UNKNOWN,
+                sensor: {
+                    maker: '',
+                    name: ''
+                },
+                flightAltitude: 0
+            };
+        } else {
+            inputData = {
+                fileName: layer.fileData.name,
+                affiliation: AFFILIATION_TYPES.AFFILIATION_UNKNOWN,
+                GSD: 0,
+                sensor: {
+                    maker: '',
+                    name: '',
+                    bands: []
+                },
+                flightAltitude: 0,
+                cloudCoveragePercentage: 0,
+                zoom: 14,
+                opacity: 0.6
+            };
+        }
+        return inputData;
     };
 
     // create new layer in the DataBase and update its _id in the world layersId list
     createLayer = (newLayer: IWorldLayer): Promise<any> => {
-        return LayerService.createLayer(newLayer)
+        return LayerService.createLayer(newLayer, this.props.world._id)
             .then(dbLayer => {
                 console.warn('CREATE new layer in MongoDB id: ' + dbLayer._id);
                 // update the layer with its Id in the DataBase
@@ -447,7 +474,7 @@ class UploadFile extends React.Component {
 
                 <div className="content-section implementation">
                     <FileUpload mode="advanced" name="uploads" multiple={true} url={this.url}
-                                accept="image/tiff, .shp, .shx, .dbf, .prj, .qix, .fix, .xml, .sbn, .sbx, .cpg, .jpeg, .jpg, .dng, .xml"
+                                accept="image/tiff, .shp, .shx, .dbf, .prj, .qix, .fix, .xml, .sbn, .sbx, .cpg, .jpeg, .jpg"
                                 maxFileSize={config.maxFileSize} auto={false}
                                 chooseLabel="Choose Files (no zip)"
                                 onSelect={this.onSelect}
@@ -477,4 +504,3 @@ const mapDispatchToProps = (dispatch: any) => ({
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(UploadFile);
-

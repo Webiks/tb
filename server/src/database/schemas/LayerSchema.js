@@ -6,17 +6,17 @@ const Schema = mongoose.Schema;
 const footprint = {
 	type: {
 		type: String,
-		enum: ['Feature'],
+		enum: [ 'Feature' ],
 		required: true
 	},
 	geometry: {
 		type: {
 			type: String,
-			enum: ['Polygon'],
+			enum: [ 'Polygon' ],
 			required: true
 		},
 		coordinates: {
-			type: [[[Number]]], // Array of arrays of arrays of numbers
+			type: [ [ [ Number ] ] ], // Array of arrays of arrays of numbers
 			required: true
 		}
 	},
@@ -24,15 +24,15 @@ const footprint = {
 };
 
 const geoData = {
-	centerPoint: [Number, Number],
-	bbox: [Number, Number, Number, Number] | [Number, Number, Number, Number, Number, Number],				// [ minx, miny, maxx, maxy ]
+	centerPoint: [ Number, Number ],
+	bbox: [ Number, Number, Number, Number ] | [ Number, Number, Number, Number, Number, Number ],				// [ minx, miny, maxx, maxy ]
 	footprint
 };
 
 // LAYER: from GeoServer - Layer page
 const layer = {
 	name: String,
-	type: {type: String, uppercase: true, enum: ["RASTER", "VECTOR"]},
+	type: { type: String, uppercase: true, enum: [ 'RASTER', 'VECTOR' ] },
 	defaultStyle: {
 		name: String,
 		href: String                                // href to the style page
@@ -47,15 +47,15 @@ const layer = {
 		logoHeight: Number
 	},
 	storeId: String,                               // get from the details page (RASTER/VECTOR) store's name field
-	storeName: String,                             // get from the store's name field
+	storeName: String                             // get from the store's name field
 };
 
 // STORE: from GeoServer - Store page (coveragestores(RASTER) / datastores(VECTOR))
 const store = {
 	storeId: String,                               // get from the details page (RASTER/VECTOR) store's name field
 	name: String,
-	type: {type: String, uppercase: true, enum: ["RASTER", "VECTOR"]},      // get from the Layer page's type
-	format: {type: String, uppercase: true, enum: ["GEOTIFF", "SHAPEFILE"]}, // get from the store type ('GeoTiff' or 'Shapefile')
+	type: { type: String, uppercase: true, enum: [ 'RASTER', 'VECTOR' ] },      // get from the Layer page's type
+	format: { type: String, uppercase: true, enum: [ 'GEOTIFF', 'SHAPEFILE' ] }, // get from the store type ('GeoTiff' or 'Shapefile')
 	enabled: Boolean,
 	_default: Boolean,
 	workspace: {
@@ -80,7 +80,7 @@ const data = {
 	},
 	title: String,
 	keywords: {
-		string: [String]
+		string: [ String ]
 	},
 	nativeCRS: String,                              // was translated from a map
 	srs: String,
@@ -98,7 +98,7 @@ const data = {
 		maxy: Number,
 		crs: String
 	},
-	center: [Number, Number],
+	center: [ Number, Number ],
 	projectionPolicy: String,
 	enabled: Boolean,
 	metadata: {                                     // was translated from a map
@@ -146,10 +146,10 @@ const data = {
 		crs: String
 	},
 	supportedFormats: {
-		string: [String]
+		string: [ String ]
 	},
 	interpolationMethods: {
-		string: [String]
+		string: [ String ]
 	},
 	defaultInterpolationMethod: String,
 	dimension: {
@@ -159,10 +159,10 @@ const data = {
 				description: String,
 				range: {
 					min: Number || String,
-					max: Number || String,
+					max: Number || String
 				},
 				nullValues: {
-					double: [Number]
+					double: [ Number ]
 				},
 				unit: String,
 				dimensionType: {
@@ -172,15 +172,15 @@ const data = {
 		]
 	},
 	requestSRS: {
-		string: [String]
+		string: [ String ]
 	},
 	responseSRS: {
-		string: [String]
+		string: [ String ]
 	},
 	parameters: {
 		entry: [
 			{
-				string: [String]
+				string: [ String ]
 			}
 		]
 	}
@@ -221,9 +221,9 @@ const imageData = {
 	JPGModifiedDate: Date | String,
 	JPGOriginalDate: Date | String,
 	YCbCrPosition: Number,
-	XPComment: [Number],
-	XPKeywords: [Number],
-	GPSVersionId: [Number, Number, Number, Number],
+	XPComment: [ Number ],
+	XPKeywords: [ Number ],
+	GPSVersionId: [ Number, Number, Number, Number ],
 	GPSLatitudeRef: String,									// x-point orientation (latitude)
 	GPSLatitude: Number,										// x-point (latitude)
 	GPSLongitudeRef: String,								// y-point orientation (longitude)
@@ -261,16 +261,16 @@ const imageData = {
 // INPUT DATA: data from the user
 const inputData = {
 	fileName: String,
-	affiliation: {type: String, uppercase: true, enum: ["INPUT", "OUTPUT", "UNKNOWN"]},  // 'INPUT' or 'OUTPUT'
+	affiliation: { type: String, uppercase: true, enum: [ 'INPUT', 'OUTPUT', 'UNKNOWN' ] },  // 'INPUT' or 'OUTPUT'
 	GSD: Number,
 	flightAltitude: Number,
 	cloudCoveragePercentage: Number,
 	zoom: Number,
-	opacity: {type: Number, min: 0, max: 1},
+	opacity: { type: Number, min: 0, max: 1 },
 	sensor: {
 		name: String,
 		maker: String,
-		bands: [String]
+		bands: [ String ]
 	}
 };
 
@@ -282,8 +282,8 @@ const LayerSchema = new Schema({
 	href: String,                                  // href to the Layer page
 	fileName: String,
 	filePath: String,
-	fileType: {type: String, lowercase: true, enum: ["raster", "vector", "image"]},
-	format: {type: String, uppercase: true, enum: ["GEOTIFF", "SHAPEFILE", "JPG"]},
+	fileType: { type: String, lowercase: true, enum: [ 'raster', 'vector', 'image' ] },
+	format: { type: String, uppercase: true, enum: [ 'GEOTIFF', 'SHAPEFILE', 'JPG' ] },
 	geoData,
 	layer,
 	store,

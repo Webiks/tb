@@ -1,28 +1,28 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
 class DBManager {
 
-    static connect(Url) {
+	static connect(Url) {
 
-        return new Promise((resolve, reject) => {
+		return new Promise((resolve, reject) => {
 
-            mongoose.connect(Url, { useNewUrlParser: true });
+			mongoose.connect(Url, { useNewUrlParser: true });
 
-            const db = mongoose.connection;
-            db.on("error", (err) => {
-                console.error('connection error!: ' + err);
-                return reject(err);
-            });
-            db.once("open", function () {
-                console.log("connected to mongo!!!");
-                return resolve();
-            });
-        });
-    }
+			const db = mongoose.connection;
+			db.on('error', (err) => {
+				console.error('connection error!: ' + err);
+				return reject(err);
+			});
+			db.once('open', function () {
+				console.log('connected to mongo!!!');
+				return resolve();
+			});
+		});
+	}
 
-    static disconnect(done) {
-        mongoose.disconnect(done);
-    }
+	static disconnect(done) {
+		mongoose.disconnect(done);
+	}
 }
 
 module.exports = DBManager;

@@ -20,11 +20,8 @@ module.exports = function () {
 		if (extension.includes('tif')) {
 			return 'raster';
 		}
-		else if (extension === 'jpg' || extension === 'jpeg' || extension === 'dng') {
+		else if (extension === 'jpg' || extension === 'jpeg') {
 			return 'image';
-		}
-		else if (extension === 'xml') {
-			return 'xml';
 		}
 		else {
 			return 'vector';

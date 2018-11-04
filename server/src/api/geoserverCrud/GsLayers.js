@@ -14,7 +14,7 @@ class GsLayers {
 	// get a list of all the layers of the world from geoserver by REST api
 	static getWorldLayerListFromGeoserver(worldName) {
 		const urlGetLayers = `${configUrl.baseWorkspacesUrlGeoserver}/${worldName}/layers.json`;
-		console.log('GsLayers: start GET-ALL world\'s layers from Geoserver...' + urlGetLayers);
+		console.log('GsLayers: start GET-ALL world\'s layers from Geoserver...', urlGetLayers);
 		return axios.get(urlGetLayers, { headers: { authorization } })
 			.then(response => response.data)
 			.catch(error => {
@@ -26,7 +26,7 @@ class GsLayers {
 	// get the layer type & resource info ("layer" field - type ILayerDetails) from geoserver by REST api
 	static getLayerInfoFromGeoserver(worldName, layerName) {
 		const urlGetLayer = `${configUrl.baseWorkspacesUrlGeoserver}/${worldName}/layers/${layerName}.json`;
-		console.log('GsLayers: start GET LAYER INFO url = ' + urlGetLayer);
+		console.log('GsLayers: start GET LAYER INFO url = ', urlGetLayer);
 		return axios.get(urlGetLayer, { headers: { authorization } })
 			.then(response => response.data)
 			.catch(error => {
@@ -38,7 +38,7 @@ class GsLayers {
 	// get layer's details ("data" field - type ILayerDetails) from geoserver by REST api
 	// using the resource href that we got from the "layer's info" request
 	static getLayerDetailsFromGeoserver(resourceUrl) {
-		console.log('GsLayers: GET LAYER DETAILS url: ' + resourceUrl);
+		console.log('GsLayers: GET LAYER DETAILS url: ', resourceUrl);
 		return axios.get(resourceUrl, { headers: { authorization } })
 			.then(response => response.data)
 			.catch(error => {
@@ -50,7 +50,7 @@ class GsLayers {
 	// get the layer's store data ("store" field - type ILayerDetails) from geoserver by REST api
 	// using the store href that we got from the "layer's details" request
 	static getStoreDataFromGeoserver(storeUrl) {
-		console.log('GsLayers: start GET STORE DATA url = ' + storeUrl);
+		console.log('GsLayers: start GET STORE DATA url = ', storeUrl);
 		return axios.get(storeUrl, { headers: { authorization } })
 			.then(response => response.data)
 			.catch(error => {
@@ -61,7 +61,7 @@ class GsLayers {
 
 	// get Capabilities XML file - WMTS Request for display the selected layer
 	static getCapabilitiesFromGeoserver(capabilitiesUrl) {
-		console.log('GsLayers: start GET CAPABILITIES url = ' + capabilitiesUrl);
+		console.log('GsLayers: start GET CAPABILITIES url = ', capabilitiesUrl);
 		return axios.get(capabilitiesUrl, { headers: { authorization } })
 			.then(response => response.data)
 			.catch(error => {
@@ -75,7 +75,7 @@ class GsLayers {
 	// =================
 	// delete a layer from geoserver by REST api
 	static deleteLayerFromGeoserver(url) {
-		console.log('GsWorlds: start DELETE LAYER from GEOSERVER = ' + url);
+		console.log('GsWorlds: start DELETE LAYER from GEOSERVER = ', url);
 		return axios.delete(`${url}?recurse=true`, { headers: { authorization } })
 			.then(response => {
 				console.log(`success to delete the layer! ${url}`);

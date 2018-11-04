@@ -55,7 +55,6 @@ const store = {
 	storeId: String,                               // get from the details page (RASTER/VECTOR) store's name field
 	name: String,
 	type: { type: String, uppercase: true, enum: ['RASTER', 'VECTOR'] },      // get from the Layer page's type
-	format: { type: String, uppercase: true, enum: ['GEOTIFF', 'SHAPEFILE'] }, // get from the store type ('GeoTiff' or 'Shapefile')
 	enabled: Boolean,
 	_default: Boolean,
 	workspace: {
@@ -276,8 +275,7 @@ const inputData = {
 
 // create the World-Layer Schema
 const LayerSchema = new Schema({
-	workspaceName: String,                         // the name of the GeoServer workspace
-	worldLayerId: String,                          // workspaceName: layername , unique : true
+	// _id: { type: String },       			 		 		 // the original layer name (?)
 	name: String,                                  // from GeoServer
 	href: String,                                  // href to the Layer page
 	fileName: String,

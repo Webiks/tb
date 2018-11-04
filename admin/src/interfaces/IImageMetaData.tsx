@@ -51,6 +51,5 @@ export interface IImageMetaData {
     GainControl?: number;
     Contrast?: number;
     Saturation?: number;
-    Sharpness?: number
+    Sharpness?: number;
 }
-

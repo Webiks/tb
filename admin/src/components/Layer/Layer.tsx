@@ -22,13 +22,11 @@ const Layer = ({ worldName, world, layerName, selectedLayer, push }: ILayerCompo
         <div>
             { selectedLayer && <LayerEditor worldName={worldName} layer={selectedLayer}/> }
         </div>
-
     </div>
 );
-
 const mapStateToProps = (state: IState, { match }:any ) => {
     const world: IWorld = state.worlds.list.find(({ name, layers }: IWorld) => match.params.worldName === name);
-    const selectedLayer: IWorldLayer = world.layers.find(({ layer }: IWorldLayer) => match.params.layerName === layer.name);
+    const selectedLayer: IWorldLayer = world.layers.find(( { name } : IWorldLayer) => match.params.layerName === name);
     return {
         world,
         selectedLayer,
@@ -36,5 +34,4 @@ const mapStateToProps = (state: IState, { match }:any ) => {
         worldName: match.params.worldName
     }
 };
-
 export default connect(mapStateToProps)(Layer);

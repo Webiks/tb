@@ -1,7 +1,6 @@
 import * as React from 'react';
 
 import { connect } from 'react-redux';
-import { bindActionCreators } from 'redux';
 import { Route } from 'react-router';
 import { IState } from '../../store';
 import { IWorld } from '../../interfaces/IWorld';
@@ -45,16 +44,18 @@ class WorldLayers extends React.Component {
                             })
                             .catch(error => this.refresh([],[]));
                     }))
-                    .then (() => {
-                        // 3. update the App store with the worlds' list
-                        console.log(`WorldLayer: 3. update the ${world.name}'s world layers...` + world.layers.length);
-                        this.refresh(world.layersId, world.layers);
-                        return world;
-                    })
-                    .catch(error => {
-                        console.error("error update the world!" + error);
-                        return this.refresh([],[])
-                    });
+                        .then (() => {
+                            // 3. update the App store with the worlds' list
+                            console.log(`WorldLayer: 3. update the ${world.name}'s world layers...` + world.layers.length);
+                            console.log("layersId: " + JSON.stringify(world.layersId));
+                            this.refresh(world.layersId, world.layers);
+                            console.log("finished to refresh the world...");
+                            return world;
+                        })
+                        .catch(error => {
+                            console.error("error update the world!" + error);
+                            return this.refresh([],[])
+                        });
                 } else {
                     world.layersId = [];
                     this.refresh(world.layersId, world.layers);
@@ -69,6 +70,7 @@ class WorldLayers extends React.Component {
 
     // update the App store and refresh the page
     refresh = (layersId: string[], layers: IWorldLayer[]) => {
+        console.log("start refresh...");
         const name = this.props.worldName;
         this.props.updateWorld({ name, layersId, layers });
         this.setState({ hideSpinner: true } );
@@ -104,4 +106,3 @@ const mapDispatchToProps = (dispatch: any) => ({
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(WorldLayers);
-

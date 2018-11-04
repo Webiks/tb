@@ -8,6 +8,7 @@ import { IWorld } from '../../interfaces/IWorld';
 import { ITBAction } from '../../consts/action-types';
 import { IWorldLayer } from '../../interfaces/IWorldLayer';
 import { IFileData } from '../../interfaces/IFileData';
+import { IInputdata } from '../../interfaces/IInputData';
 import { LayerService } from '../../services/LayerService';
 import { WorldsActions } from '../../actions/world.actions';
 import { FileUpload } from 'primereact/components/fileupload/FileUpload';
@@ -20,8 +21,6 @@ import 'primeicons/primeicons.css';
 import 'font-awesome/css/font-awesome.css';
 import { ProgressSpinner } from 'primereact/components/progressspinner/ProgressSpinner';
 import { Growl } from 'primereact/components/growl/Growl';
-import { IInputdata } from '../../interfaces/IInputData';
-import Layer from '../Layer/Layer';
 
 export interface IPropsUploadFiles {
     worldName: string,
@@ -30,11 +29,12 @@ export interface IPropsUploadFiles {
 }
 
 export interface IReqFile {
+    _id: string;
     name: string;
     size: number;
     type: string;
     path: string;
-    mtime: Date | string;
+    fileUploadDate: Date | string;
     fileType: string;
     filePath: string;
     encodeFileName: string;
@@ -47,16 +47,16 @@ export interface IStateWorld {
     fileList: IFileData[];
 }
 
-class UploadFilesToFS extends React.Component {
+class UploadFiles extends React.Component {
     props: IPropsUploadFiles;
     layersId: string[] = this.props.world.layersId ? this.props.world.layersId : [];
     state: IStateWorld = {
         hideSpinner: true,
         fileList: []
     };
-    url: string = `${config.baseUrl}/api/upload/${this.props.world.workspaceName}`;
+    url: string = `${config.baseUrl}/api/upload/${this.props.world._id}`;
     growl: any;
-    uploadFiles: IFileData[];
+    uploadFiles: any[] ;
 
     onSelect = (e: {originalEvent: Event, files: any}): void  => {
         console.log('On Select...');
@@ -65,9 +65,11 @@ class UploadFilesToFS extends React.Component {
         // get a list of the e.files (change Files Object to an Array)
         const selectedFiles: IFileData[] = Array.from(e.files).map((file: File): IFileData => {
             // find the file Extension and Type
-            const fileExtension = this.getExtension(file.name);
-            if (fileExtension.toLowerCase().includes('tif')){
+            const fileExtension = this.getExtension(file.name).toLowerCase();
+            if (fileExtension.includes('tif')) {
                 fileType = 'raster'
+            } else if (fileExtension === '.jpg' || fileExtension === '.jpeg'){
+                fileType = 'image'
             } else {
                 fileType = 'vector'
             }
@@ -83,39 +85,42 @@ class UploadFilesToFS extends React.Component {
         console.log(`selectedFiles Length: ${selectedFiles.length}`);
         // Check the Validation of the files
         // of MULTI-FILES
-        if (selectedFiles.length > 1){
-            // 1. RASTERS - check that don't mix Raster's files with Vector's files
+        if (selectedFiles.length > 1) {
+            // 1. check that all the files are from the same type
             let countRasters: number = 0;
-            selectedFiles.forEach( ( file: IFileData ) => {
-                if (file.fileType === 'raster'){
+            let countVectors: number = 0;
+            let countImages: number = 0;
+            selectedFiles.forEach((file: IFileData) => {
+                if (file.fileType === 'raster') {
                     countRasters++;
+                } else if (file.fileType === 'vector') {
+                    countVectors++;
+                } else {
+                    countImages++;
                 }
             });
-            console.log("countRasters = " + countRasters);
+            if (countRasters > 0 && countRasters !== selectedFiles.length ||
+                countVectors > 0 && countVectors !== selectedFiles.length ||
+                countImages > 0 && countImages !== selectedFiles.length) {
+                this.showError("all the files must to be from the same type!");
+            } else {
+                // add the files to the Files List
+                selectedFiles.map((file: IFileData) => this.uploadFiles.push(file));
+            }
+            console.log(`uploadFiles Length(raster validation): ${this.uploadFiles.length}`);
 
-            if (countRasters > 0){
-                if (countRasters !== selectedFiles.length){
-                    this.showError("Can't upload rasters and vectors files together!");
+            // 2. for VECTORS only
+            // A. check that the mandatory .SHP file exists
+            if (this.isShpFileExist(selectedFiles)){
+                // B. check if all the Vector's files's names are the same
+                const vectorName = this.getFileName(selectedFiles[0].name);
+                if (this.isNameDiffer(selectedFiles, vectorName)){
+                    this.showError("all the Vector's files must have the same name!");
                 } else {
                     // add the files to the Files List
-                    selectedFiles.map( ( raster: IFileData ) => this.uploadFiles.push(raster));
+                    selectedFiles.map( ( file: IFileData ) : any => this.uploadFiles.push(file));
                 }
-                console.log(`uploadFiles Length(raster validation): ${this.uploadFiles.length}`);
-            }
-            // 2. for VECTORS only
-            else {
-                // A. check that the mandatory .SHP file exist
-                if (this.isShpFileExist(selectedFiles)){
-                    // B. check if all the Vector's files names are the same
-                    const vectorName = this.getFileName(selectedFiles[0].name);
-                    if (this.isNameDiffer(selectedFiles, vectorName)){
-                        this.showError("all the Vector's files must have the same name!");
-                    } else {
-                        // add the files to the Files List
-                        selectedFiles.map( ( file: IFileData ) : any => this.uploadFiles.push(file));
-                    }
-                    console.log(`uploadFiles Length(vector validation): ${this.uploadFiles.length}`);
-                }
+                console.log(`uploadFiles Length(vector validation): ${this.uploadFiles.length}`);
             }
         }
         // of a SINGLE file
@@ -128,28 +133,27 @@ class UploadFilesToFS extends React.Component {
                     this.uploadFiles.push(selectedFiles[0]);
                 }
             } else {
-                // if Raster - add the file to the Files List
+                // add the file to the Files List
                 this.uploadFiles.push(selectedFiles[0]);
             }
             console.log(`uploadFiles Length(single file validation): ${this.uploadFiles.length}`);
         }
 
         // 3. check the file name (of the valid files) to prevent duplicate names
-        // check only if the file list is not empty
         if (this.uploadFiles.length > 0){
             let selectedFileList: IFileData[];
-            if (fileType === 'raster') {
-                selectedFileList = this.uploadFiles;
-            } else {
+            if (fileType === 'vector') {
                 // VECTORS - all the files are with the same name (check only the first file)
                 selectedFileList = [this.uploadFiles[0]];
+            } else {
+                selectedFileList = this.uploadFiles;
             }
             console.log(`selectedFileList Length(before check the name): ${selectedFileList.length}`);
 
             selectedFileList.map( ( file: IFileData ) => {
                 const name = this.getFileName(file.name);
-                console.log("file name: " + name);
-                // 1. check if the name is already exist (only if there are layers in the world)
+                console.log("file name: ", name);
+                // 1. check if the layer name is already exist in the world
                 if (this.props.world.layers.length > 0){
                     if (this.isNameExist(name)){
                         this.removeFileFromList(fileType, name);
@@ -207,16 +211,24 @@ class UploadFilesToFS extends React.Component {
     onUpload = (e: {xhr: XMLHttpRequest, files: any}): void => {
         console.log('On Upload...');
         // get the list of the upload files
-        let parsingRes: IReqFile[] = JSON.parse(e.xhr.response);
+        let parsingRes: any[] = JSON.parse(e.xhr.response);
         parsingRes = Array.isArray(parsingRes) ? parsingRes : [parsingRes];
-        console.log('upload response: ' + JSON.stringify(parsingRes));
+        console.log('upload response: ', JSON.stringify(parsingRes));
         if (parsingRes.length === 0){
             this.setState({ hideSpinner: true });
             this.showError("the upload was a failure!");
         } else {
             this.updateFilesList(parsingRes);
-            console.log("onUpload: " +  JSON.stringify(this.uploadFiles));
-            this.getNewLayersData();
+            console.log("onUpload: ", JSON.stringify(this.uploadFiles));
+            if (this.uploadFiles[0].fileType === 'image'){
+                console.log('handle image files...');
+                // update the App Store with the new layer
+                const newLayers = [...this.props.world.layers, ...this.uploadFiles];
+                console.log('refreshing imageLayers...', newLayers);
+                this.refresh(this.layersId, newLayers);
+            } else {
+                this.getNewLayersData();
+            }
         }
     };
 
@@ -256,12 +268,12 @@ class UploadFilesToFS extends React.Component {
         fileList.find( (file: IFileData): boolean => file.fileExtension.toLowerCase() === ext);
 
     findFileIndex = (name: string): number => {
-        console.log("findFileIndex name: " + name);
+        console.log("findFileIndex name: ", name);
         const file = this.uploadFiles.find( (file: IFileData) => file.name === name);
         return this.uploadFiles.indexOf(file);
     };
 
-    removeFileFromList = (fileType, name) => {
+    removeFileFromList = (fileType: string, name: string) => {
         // remove the file from the file list
         if (fileType === 'raster'){
             this.uploadFiles.splice(this.findFileIndex(name), 1);
@@ -270,22 +282,19 @@ class UploadFilesToFS extends React.Component {
         }
     };
 
-    updateFilesList = (reqFiles: IReqFile[]) => {
-        console.log("updateFilesList reqFiles: " + JSON.stringify(reqFiles));
-        reqFiles.map((reqFile: IReqFile) => {
+    updateFilesList = (reqFiles: any[]) => {
+        console.log("updateFilesList reqFiles: ", JSON.stringify(reqFiles));
+        reqFiles.map((reqFile: any) => {
             // find the match layer
-            const extension = this.getExtension(reqFile.name);
-            if (extension.toLowerCase().includes('tif') || extension === '.shp'){
-                console.log("reqFile name: " + reqFile.name);
+            const extension = this.getExtension(reqFile.name).toLowerCase();
+            if ( extension.includes('tif') || extension === '.shp' ||
+                extension === '.jpg' || extension === '.jpeg'){
+                console.log("reqFile name: ", reqFile.name);
                 const layerIndex = this.findFileIndex(reqFile.name);
-                console.log("updateFilesList layerIndex: " + layerIndex);
+                console.log("updateFilesList layerIndex: ", layerIndex);
                 if (layerIndex !== -1){
-                    // update the file new fields
-                    this.uploadFiles[layerIndex].fileUploadDate = reqFile.mtime;
-                    this.uploadFiles[layerIndex].filePath = reqFile.filePath;
-                    this.uploadFiles[layerIndex].encodeFileName = reqFile.encodeFileName;
-                    this.uploadFiles[layerIndex].encodePathName = reqFile.encodePathName;
-                    this.uploadFiles[layerIndex].splitPath = reqFile.splitPath;
+                    // update the file's new fields
+                    this.uploadFiles[layerIndex] = {...this.uploadFiles[layerIndex], ...reqFile};
                     console.log(`updateFilesList File list[${layerIndex}]: ${JSON.stringify(this.uploadFiles[layerIndex])}`);
                 }
             }
@@ -293,14 +302,14 @@ class UploadFilesToFS extends React.Component {
     };
 
     getNewLayersList = (geolayers: IWorldLayer[]): IWorldLayer[] => {
-        console.log('app layers length: ' + this.props.world.layers.length);
-        console.log('geo layers length: ' + geolayers.length);
+        console.log('app layers length: ', this.props.world.layers.length);
+        console.log('geo layers length: ', geolayers.length);
         // check if there is a difference between the App Store layers's list to the GeoServer layers's list
         const newLayers = (this.props.world.layers.length && this.props.world.layers[0] !== null)
             ? _.differenceWith(geolayers, this.props.world.layers,
                 (geoLayer: IWorldLayer, appLayer: IWorldLayer) => geoLayer.name === appLayer.name)
             : geolayers;
-        console.log('diff layers length: ' + newLayers.length);
+        console.log('diff layers length: ', newLayers.length);
         return newLayers;
     };
 
@@ -308,11 +317,11 @@ class UploadFilesToFS extends React.Component {
         this.setState({ hideSpinner: false });
         console.log('getNewLayersData...');
         // 1. get an Array of all the world's layers from the GeoServer
-        LayerService.getWorldLayersFromGeoserver(this.props.world.workspaceName)
+        LayerService.getWorldLayersFromGeoserver(this.props.world._id)
             .then((geolayers: IWorldLayer[]) => this.getNewLayersList(geolayers))
             // 2. get all the layers data from GeoServer (only for the new upload files)
             .then((newLayers: IWorldLayer[]) => {
-                LayerService.getAllLayersData(this.props.world.workspaceName, newLayers)
+                LayerService.getAllLayersData(this.props.world._id, newLayers)
                     .then((layers: IWorldLayer[]): Promise<any> => {
                         // 3. set the final layers list and save it in the DataBase
                         const promises = layers.map((layer: IWorldLayer) =>
@@ -333,19 +342,18 @@ class UploadFilesToFS extends React.Component {
     // get other data of the layer
     getOtherLayerData = (layer: IWorldLayer): IWorldLayer => {
         // set the fileData field with the upload layer data
-        console.log("layer name: " + layer.fileName);
-        console.log("encode name: " + this.uploadFiles[0].encodeFileName);
+        console.log("layer name: ", layer.fileName);
+        console.log("encode name: ", this.uploadFiles[0].encodeFileName);
         const currentFile = this.uploadFiles.find(file => file.encodeFileName === layer.fileName);
         layer.fileData = this.setFileData(currentFile);
         // set the inputData to be EMPTY for the new layer
         layer.inputData = this.setInitInputData(layer);
-        console.log("uploadFile fileData: " + JSON.stringify(layer.fileData));
-        // layer.imageData = this.getImageData(uploadLayer);
+        console.log("uploadFile fileData: ", JSON.stringify(layer.fileData));
         return { ...layer };
     };
 
     // get the Image Data of the layer from the App store
-    setFileData = (file: IFileData): any => {
+    setFileData = (file: any): IFileData => {
         console.log('getFileData...', file.name);
         return {
             name: file.name,
@@ -364,7 +372,7 @@ class UploadFilesToFS extends React.Component {
 
     // get the input Data of the layer from the App store
     setInitInputData = (layer: IWorldLayer): IInputdata => {
-        console.log('setInitInputData...' + layer.name);
+        console.log('setInitInputData...', layer.name);
         return {
             fileName: layer.fileData.name,
             affiliation: AFFILIATION_TYPES.AFFILIATION_UNKNOWN,
@@ -383,7 +391,7 @@ class UploadFilesToFS extends React.Component {
 
     // create new layer in the DataBase and update its _id in the world layersId list
     createLayer = (newLayer: IWorldLayer): Promise<any> => {
-        return LayerService.createLayer(newLayer)
+        return LayerService.createLayer(newLayer, this.props.world._id)
             .then(dbLayer => {
                 console.warn('CREATE new layer in MongoDB id: ' + dbLayer._id);
                 // update the layer with its Id in the DataBase
@@ -454,5 +462,5 @@ const mapDispatchToProps = (dispatch: any) => ({
     updateWorld: (payload: Partial<IWorld>) => dispatch(WorldsActions.updateWorldAction(payload))
 });
 
-export default connect(mapStateToProps, mapDispatchToProps)(UploadFilesToFS);
+export default connect(mapStateToProps, mapDispatchToProps)(UploadFiles);
 

@@ -10,6 +10,7 @@ import { IWorld } from '../../interfaces/IWorld';
 import { IWorldLayer } from '../../interfaces/IWorldLayer';
 import { ITBAction } from '../../consts/action-types';
 import { LayerService } from '../../services/LayerService';
+import { FileService } from '../../services/FileService';
 
 /* Prime React components */
 import 'primereact/resources/themes/omega/theme.css';
@@ -19,7 +20,6 @@ import 'font-awesome/css/font-awesome.css';
 import { Button } from 'primereact/components/button/Button';
 import { InputText } from 'primereact/components/inputtext/InputText';
 import { Dialog } from 'primereact/components/dialog/Dialog';
-import { FileService } from '../../services/FileService';
 
 export interface IDisplayMapProps  {
     worldName: string,
@@ -54,7 +54,7 @@ class DisplayMap extends React.Component {
 
     componentWillMount() {
         this.setState({ selectedLayer: cloneDeep(this.props.layer),
-                              displayMapWindow: true});
+            displayMapWindow: true});
         this.layerIndex = this.props.world.layers.indexOf(this.props.layer);
         this.olCenter = ol.proj.transform(this.props.layer.data.center, this.projection, this.olProjection);
     }
@@ -73,24 +73,17 @@ class DisplayMap extends React.Component {
 
     // 1. get the Capabilities XML file
     getJsonCapabilities = () => {
-        return LayerService.getCapabilities(this.props.world.workspaceName, this.props.layer.name)
+        return LayerService.getCapabilities(this.props.world._id, this.props.layer.name)
             .then( xml => {
                 console.log("1. get capabilities XML");
                 // 2. convert the xml data to json
                 this.json = this.parser.read(xml);
-                console.log("WMTS: the JSON file: " + JSON.stringify(this.json));
                 // change the 'localhost' to the App domain (for the remote server)
                 if (config.isRemote) {
                     const oldPath = /localhost/gi;
                     const jsonString = JSON.stringify(this.json).replace(oldPath, config.path);  // convert to JSON
                     this.json = JSON.parse(jsonString);                                          // convert to Object
                 }
-                // change the store name to be the original name of the file (before being encoded)
-                // const encodedName = this.props.layer.store.name;
-                // const fileName = this.props.layer.fileData.name;
-                // const jsonString = JSON.stringify(this.json).replace(encodedName, fileName);     // convert to JSON
-                // this.json = JSON.parse(jsonString);                                              // convert to Object
-
                 return this.json;
             })
             .catch(error => { throw new Error(error) });
@@ -235,66 +228,63 @@ class DisplayMap extends React.Component {
                     <div id="map" className="map" style={{ height: '400px', width: '100%' }}/>
                 </div>
                 {
-                this.state.selectedLayer.inputData &&
-                <div>
-                    <div className="content-section implementation" style={{ textAlign: 'left', width: '70%', margin: '15px' }}>
-                        <div className="ui-grid-row">
-                            <div className="ui-grid-col-4" style={{ textAlign: 'left', padding: '5px' }}>
-                                <label htmlFor="zoom">Zoom Level</label>
+                    this.state.selectedLayer.inputData &&
+                    <div>
+                        <div className="content-section implementation" style={{ textAlign: 'left', width: '70%', margin: '15px' }}>
+                            <div className="ui-grid-row">
+                                <div className="ui-grid-col-4" style={{ textAlign: 'left', padding: '5px' }}>
+                                    <label htmlFor="zoom">Zoom Level</label>
+                                </div>
+                                <div className="ui-grid-col-8" style={{ textAlign: 'left', padding: '5px' }}>
+                                    <InputText type="number" min="1" id="zoom"
+                                               value={this.state.selectedLayer.inputData.zoom}
+                                               onChange={(e: any) => { this.onMapPropChanges('zoom', e.target.value)}}/>
+                                </div>
                             </div>
-                            <div className="ui-grid-col-8" style={{ textAlign: 'left', padding: '5px' }}>
-                                <InputText type="number" min="1" id="zoom"
-                                           value={this.state.selectedLayer.inputData.zoom}
-                                           onChange={(e: any) => { this.onMapPropChanges('zoom', e.target.value)}}/>
+                            <div className="ui-grid-row">
+                                <div className="ui-grid-col-4" style={{ textAlign: 'left', padding: '5px' }}>
+                                    <label htmlFor="opacity">Opacity</label>
+                                </div>
+                                <div className="ui-grid-col-8" style={{ textAlign: 'left', padding: '5px' }}>
+                                    <InputText type="number" min="0" max="1" step="0.05" id="opacity"
+                                               value={this.state.selectedLayer.inputData.opacity}
+                                               onChange={(e: any) => { this.onMapPropChanges('opacity', e.target.value)}}/>
+                                </div>
                             </div>
-                        </div>
-                        <div className="ui-grid-row">
-                            <div className="ui-grid-col-4" style={{ textAlign: 'left', padding: '5px' }}>
-                                <label htmlFor="opacity">Opacity</label>
+                            <div className="ui-grid-row">
+                                <div className="ui-grid-col-4" style={{ textAlign: 'left', padding: '5px' }}>
+                                    <label htmlFor="center">Center</label>
+                                </div>
+                                <div className="ui-grid-col-8" style={{ textAlign: 'left', padding: '5px' }}>
+                                    lon : { this.state.selectedLayer.data.center[0].toFixed(4) }
+                                </div>
+                                <div className="ui-grid-col-4" style={{ textAlign: 'left', padding: '5px' }}/>
+                                <div className="ui-grid-col-8" style={{ textAlign: 'left', padding: '5px' }}>
+                                    lat : { this.state.selectedLayer.data.center[1].toFixed(4) }
+                                </div>
                             </div>
-                            <div className="ui-grid-col-8" style={{ textAlign: 'left', padding: '5px' }}>
-                                <InputText type="number" min="0" max="1" step="0.05" id="opacity"
-                                           value={this.state.selectedLayer.inputData.opacity}
-                                           onChange={(e: any) => { this.onMapPropChanges('opacity', e.target.value)}}/>
-                            </div>
-                        </div>
-                        <div className="ui-grid-row">
-                            <div className="ui-grid-col-4" style={{ textAlign: 'left', padding: '5px' }}>
-                                <label htmlFor="center">Center</label>
-                            </div>
-                            <div className="ui-grid-col-8" style={{ textAlign: 'left', padding: '5px' }}>
-                                lon : { this.state.selectedLayer.data.center[0].toFixed(4) }
-                            </div>
-                            <div className="ui-grid-col-4" style={{ textAlign: 'left', padding: '5px' }}/>
-                            <div className="ui-grid-col-8" style={{ textAlign: 'left', padding: '5px' }}>
-                                lat : { this.state.selectedLayer.data.center[1].toFixed(4) }
-                            </div>
-                        </div>
-                        <div className="ui-grid-row">
-                            <div className="ui-grid-col-4" style={{ textAlign: 'left', padding: '5px' }}>
-                                Projection:
-                            </div>
-                            <div className="ui-grid-col-8" style={{ textAlign: 'left', padding: '5px' }}>
-                                { this.projection }
+                            <div className="ui-grid-row">
+                                <div className="ui-grid-col-4" style={{ textAlign: 'left', padding: '5px' }}>
+                                    Projection:
+                                </div>
+                                <div className="ui-grid-col-8" style={{ textAlign: 'left', padding: '5px' }}>
+                                    { this.projection }
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
                 }
             </Dialog>
         )
     }
 }
-
 const mapStateToProps = (state: IState, { worldName, ...props }: any) => {
     return {
         world: state.worlds.list.find(({ name, layers }: IWorld) => worldName === name),
         worldName, ...props
     }
 };
-
 const mapDispatchToProps = (dispatch: any) => ({
     updateWorld: (payload: Partial<IWorld>) => dispatch(WorldsActions.updateWorldAction(payload))
 });
-
 export default connect(mapStateToProps, mapDispatchToProps)(DisplayMap);

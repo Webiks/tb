@@ -32,7 +32,7 @@ const geoData = {
 // LAYER: from GeoServer - Layer page
 const layer = {
 	name: String,
-	type: {type: String, uppercase: true, enum: ["RASTER", "VECTOR"]},
+	type: { type: String, uppercase: true, enum: ['RASTER', 'VECTOR'] },
 	defaultStyle: {
 		name: String,
 		href: String                                // href to the style page
@@ -47,15 +47,14 @@ const layer = {
 		logoHeight: Number
 	},
 	storeId: String,                               // get from the details page (RASTER/VECTOR) store's name field
-	storeName: String,                             // get from the store's name field
+	storeName: String                             // get from the store's name field
 };
 
 // STORE: from GeoServer - Store page (coveragestores(RASTER) / datastores(VECTOR))
 const store = {
 	storeId: String,                               // get from the details page (RASTER/VECTOR) store's name field
 	name: String,
-	type: {type: String, uppercase: true, enum: ["RASTER", "VECTOR"]},      // get from the Layer page's type
-	format: {type: String, uppercase: true, enum: ["GEOTIFF", "SHAPEFILE"]}, // get from the store type ('GeoTiff' or 'Shapefile')
+	type: { type: String, uppercase: true, enum: ['RASTER', 'VECTOR'] },      // get from the Layer page's type
 	enabled: Boolean,
 	_default: Boolean,
 	workspace: {
@@ -159,7 +158,7 @@ const data = {
 				description: String,
 				range: {
 					min: Number || String,
-					max: Number || String,
+					max: Number || String
 				},
 				nullValues: {
 					double: [Number]
@@ -261,12 +260,12 @@ const imageData = {
 // INPUT DATA: data from the user
 const inputData = {
 	fileName: String,
-	affiliation: {type: String, uppercase: true, enum: ["INPUT", "OUTPUT", "UNKNOWN"]},  // 'INPUT' or 'OUTPUT'
+	affiliation: { type: String, uppercase: true, enum: ['INPUT', 'OUTPUT', 'UNKNOWN'] },  // 'INPUT' or 'OUTPUT'
 	GSD: Number,
 	flightAltitude: Number,
 	cloudCoveragePercentage: Number,
 	zoom: Number,
-	opacity: {type: Number, min: 0, max: 1},
+	opacity: { type: Number, min: 0, max: 1 },
 	sensor: {
 		name: String,
 		maker: String,
@@ -276,14 +275,13 @@ const inputData = {
 
 // create the World-Layer Schema
 const LayerSchema = new Schema({
-	workspaceName: String,                         // the name of the GeoServer workspace
-	worldLayerId: String,                          // workspaceName: layername , unique : true
+	// _id: { type: String },       			 		 		 // the original layer name (?)
 	name: String,                                  // from GeoServer
 	href: String,                                  // href to the Layer page
 	fileName: String,
 	filePath: String,
-	fileType: {type: String, lowercase: true, enum: ["raster", "vector", "image"]},
-	format: {type: String, uppercase: true, enum: ["GEOTIFF", "SHAPEFILE", "JPG"]},
+	fileType: { type: String, lowercase: true, enum: ['raster', 'vector', 'image'] },
+	format: { type: String, uppercase: true, enum: ['GEOTIFF', 'SHAPEFILE', 'JPG'] },
 	geoData,
 	layer,
 	store,

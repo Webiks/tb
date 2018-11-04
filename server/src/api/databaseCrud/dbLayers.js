@@ -22,11 +22,11 @@ const dbLayerCrud = new MongoCrud(layerModel);
 // ==============
 // create a new layer in the DataBase(passing a new worldLayer object in the req.body)
 router.post('/:worldId/:layerName', (req, res) => {
-	console.log("create Layer: req.body = ", JSON.stringify(req.body));
-	console.log("create Layer: worldId = ", req.params.worldId);
+	console.log('create Layer: req.body = ', JSON.stringify(req.body));
+	console.log('create Layer: worldId = ', req.params.worldId);
 	createNewLayer(req.body, req.params.worldId)
-		.then( newLayer => res.send(newLayer))
-		.catch ( error => {
+		.then(newLayer => res.send(newLayer))
+		.catch(error => {
 			const consoleMessage = `db LAYER: ERROR to CREATE a new Layer!: ${error}`;
 			const sendMessage = `ERROR: failed to create new layer!: ${error}`;
 			dbUtils.handleError(res, 500, consoleMessage, sendMessage);
@@ -78,18 +78,18 @@ router.get('/geoserver/:worldId', (req, res) => {
 // get World's Layer DATA from GeoServer
 router.get('/geoserver/:worldId/:layerName', (req, res) => {
 	const layerName = req.params.layerName;
-	const worldLayer = {name: layerName};
+	const worldLayer = { name: layerName };
 	console.log(`geo LAYER SERVER: start GET ${layerName} layer DATA...`);
 	// 1. get the layer's info
 	gsUtils.getLayerInfoFromGeoserver(worldLayer, req.params.worldId, layerName)
 		.then(resourceUrl => {
 			// 2. get the layer's details
-			return gsUtils.getLayerDetailsFromGeoserver(worldLayer, resourceUrl)
+			return gsUtils.getLayerDetailsFromGeoserver(worldLayer, resourceUrl);
 		})
 		.then(storeUrl => {
 			// 3. get the store's data
-			console.log("dbLayer storeUrl: ", storeUrl);
-			return gsUtils.getStoreDataFromGeoserver(worldLayer, storeUrl)
+			console.log('dbLayer storeUrl: ', storeUrl);
+			return gsUtils.getStoreDataFromGeoserver(worldLayer, storeUrl);
 		})
 		.then(worldLayer => res.send(worldLayer))
 		.catch(error => {
@@ -102,7 +102,7 @@ router.get('/geoserver/:worldId/:layerName', (req, res) => {
 // get Capabilities XML file - WMTS Request for display the selected layer
 router.get('/geoserver/wmts/:worldId/:layerName', (req, res) => {
 	const capabilitiesUrl = `${configUrl.baseUrlGeoserver}/${req.params.worldId}/${req.params.layerName}/${configParams.wmtsServiceUrl}`;
-	console.log("geo LAYER SERVER: start GetCapabilities url = ", capabilitiesUrl);
+	console.log('geo LAYER SERVER: start GetCapabilities url = ', capabilitiesUrl);
 	GsLayers.getCapabilitiesFromGeoserver(capabilitiesUrl)
 		.then(response => res.send(response))
 		.catch(error => {
@@ -117,7 +117,7 @@ router.get('/geoserver/wmts/:worldId/:layerName', (req, res) => {
 // =========
 // update all the Layer's fields (passing a new layer object in the req.body)
 router.put('/:layerName', (req, res) => {
-	console.log("db WORLD SERVER: start to UPDATE layer ", req.params.layerName);
+	console.log('db WORLD SERVER: start to UPDATE layer ', req.params.layerName);
 	dbLayerCrud.update(req.body)
 		.then(response => res.send(response))
 		.catch(error => {
@@ -129,10 +129,10 @@ router.put('/:layerName', (req, res) => {
 
 // update a single field in the Layer (passing the new value of the field in the req.body)
 router.put('/:layerId/:fieldName', (req, res) => {
-	console.log("db LAYER SERVER: start to UPDATE-FIELD layer ", req.params.layerId);
+	console.log('db LAYER SERVER: start to UPDATE-FIELD layer ', req.params.layerId);
 	const fieldName = req.params.fieldName;
 	const fieldValue = req.body['newValue'];
-	const entityId = {_id: req.params.layerId };
+	const entityId = { _id: req.params.layerId };
 
 	let updatedField = {};
 	updatedField[fieldName] = fieldValue;
@@ -160,10 +160,10 @@ router.delete('/delete/:worldId/:layerId', (req, res) => {
 	const worldId = req.params.worldId;
 	// 1. remove the layer's Id from the world's layersId array
 	dbWorldCrud.updateField({ _id: worldId }, { layersId: layerId }, 'removeFromArray')
-		.then (() => {
+		.then(() => {
 			// 2. remove the layer if it doesn't exist in another worlds
 			return dbUtils.removeLayer(layerId, worldId)
-				.then( response => res.send(response));
+				.then(response => res.send(response));
 		})
 		.catch(error => {
 			const consoleMessage = `db LAYER: ERROR to REMOVE LAYER!: ${error}`;

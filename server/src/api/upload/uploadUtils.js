@@ -76,11 +76,11 @@ const uploadFiles = (req, res) => {
 	if (fileType === 'image') {
 		// save the file in the File System
 		UploadFilesToFS.uploadFile(worldId, reqFiles, name, path)
-			.then ( files => res.send(returnFiles(files, path)));
+			.then(files => res.send(returnFiles(files, path)));
 	} else {
 		// upload the file to GeoServer
 		UploadFilesToGS.uploadFile(worldId, reqFiles, name, path)
-			.then ( files => res.send(returnFiles(files, path)));
+			.then(files => res.send(returnFiles(files, path)));
 	}
 };
 

@@ -114,7 +114,7 @@ router.delete('/delete/:worldId', (req, res) => {
 					dbWorldCrud.remove({ _id: worldId })
 						.then(() => {
 							// 4. remove the world's layers if non of them exist in another worlds
-							layersId.forEach(layerId => dbUtils.removeLayer(layerId, worldId))
+							layersId.forEach(layerId => dbUtils.removeLayer(layerId, worldId));
 						})
 						.then(() => res.send(`succeed to delete ${worldId} world!`));
 				});

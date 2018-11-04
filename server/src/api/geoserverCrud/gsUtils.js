@@ -5,12 +5,12 @@ const turf = require('@turf/turf');
 const getLayerInfoFromGeoserver = (worldLayer, worldId, layerName) => {
 	return GsLayers.getLayerInfoFromGeoserver(worldId, layerName)
 		.then(layerInfo => {
-			console.log("1. got Layer Info...");
-			console.log("1. worldLayer: ", JSON.stringify(worldLayer));
+			console.log('1. got Layer Info...');
+			console.log('1. worldLayer: ', JSON.stringify(worldLayer));
 			worldLayer.layer = layerInfo.layer;
 			worldLayer.layer.type = layerInfo.layer.type.toUpperCase();         // set the layer type
 			return layerInfo.layer.resource.href;
-		})
+		});
 };
 
 // 2. get the layer's details
@@ -19,16 +19,16 @@ const getLayerDetailsFromGeoserver = (worldLayer, resourceUrl) => {
 		.then(layerDetails => {
 			let latLonBoundingBox;
 			// get the layer details data according to the layer's type
-			console.log("2. got Layer Details...");
-			console.log("2. worldLayer: ", JSON.stringify(worldLayer));
+			console.log('2. got Layer Details...');
+			console.log('2. worldLayer: ', JSON.stringify(worldLayer));
 			if (worldLayer.layer.type.toLowerCase() === 'raster') {
 				worldLayer.data = parseLayerDetails(worldLayer, layerDetails.coverage);
-				console.log("getLayerDetailsFromGeoserver data: ", JSON.stringify(worldLayer.data));
-				worldLayer.data.metadata = {dirName: layerDetails.coverage.metadata.entry.$};
+				console.log('getLayerDetailsFromGeoserver data: ', JSON.stringify(worldLayer.data));
+				worldLayer.data.metadata = { dirName: layerDetails.coverage.metadata.entry.$ };
 			}
 			else if (worldLayer.layer.type.toLowerCase() === 'vector') {
 				worldLayer.data = parseLayerDetails(worldLayer, layerDetails.featureType);
-				worldLayer.data.metadata = {recalculateBounds: layerDetails.featureType.metadata.entry.$};
+				worldLayer.data.metadata = { recalculateBounds: layerDetails.featureType.metadata.entry.$ };
 			}
 			else {
 				res.status(500).send('ERROR: unknown layer TYPE!');
@@ -36,34 +36,34 @@ const getLayerDetailsFromGeoserver = (worldLayer, resourceUrl) => {
 			// set the data center point
 			worldLayer.data.center =
 				[worldLayer.data.latLonBoundingBox.minx, worldLayer.data.latLonBoundingBox.maxy];
-			console.log("getLayerDetailsFromGeoserver data center: ", JSON.stringify(worldLayer.data.center));
+			console.log('getLayerDetailsFromGeoserver data center: ', JSON.stringify(worldLayer.data.center));
 			const centerPoint = worldLayer.data.center;
-			console.log("getLayerDetailsFromGeoserver center point: ", JSON.stringify(centerPoint));
+			console.log('getLayerDetailsFromGeoserver center point: ', JSON.stringify(centerPoint));
 
 			// set the Polygon field for Ansyn
 			const polygon = worldLayer.data.latLonBoundingBox;
-			console.log("getLayerDetailsFromGeoserver polygon: ", JSON.stringify(polygon));
+			console.log('getLayerDetailsFromGeoserver polygon: ', JSON.stringify(polygon));
 			const bbox = [polygon.minx, polygon.miny, polygon.maxx, polygon.maxy];
 			const footprint = turf.bboxPolygon(bbox);
-			console.log("getLayerDetailsFromGeoserver footprint: ", JSON.stringify(footprint));
-			worldLayer.geoData = {centerPoint, bbox, footprint};
-			console.log("getLayerDetailsFromGeoserver geoData: ", JSON.stringify(worldLayer.geoData));
+			console.log('getLayerDetailsFromGeoserver footprint: ', JSON.stringify(footprint));
+			worldLayer.geoData = { centerPoint, bbox, footprint };
+			console.log('getLayerDetailsFromGeoserver geoData: ', JSON.stringify(worldLayer.geoData));
 
 			// set the store's name
 			worldLayer.layer.storeName = (worldLayer.layer.storeId).split(':')[1];
 			return worldLayer.data.store.href;
-		})
+		});
 };
 
 // 3. get the store's data
 const getStoreDataFromGeoserver = (worldLayer, storeUrl) => {
 	return GsLayers.getStoreDataFromGeoserver(storeUrl)
-		.then( store => {
-			console.log("3. got Store Data...");
+		.then(store => {
+			console.log('3. got Store Data...');
 			// get the store data according to the layer's type
 			let url;
 			if (worldLayer.layer.type.toLowerCase() === 'raster') {
-				console.log("dbLayer get RASTER data...");
+				console.log('dbLayer get RASTER data...');
 				worldLayer.store = store.coverageStore;
 				// translate map to an object
 				worldLayer.store = {
@@ -72,11 +72,11 @@ const getStoreDataFromGeoserver = (worldLayer, storeUrl) => {
 					}
 				};
 				worldLayer.filePath = store.coverageStore.url;                          // for the file path
-				console.log("dbLayer RASTER url = ", worldLayer.filePath);
+				console.log('dbLayer RASTER url = ', worldLayer.filePath);
 				worldLayer.format = store.coverageStore.type.toUpperCase();       			// set the format
 			}
 			else if (worldLayer.layer.type.toLowerCase() === 'vector') {
-				console.log("dbLayer get VECTOR data...");
+				console.log('dbLayer get VECTOR data...');
 				worldLayer.store = store.dataStore;
 				// translate map to an object
 				worldLayer.store = {
@@ -86,7 +86,7 @@ const getStoreDataFromGeoserver = (worldLayer, storeUrl) => {
 					}
 				};
 				worldLayer.filePath = worldLayer.store.connectionParameters.url;        // for the file path
-				console.log("dbLayer VECTOR url = ", worldLayer.filePath);
+				console.log('dbLayer VECTOR url = ', worldLayer.filePath);
 				worldLayer.format = store.dataStore.type.toUpperCase();           			// set the format
 			}
 			else {
@@ -101,13 +101,13 @@ const getStoreDataFromGeoserver = (worldLayer, storeUrl) => {
 
 			// set the file name
 			const path = worldLayer.filePath;
-			console.log("dbLayer filePath: ", worldLayer.filePath);
+			console.log('dbLayer filePath: ', worldLayer.filePath);
 			const extension = path.substring(path.lastIndexOf('.'));
 			worldLayer.fileName = `${worldLayer.store.name}${extension}`;
-			console.log("dbLayer fileName: ", worldLayer.fileName);
+			console.log('dbLayer fileName: ', worldLayer.fileName);
 			// return the world-layer with all the data from GeoServer
 			return worldLayer;
-		})
+		});
 };
 
 //================================================Private Functions=====================================================

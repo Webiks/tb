@@ -8,18 +8,23 @@ import { IFileData } from './IFileData';
 
 export interface IWorldLayer {
     _id: string;
-    workspaceName: string;
-    worldLayerId: string;           // get from the resource.name from getInfo
     name: string;
     href?: string;
-    fileName: string,
-    filePath: string,
-    layer: ILayer;                  // layer data from geoserver
-    store: IStore;                  // store store data from geoserver (coverStore or dataStore)
-    data:  ILayerDetails;           // raster or vector data from geoserver
-    fileData: IFileData;            // data from the upload file
-    imageData: IImageData;          // data from the image file
-    inputData: IInputdata;          // data from the user
-    // for ANSYN: get the polygon from the latLonBoundingBox field in the data field
+    fileName: string;
+    filePath: string;
+    fileType: string;                // enum: ['raster', 'vector', 'image']
+    format: string;                  // enum: ['GEOTIFF', 'SHAPEFILE', 'JPG'],
+    layer?: ILayer;                  // layer data from geoserver
+    store?: IStore;                  // store store data from geoserver (coverStore or dataStore)
+    data?:  ILayerDetails;           // raster or vector data from geoserver
+    fileData: IFileData;             // data from the upload file
+    imageData?: IImageData;          // data from an image file
+    inputData: IInputdata;           // data from the user
+    geoData: IGeoData                // geo api-data for Ansyn app
+}
+
+export interface IGeoData {
+    centerPoint: number[];
+    bbox: number[];                     // [ minx, miny, maxx, maxy ]
     footprint: Feature<Polygon>;
 }

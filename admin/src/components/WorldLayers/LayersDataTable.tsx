@@ -36,6 +36,7 @@ export interface IStateTable {
     layers: IWorldLayer[],
     selectedLayer: any,
     displayMapWindow: boolean,
+    displayJPG: boolean,
     displayAlert: boolean,
     globalFilter: any,
     title: string,
@@ -50,6 +51,7 @@ class LayersDataTable extends React.Component {
         layers: this.props.layers,
         selectedLayer: null,
         displayMapWindow: false,
+        displayJPG: false,
         displayAlert: false,
         globalFilter: '',
         title: null,
@@ -61,6 +63,7 @@ class LayersDataTable extends React.Component {
         this.setState({
             selectedLayer: null,
             displayMapWindow: false,
+            displayJPG: false,
             displayAlert: false,
             title: null,
             tooltipPosition: 'bottom'
@@ -72,6 +75,7 @@ class LayersDataTable extends React.Component {
         this.setState({
             selectedLayer: {...layer},
             displayMapWindow: false,
+            displayJPG: false,
             displayAlert: false });
         this.props.navigateTo(`/world/${this.props.worldName}/layer/${layer.name}`);
     };
@@ -80,6 +84,7 @@ class LayersDataTable extends React.Component {
         this.setState({
             selectedLayer: {...rowData},
             displayMapWindow: false,
+            displayJPG: false,
             displayAlert: true });
         console.log("delete layer...");
     };
@@ -88,7 +93,7 @@ class LayersDataTable extends React.Component {
         console.log("selected layer: " + this.state.selectedLayer.name);
         console.log("LAYER DATA TABLE: delete layer...");
         // 1. delete the layer from GeoServer
-        LayerService.deleteWorldLayer(this.state.selectedLayer._id)
+        LayerService.deleteWorldLayer(this.props.world._id, this.state.selectedLayer._id)
             .then ( response => {
                 // 2. update the layers' list to be without the deleted layer
                 const layers =
@@ -141,7 +146,13 @@ class LayersDataTable extends React.Component {
                 <Tooltip for={["#preview", "#edit", "#delete"]} title={this.state.title} tooltipPosition={this.state.tooltipPosition}
                          onBeforeShow={(e) => this.onTooltipPosition(e)}/>
                 <Button type="button" id="preview" icon="fa fa-search" className="ui-button-success" style={{margin: '3px 7px'}}
-                        onClick={() => this.setState({selectedLayer: rowData, displayMapWindow: true})}/>
+                        onClick={() => {
+                            if (rowData.fileType === 'image'){
+                                this.setState({selectedLayer: rowData, displayJPG: true})
+                            } else {
+                                this.setState({selectedLayer: rowData, displayMapWindow: true})
+                            }
+                        }}/>
                 <Button type="button" id="edit" icon="fa fa-edit" className="ui-button-warning" style={{margin: '3px 7px'}}
                         onClick={() => this.editLayer(rowData)}/>
                 <Button type="button" id="delete" icon="fa fa-close" style={{margin: '3px 7px'}}
@@ -172,8 +183,8 @@ class LayersDataTable extends React.Component {
                                     selectionMode="single" selection={this.state.selectedLayer}
                                     onSelectionChange={(e: any)=>{this.setState({selectedLayer: e.data});}}>
                             <Column field="inputData.fileName" header="Name" sortable={true} style={{textAlign:'left', padding:'7px 20px'}}/>
-                            <Column field="store.type" header="Type" sortable={true} style={{width: '10%'}} />
-                            <Column field="store.format" header="Format" sortable={true} style={{width: '10%'}}/>
+                            <Column field="fileType" header="Type" sortable={true} style={{width: '10%'}} />
+                            <Column field="format" header="Format" sortable={true} style={{width: '10%'}}/>
                             <Column field="fileData.fileExtension" header="Extension" sortable={true} style={{width: '12%'}}/>
                             <Column field="fileData.fileCreatedDate" header="File Created" sortable={true} style={{width: '12%'}}/>
                             <Column field="fileData.fileUploadDate"  header="Layer Upload" sortable={true} style={{width: '12%'}}/>
@@ -191,6 +202,17 @@ class LayersDataTable extends React.Component {
                                     setDisplayMap={this.setDisplayMap}
                                     displayMapWindow={true}
                                     refresh={this.refresh}/>
+                    </div>
+                }
+
+                {
+                    this.state.selectedLayer && this.state.displayJPG &&
+                    <div>
+                        <Dialog visible={this.state.displayJPG}
+                                width="350px" modal={true}  minY={70}
+                                onHide={() => this.refresh(this.props.layers) }>
+                            <img src={this.state.selectedLayer.fileData.filePath}/>
+                        </Dialog>
                     </div>
                 }
 

@@ -7,6 +7,5 @@ export interface IWorld {
     desc?: string,
     country?: string,
     layers: IWorldLayer[],
-    layersId: string[],
-    workspaceName: string
+    layersId: string[]
 }

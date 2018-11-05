@@ -9,7 +9,6 @@ import { bindActionCreators } from 'redux';
 import Navbar from './components/Navbar/Navbar';
 import LoginService from './components/Login/LoginService';
 import Worlds from './components/Worlds/Worlds';
-import UploadFilesToFS from './components/WorldLayers/UploadFiles';
 
 class App extends React.Component {
     props: { SetAuth: (bool: boolean) => {} };

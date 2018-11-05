@@ -10,7 +10,7 @@ import { ITBAction } from '../../consts/action-types';
 import { WorldService } from '../../services/WorldService';
 import { LayerService } from '../../services/LayerService';
 import DataTableHeader from '../DataTable/DataTableHeader';
-import UploadFile from './UploadFile';
+import UploadFiles from './UploadFiles';
 import DisplayMap from '../DisplayMap/DisplayMap';
 
 /* Prime React components */
@@ -178,7 +178,7 @@ class LayersDataTable extends React.Component {
                         <DataTable  value={this.props.layers} paginator={true} rows={30} responsive={false}
                                     resizableColumns={true} autoLayout={true} style={{margin:'10px 20px'}}
                                     header={<DataTableHeader title={`${this.props.worldName} World's Files List`} setGlobalFilter={this.setGlobalFilter}/>}
-                                    footer={<UploadFile worldName={this.props.worldName}/>}
+                                    footer={<UploadFiles worldName={this.props.worldName}/>}
                                     globalFilter={this.state.globalFilter}
                                     selectionMode="single" selection={this.state.selectedLayer}
                                     onSelectionChange={(e: any)=>{this.setState({selectedLayer: e.data});}}>

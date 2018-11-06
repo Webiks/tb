@@ -31,6 +31,7 @@ export interface IPropsUploadFiles {
 }
 
 export interface IReqFile {
+    _id?: string,
     name: string;
     size: number;
     type: string;
@@ -303,10 +304,12 @@ class UploadFiles extends React.Component {
             const extension = this.getExtension(reqFile.name).toLowerCase();
             if (extension.includes('tif') || extension === '.shp') {
                 console.log('reqFile name: ', reqFile.name);
+                console.log('reqFile id: ', reqFile._id);
                 const layerIndex = this.findFileIndex(reqFile.name);
                 console.log('updateFilesList layerIndex: ', layerIndex);
                 if (layerIndex !== -1) {
                     // update the file new fields
+                    this.uploadFiles[layerIndex]._id = reqFile._id;
                     this.uploadFiles[layerIndex].fileUploadDate = reqFile.fileUploadDate;
                     this.uploadFiles[layerIndex].filePath = reqFile.filePath;
                     this.uploadFiles[layerIndex].fileType = reqFile.fileType;
@@ -343,6 +346,7 @@ class UploadFiles extends React.Component {
             .then((newLayers: IWorldLayer[]) => {
                 LayerService.getAllLayersData(this.props.world._id, newLayers)
                     .then((layers: IWorldLayer[]) => {
+                        console.log('uploadFiles getNewLayersData layers: ', JSON.stringify(layers));
                         this.saveLayersToDataBase(layers);
                     })
                     .catch(error => this.handleError(`UPLOAD: getAllLayersData ERROR: ${error}`));
@@ -431,13 +435,14 @@ class UploadFiles extends React.Component {
 
     // create new layer in the DataBase and update its _id in the world layersId list
     createLayer = (newLayer: IWorldLayer): Promise<any> => {
+        console.warn('start to create a layer: ' + newLayer._id);
         return LayerService.createLayer(newLayer, this.props.world._id)
             .then(dbLayer => {
                 console.warn('CREATE new layer in MongoDB id: ' + dbLayer._id);
                 // update the layer with its Id in the DataBase
-                newLayer._id = dbLayer._id;
+                // newLayer._id = dbLayer._id;
                 // update the world's layersId with the new Id
-                this.layersId.push(dbLayer._id);
+                this.layersId.push(newLayer._id);
                 return newLayer;
             })
             .catch(error => this.handleError('Failed to save the layer in MongoDB: ' + error));

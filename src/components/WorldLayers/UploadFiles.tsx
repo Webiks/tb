@@ -345,10 +345,7 @@ class UploadFiles extends React.Component {
             // 2. get all the layers data from GeoServer (only for the new upload files)
             .then((newLayers: IWorldLayer[]) => {
                 LayerService.getAllLayersData(this.props.world._id, newLayers)
-                    .then((layers: IWorldLayer[]) => {
-                        console.log('uploadFiles getNewLayersData layers: ', JSON.stringify(layers));
-                        this.saveLayersToDataBase(layers);
-                    })
+                    .then((layers: IWorldLayer[]) => this.saveLayersToDataBase(layers))
                     .catch(error => this.handleError(`UPLOAD: getAllLayersData ERROR: ${error}`));
             })
             .catch(error => this.handleError(`UPLOAD: getWorldLayersFromGeoserver ERROR: ${error}`));
@@ -374,6 +371,7 @@ class UploadFiles extends React.Component {
         console.log('layer name: ', layer.fileName);
         console.log('encode name: ', this.uploadFiles[0].encodeFileName);
         const currentFile = this.uploadFiles.find(file => file.encodeFileName === layer.fileName);
+        layer._id = currentFile._id;
         layer.fileType = currentFile.fileType;
         layer.fileData = this.setFileData(currentFile);
         // set the inputData to be EMPTY for the new layer

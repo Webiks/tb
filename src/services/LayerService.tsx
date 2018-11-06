@@ -85,11 +85,10 @@ export class LayerService {
                 layerId: layer._id,
                 layerName: layer.name,
                 type: layer.fileType,
-                // imageName: layer.imageData.imageName,
                 path: layer.filePath
             };
         } else {
-            const data = {
+            data = {
                 worldId,
                 layerId: layer._id,
                 layerName: layer.name,

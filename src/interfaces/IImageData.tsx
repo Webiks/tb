@@ -1,5 +1,4 @@
 export interface IImageData {
-    // imageName: string;                                      // the original image file name
     ImageDescription: string;
     Make: string;
     Model: string;

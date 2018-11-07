@@ -1,6 +1,7 @@
 import { ISelectedFile } from './ISelectedFile';
 
 export interface IFileData {
+    _id?: string;
     name: string;
     size: number;
     lastModified?: number;

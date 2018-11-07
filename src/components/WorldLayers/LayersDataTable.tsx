@@ -93,7 +93,7 @@ class LayersDataTable extends React.Component {
         console.log("selected layer: " + this.state.selectedLayer.name);
         console.log("LAYER DATA TABLE: delete layer...");
         // 1. delete the layer from GeoServer
-        LayerService.deleteWorldLayer(this.props.world._id, this.state.selectedLayer._id)
+        LayerService.deleteWorldLayer(this.props.world._id, this.state.selectedLayer)
             .then ( response => {
                 // 2. update the layers' list to be without the deleted layer
                 const layers =

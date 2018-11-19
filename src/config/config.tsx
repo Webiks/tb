@@ -1,31 +1,32 @@
 console.log("NODE_ENV: " + process.env.NODE_ENV);
 
-let ip: string;
 let isRemote: boolean;
-const serverPort: number = 4000;
+let domain: string;
+const serverPort: number = 10010;
 const geoserverPort: number = 8080;
 
+const localDomain: string = 'http://127.0.0.1';
+const remoteDomain: string = 'http://tb-admin.webiks.com';
+const serverDomain: string = 'http://tb-server.webiks.com';
+
 if (process.env.NODE_ENV === 'production') {
-    // path = 'tb-server.webiks.com';
-    ip = '34.218.228.21';
+    domain = remoteDomain;
     isRemote = true;
 } else {
-    // path = 'localhost:4000';
-    ip = '127.0.0.1';
+    domain = localDomain;
     isRemote = false;
 }
 
 const config = {
-    ip,
     isRemote,
-    path: `${ip}:${serverPort}`,
-    baseUrl: `http://${ip}:${serverPort}`,
-    geoBaseUrl: `http://${ip}:${geoserverPort}`,
+    domain,
+    baseUrl: `${domain}:${serverPort}`,
+    geoBaseUrl: `${domain}:${geoserverPort}`,
     authorization: 'Basic YWRtaW46Z2Vvc2VydmVy',
     geoserverUserName: 'sdf09rt2s',
     maxFileSize: 100000 * 1024 * 1024
 };
 
-console.log('Config Path: ' + config.path );
+console.log('Config Domain: ' + config.domain );
 
 export default config;

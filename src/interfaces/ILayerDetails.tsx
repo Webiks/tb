@@ -10,7 +10,6 @@ export interface ILayerDetails {
     srs: string,
     nativeBoundingBox: INativeBoundingBox,
     latLonBoundingBox: ILatLonBoundingBox,
-    center: [ number, number],
     projectionPolicy?: string,
     enabled: boolean,
     metadata?: IMetaData,

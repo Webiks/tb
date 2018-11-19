@@ -3,7 +3,7 @@ import config from "../config/config";
 
 export class FileService {
 
-    static baseUrl: string = `${config.baseUrl}/api/fs`;
+    static baseUrl: string = `${config.baseUrl}/v1/api/fs`;
 
     // ==============
     //  REMOVE files

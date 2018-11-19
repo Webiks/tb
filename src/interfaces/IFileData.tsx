@@ -1,5 +1,3 @@
-import { ISelectedFile } from './ISelectedFile';
-
 export interface IFileData {
     _id?: string;
     name: string;
@@ -11,7 +9,6 @@ export interface IFileData {
     fileType: string,
     filePath?: string,
     encodeFileName?: string,
-    encodePathName?: string,
-    splitPath?: string
+    zipPath?: string
 }
 

@@ -45,7 +45,7 @@ class DisplayMap extends React.Component {
     layerIndex: number ;
 
     parser = new ol.format.WMTSCapabilities();
-    projection: string = this.props.layer.data.latLonBoundingBox.crs;
+    projection: string = this.props.layer.geoserver.data.latLonBoundingBox.crs;
     olProjection: string = 'EPSG:3857';
     map: any;
     json: any;
@@ -56,7 +56,7 @@ class DisplayMap extends React.Component {
         this.setState({ selectedLayer: cloneDeep(this.props.layer),
             displayMapWindow: true});
         this.layerIndex = this.props.world.layers.indexOf(this.props.layer);
-        this.olCenter = ol.proj.transform(this.props.layer.data.center, this.projection, this.olProjection);
+        this.olCenter = ol.proj.transform(this.props.layer.geoData.centerPoint, this.projection, this.olProjection);
     }
 
     // get the Capabilities XML file in JSON format
@@ -81,7 +81,7 @@ class DisplayMap extends React.Component {
                 // change the 'localhost' to the App domain (for the remote server)
                 if (config.isRemote) {
                     const oldPath = /localhost/gi;
-                    const jsonString = JSON.stringify(this.json).replace(oldPath, config.path);  // convert to JSON
+                    const jsonString = JSON.stringify(this.json).replace(oldPath, config.domain);  // convert to JSON
                     this.json = JSON.parse(jsonString);                                          // convert to Object
                 }
                 return this.json;
@@ -94,7 +94,7 @@ class DisplayMap extends React.Component {
         // 1. define the map options
         const options = ol.source.WMTS.optionsFromCapabilities(jsonFile,
             {
-                projection: this.props.layer.data.srs,
+                projection: this.props.layer.geoserver.data.srs,
                 layer: this.props.layer.name,
                 matrixSet: this.projection
             });
@@ -108,7 +108,7 @@ class DisplayMap extends React.Component {
         });
         // the image layer
         this.frontLayer = new ol.layer.Tile({
-            opacity: this.state.selectedLayer.inputData.opacity,
+            opacity: this.state.selectedLayer.inputData.ol.opacity,
             source: new ol.source.WMTS(options)
         });
 
@@ -120,7 +120,7 @@ class DisplayMap extends React.Component {
             view: new ol.View({
                 projection: this.olProjection,
                 center: this.olCenter,
-                zoom: this.props.layer.inputData.zoom
+                zoom: this.props.layer.inputData.ol.zoom
             })
         });
         this.initListeners();
@@ -131,23 +131,23 @@ class DisplayMap extends React.Component {
             this.updateProperty('zoom', this.map.getView().getZoom());
             // transform the center point from the ol projection to the file projection
             const center = ol.proj.transform(this.map.getView().getCenter(), this.olProjection , this.projection);
-            this.updateProperty('center', center);
+            this.updateProperty('centerPoint', center);
         });
     }
 
     // if vector - remove the zip directory (only in the first time)
     removeVectorZipDir = () => {
-        if (this.state.selectedLayer.fileData.splitPath){
+        if (this.state.selectedLayer.fileData.zipPath){
             console.log("removeVectorZipDir vectorDirRemoved: " + this.vectorDirRemoved);
             if (!this.vectorDirRemoved){
-                this.removeFile(this.state.selectedLayer.fileData.splitPath);
+                this.removeFile(this.state.selectedLayer.fileData.zipPath);
             }
         }
     };
 
     removeFile = (filePath: string) => {
         console.log("calling the File Service..." + filePath);
-        // this.updateProperty('splitPath', null);
+        // this.updateProperty('zipPath', null);
         this.vectorDirRemoved = true;
         console.log("removeFile vectorDirRemoved: " + this.vectorDirRemoved);
         FileService.removeFile(filePath)
@@ -159,26 +159,26 @@ class DisplayMap extends React.Component {
         // 1. update the App store
         this.updateProperty(property, value);
         // 2. update the map view
-        this.frontLayer.setOpacity(this.state.selectedLayer.inputData.opacity);
-        this.map.getView().setZoom(this.state.selectedLayer.inputData.zoom);
+        this.frontLayer.setOpacity(this.state.selectedLayer.inputData.ol.opacity);
+        this.map.getView().setZoom(this.state.selectedLayer.inputData.ol.zoom);
     }
 
     reset = () => {
         this.map.getView().setCenter(this.olCenter);
-        this.map.getView().setZoom(this.props.layer.inputData.zoom);
+        this.map.getView().setZoom(this.props.layer.inputData.ol.zoom);
     };
 
     // save the App state when the field's value is been changed (zoom or opacity) and refresh the map
     updateProperty(property, value) {
         const newLayer = { ...this.state.selectedLayer };
         switch (property){
-            case 'splitPath':
-            case 'center':
-                newLayer.data[property] = value;
+            case 'zipPath':
+            case 'centerPoint':
+                newLayer.geoData[property] = value;
                 break;
             case 'zoom':
             case 'opacity':
-                newLayer.inputData[property] = value;
+                newLayer.inputData.ol[property] = value;
                 break;
         }
         this.setState({ selectedLayer: { ...newLayer } });
@@ -187,6 +187,7 @@ class DisplayMap extends React.Component {
     // save the changes in the App store and the DataBase
     save = () => {
         const layers = [...this.props.world.layers];
+        layers[this.layerIndex] = this.state.selectedLayer;
         layers[this.layerIndex] = this.state.selectedLayer;
         // 1. update the changes in the database
         LayerService.updateLayer(this.props.layer, this.state.selectedLayer)
@@ -237,7 +238,7 @@ class DisplayMap extends React.Component {
                                 </div>
                                 <div className="ui-grid-col-8" style={{ textAlign: 'left', padding: '5px' }}>
                                     <InputText type="number" min="1" id="zoom"
-                                               value={this.state.selectedLayer.inputData.zoom}
+                                               value={this.state.selectedLayer.inputData.ol.zoom}
                                                onChange={(e: any) => { this.onMapPropChanges('zoom', e.target.value)}}/>
                                 </div>
                             </div>
@@ -247,7 +248,7 @@ class DisplayMap extends React.Component {
                                 </div>
                                 <div className="ui-grid-col-8" style={{ textAlign: 'left', padding: '5px' }}>
                                     <InputText type="number" min="0" max="1" step="0.05" id="opacity"
-                                               value={this.state.selectedLayer.inputData.opacity}
+                                               value={this.state.selectedLayer.inputData.ol.opacity}
                                                onChange={(e: any) => { this.onMapPropChanges('opacity', e.target.value)}}/>
                                 </div>
                             </div>
@@ -256,11 +257,11 @@ class DisplayMap extends React.Component {
                                     <label htmlFor="center">Center</label>
                                 </div>
                                 <div className="ui-grid-col-8" style={{ textAlign: 'left', padding: '5px' }}>
-                                    lon : { this.state.selectedLayer.data.center[0].toFixed(4) }
+                                    lon : { this.state.selectedLayer.geoData.centerPoint[0].toFixed(4) }
                                 </div>
                                 <div className="ui-grid-col-4" style={{ textAlign: 'left', padding: '5px' }}/>
                                 <div className="ui-grid-col-8" style={{ textAlign: 'left', padding: '5px' }}>
-                                    lat : { this.state.selectedLayer.data.center[1].toFixed(4) }
+                                    lat : { this.state.selectedLayer.geoData.centerPoint[1].toFixed(4) }
                                 </div>
                             </div>
                             <div className="ui-grid-row">

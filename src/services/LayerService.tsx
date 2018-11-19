@@ -5,7 +5,7 @@ import { IWorldLayer } from '../interfaces/IWorldLayer';
 
 export class LayerService {
 
-    static baseUrl: string = `${config.baseUrl}/api/dbLayers`;
+    static baseUrl: string = `${config.baseUrl}/v1/api/dbLayers`;
 
     // Handle ERRORS
     static handleError = (error, message) => {
@@ -93,9 +93,9 @@ export class LayerService {
                 layerId: layer._id,
                 layerName: layer.name,
                 type: layer.fileType,
-                resourceUrl: layer.layer.resource.href,
-                storeUrl: layer.data.store.href,
-                path: layer.fileData.splitPath
+                resourceUrl: layer.geoserver.layer.resource.href,
+                storeUrl: layer.geoserver.data.store.href,
+                path: layer.fileData.zipPath
             };
         }
 

@@ -102,7 +102,7 @@ class LayersDataTable extends React.Component {
                 // 3. update the world in the DataBase with the new list of layers
                 WorldService.updateWorldField(this.props.world, 'layers', layers)
                     .then ( res => {
-                        console.log(`Succeed to update ${this.state.selectedLayer.inputData.fileName}'s layers`);
+                        console.log(`Succeed to update ${this.state.selectedLayer.inputData.name}'s layers`);
                         // 4. update the changes in the App Store and refresh the page
                         this.refresh(layers);
                     })
@@ -182,13 +182,13 @@ class LayersDataTable extends React.Component {
                                     globalFilter={this.state.globalFilter}
                                     selectionMode="single" selection={this.state.selectedLayer}
                                     onSelectionChange={(e: any)=>{this.setState({selectedLayer: e.data});}}>
-                            <Column field="inputData.fileName" header="Name" sortable={true} style={{textAlign:'left', padding:'7px 20px'}}/>
+                            <Column field="inputData.name" header="Name" sortable={true} style={{textAlign:'left', padding:'7px 20px'}}/>
                             <Column field="fileType" header="Type" sortable={true} style={{width: '10%'}} />
                             <Column field="format" header="Format" sortable={true} style={{width: '10%'}}/>
                             <Column field="fileData.fileExtension" header="Extension" sortable={true} style={{width: '12%'}}/>
                             <Column field="fileData.fileCreatedDate" header="File Created" sortable={true} style={{width: '12%'}}/>
                             <Column field="fileData.fileUploadDate"  header="Layer Upload" sortable={true} style={{width: '12%'}}/>
-                            <Column field="inputData.affiliation" header="File Affiliation" sortable={true} style={{width: '10%'}}/>
+                            <Column field="inputData.tb.affiliation" header="File Affiliation" sortable={true} style={{width: '10%'}}/>
                             <Column header="Actions" body={this.actionsButtons} style={{width: '12%'}}/>
                         </DataTable>
                     </div>
@@ -222,7 +222,7 @@ class LayersDataTable extends React.Component {
                         <Dialog visible={this.state.displayAlert}
                                 width="350px" modal={true} footer={alertFooter} minY={70}
                                 onHide={() => this.refresh(this.props.layers) }>
-                            <b>DELETE</b> layer <b>{this.state.selectedLayer.inputData.fileName}</b> ?
+                            <b>DELETE</b> layer <b>{this.state.selectedLayer.inputData.name}</b> ?
                         </Dialog>
                     </div>
                 }

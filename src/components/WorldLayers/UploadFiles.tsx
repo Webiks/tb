@@ -23,7 +23,6 @@ import { FileUpload } from 'primereact/components/fileupload/FileUpload';
 import { ProgressSpinner } from 'primereact/components/progressspinner/ProgressSpinner';
 import { Growl } from 'primereact/components/growl/Growl';
 
-
 export interface IPropsUploadFiles {
     worldName: string,
     world: IWorld,
@@ -40,8 +39,7 @@ export interface IReqFile {
     fileType: string;
     filePath: string;
     encodeFileName: string;
-    encodePathName: string;
-    splitPath: string;
+    zipPath: string;
     tags?: IImageMetaData
 }
 
@@ -57,7 +55,7 @@ class UploadFiles extends React.Component {
         hideSpinner: true,
         fileList: []
     };
-    url: string = `${config.baseUrl}/api/upload/${this.props.world._id}`;
+    url: string = `${config.baseUrl}/v1/api/upload/${this.props.world._id}`;
     growl: any;
     uploadFiles: IFileData[];
 
@@ -263,7 +261,7 @@ class UploadFiles extends React.Component {
 
     // check if the name exists in the layers list or in the DataBase (the store name)
     isNameExist = (name: string): any => this.props.world.layers.find(layer =>
-        (this.getFileName(layer.fileData.name) === name || this.getFileName(layer.inputData.fileName) === name));
+        (this.getFileName(layer.fileData.name) === name || this.getFileName(layer.inputData.name) === name));
 
     // in VECTORS - check if there is a different name among all the Vector's files
     isNameDiffer = (fileList: IFileData[], name): any =>
@@ -314,8 +312,7 @@ class UploadFiles extends React.Component {
                     this.uploadFiles[layerIndex].filePath = reqFile.filePath;
                     this.uploadFiles[layerIndex].fileType = reqFile.fileType;
                     this.uploadFiles[layerIndex].encodeFileName = reqFile.encodeFileName;
-                    this.uploadFiles[layerIndex].encodePathName = reqFile.encodePathName;
-                    this.uploadFiles[layerIndex].splitPath = reqFile.splitPath;
+                    this.uploadFiles[layerIndex].zipPath = reqFile.zipPath;
                     console.log(`updateFilesList File list[${layerIndex}]: ${JSON.stringify(this.uploadFiles[layerIndex])}`);
                 }
             }
@@ -373,6 +370,7 @@ class UploadFiles extends React.Component {
         const currentFile = this.uploadFiles.find(file => file.encodeFileName === layer.fileName);
         layer._id = currentFile._id;
         layer.fileType = currentFile.fileType;
+        layer.createdDate = currentFile.lastModified;
         layer.fileData = this.setFileData(currentFile);
         // set the inputData to be EMPTY for the new layer
         layer.inputData = this.setInitInputData(layer);
@@ -386,49 +384,37 @@ class UploadFiles extends React.Component {
         return {
             name: file.name,
             size: file.size,
-            lastModified: file.lastModified,
             fileCreatedDate: file.fileCreatedDate,
             fileUploadDate: file.fileUploadDate,
             fileExtension: file.fileExtension,
             fileType: file.fileType,
             filePath: file.filePath,
             encodeFileName: file.encodeFileName,
-            encodePathName: file.encodePathName,
-            splitPath: file.splitPath
+            zipPath: file.zipPath
         };
     };
 
     // get the input Data of the layer from the App store
     setInitInputData = (layer: IWorldLayer): IInputdata => {
         console.log('setInitInputData...', layer.name);
-        let inputData: IInputdata;
-        if (layer.fileType === 'image') {
-            inputData = {
-                fileName: layer.fileData.name,
-                affiliation: AFFILIATION_TYPES.AFFILIATION_UNKNOWN,
-                sensor: {
-                    maker: '',
-                    name: ''
-                },
-                flightAltitude: 0
-            };
-        } else {
-            inputData = {
-                fileName: layer.fileData.name,
+        return {
+            name: layer.fileData.name,
+            sensor: {
+                maker: '',
+                name: '',
+                bands: []
+            },
+            tb: {
                 affiliation: AFFILIATION_TYPES.AFFILIATION_UNKNOWN,
                 GSD: 0,
-                sensor: {
-                    maker: '',
-                    name: '',
-                    bands: []
-                },
                 flightAltitude: 0,
-                cloudCoveragePercentage: 0,
+                cloudCoveragePercentage: 0
+            },
+            ol: {
                 zoom: 14,
                 opacity: 0.6
-            };
-        }
-        return inputData;
+            }
+        };
     };
 
     // create new layer in the DataBase and update its _id in the world layersId list
@@ -437,9 +423,6 @@ class UploadFiles extends React.Component {
         return LayerService.createLayer(newLayer, this.props.world._id)
             .then(dbLayer => {
                 console.warn('CREATE new layer in MongoDB id: ' + dbLayer._id);
-                // update the layer with its Id in the DataBase
-                // newLayer._id = dbLayer._id;
-                // update the world's layersId with the new Id
                 this.layersId.push(newLayer._id);
                 return newLayer;
             })

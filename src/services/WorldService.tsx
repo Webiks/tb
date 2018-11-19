@@ -4,7 +4,7 @@ import { IWorld } from '../interfaces/IWorld';
 
 export class WorldService {
 
-    static baseUrl: string = `${config.baseUrl}/api/dbWorlds`;
+    static baseUrl: string = `${config.baseUrl}/v1/api/dbWorlds`;
 
     // Handle ERRORS
     static handleError = (error, message) => {

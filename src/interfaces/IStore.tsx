@@ -3,7 +3,6 @@ import { IEntry } from './ILayerDetails';
 export interface IStore {
     storeId: string,                        // get from the details page (RASTER/VECTOR) store's name field
     name: string,
-    type: string,                           // RASTER or VECTOR: get from the Layer page's type
     enable: boolean,
     workspace: IWorkspace,
     _default: boolean,

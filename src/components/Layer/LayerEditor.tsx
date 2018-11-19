@@ -64,7 +64,7 @@ class LayerEditor extends React.Component {
         switch (field) {
             case ('layer'):
                 const layer = { ...this.state.worldLayer };
-                layer.layer[property] = value;
+                layer.geoserver.layer[property] = value;
                 this.setState({ worldLayer: { ...layer }});
 
             case ('inputData'):
@@ -106,7 +106,7 @@ class LayerEditor extends React.Component {
                                   onChange={(e: any) => this.onEditorValueChange(props.rowData, e.target.value)}/>;
             case ('dropdown'):
                 return <Dropdown id="affiliation" options={this.layerAffiliationTypes}
-                                 value={this.state.worldLayer.inputData.affiliation ? this.state.worldLayer.inputData.affiliation : AFFILIATION_TYPES.AFFILIATION_UNKNOWN}
+                                 value={this.state.worldLayer.inputData.tb.affiliation ? this.state.worldLayer.inputData.tb.affiliation : AFFILIATION_TYPES.AFFILIATION_UNKNOWN}
                                  onChange={(e: any) => this.onEditorValueChange(props.rowData, e.value)}/>;
             default:
                 return <InputText type="text"

@@ -13,7 +13,7 @@ export interface IWorldLayer {
     filePath: string;
     fileType: string;                // ['raster', 'vector', 'image']
     format: string;                  // ['GEOTIFF', 'SHAPEFILE', 'JPG']
-    lastModified?: number;           // Created Date in numbers (from 1.1.1970)
+    createdDate: number;             // Created Date in numbers (from 1.1.1970)
     fileData: IFileData;             // data from the upload file
     inputData: IInputdata;           // data from the user
     geoData: IGeoData                // geo api-data for Ansyn app

@@ -370,6 +370,7 @@ class UploadFiles extends React.Component {
         const currentFile = this.uploadFiles.find(file => file.encodeFileName === layer.fileName);
         layer._id = currentFile._id;
         layer.fileType = currentFile.fileType;
+        layer.createdDate = currentFile.lastModified;
         layer.fileData = this.setFileData(currentFile);
         // set the inputData to be EMPTY for the new layer
         layer.inputData = this.setInitInputData(layer);
@@ -383,7 +384,6 @@ class UploadFiles extends React.Component {
         return {
             name: file.name,
             size: file.size,
-            lastModified: file.lastModified,
             fileCreatedDate: file.fileCreatedDate,
             fileUploadDate: file.fileUploadDate,
             fileExtension: file.fileExtension,

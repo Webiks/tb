@@ -3,7 +3,7 @@ import { IStore } from './IStore';
 import { IImageData } from './IImageData';
 import { IInputdata } from './IInputData';
 import { ILayerDetails } from './ILayerDetails';
-import { Feature, Polygon } from 'geojson';
+import { Feature, Polygon, Point } from 'geojson';
 import { IFileData } from './IFileData';
 
 export interface IWorldLayer {
@@ -11,6 +11,7 @@ export interface IWorldLayer {
     name: string;
     fileName: string;
     filePath: string;
+    displayUrl: string;
     fileType: string;                // ['raster', 'vector', 'image']
     format: string;                  // ['GEOTIFF', 'SHAPEFILE', 'JPG']
     createdDate: number;             // Created Date in numbers (from 1.1.1970)
@@ -22,9 +23,10 @@ export interface IWorldLayer {
 }
 
 export interface IGeoData {
+    footprint: Feature<Polygon>;
+    droneCenter: Feature<Point>;
     centerPoint: number[];
     bbox: number[];                     // [ minx, miny, maxx, maxy ]
-    footprint: Feature<Polygon>;
 }
 
 export interface IGeoserver {

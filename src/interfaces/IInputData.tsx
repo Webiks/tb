@@ -11,6 +11,7 @@ export interface IInputdata {
 export interface ISensor {
     type?: string,
     name?: string,
+    model?: string,
     maker?: string,
     bands?: string[]
 }
@@ -28,7 +29,8 @@ export interface IopenLayers {
 }
 
 export interface IAnsyn {
-    title?: string
+    description?: string,
+    creditName?: string
 }
 
 

@@ -373,7 +373,6 @@ class UploadFiles extends React.Component {
         layer.fileType = currentFile.fileType;
         layer.createdDate = currentFile.lastModified;
         layer.fileData = this.setFileData(currentFile);
-        layer.thumbnailUrl = '';
         // set the inputData to be EMPTY for the new layer
         layer.inputData = this.setInitInputData(layer);
         console.log('uploadFile fileData: ', JSON.stringify(layer.fileData));

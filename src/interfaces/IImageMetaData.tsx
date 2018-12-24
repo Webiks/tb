@@ -26,6 +26,5 @@ export interface IImageMetaData {
     flightPitchDegree: number,
     camReverse: number,
     gimbalReverse: number,
-    fieldOfView: number,
-    thumbnailUrl: string
+    fieldOfView: number
 }

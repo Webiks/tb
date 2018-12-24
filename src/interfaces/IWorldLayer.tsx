@@ -12,6 +12,7 @@ export interface IWorldLayer {
     fileName: string;
     filePath: string;
     displayUrl: string;
+    thumbnailUrl: string;
     fileType: string;                // ['raster', 'vector', 'image']
     format: string;                  // ['GEOTIFF', 'SHAPEFILE', 'JPG']
     createdDate: number;             // Created Date in numbers (from 1.1.1970)
@@ -27,6 +28,7 @@ export interface IGeoData {
     droneCenter: Feature<Point>;
     centerPoint: number[];
     bbox: number[];                     // [ minx, miny, maxx, maxy ]
+    isGeoRegistered: boolean;
 }
 
 export interface IGeoserver {

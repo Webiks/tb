@@ -400,6 +400,8 @@ class UploadFiles extends React.Component {
         console.log('setInitInputData...', layer.name);
         return {
             name: layer.fileData.name,
+            flightAltitude: 0,
+            cloudCoveragePercentage: 0,
             sensor: {
                 maker: '',
                 name: '',
@@ -407,9 +409,7 @@ class UploadFiles extends React.Component {
             },
             tb: {
                 affiliation: AFFILIATION_TYPES.AFFILIATION_UNKNOWN,
-                GSD: 0,
-                flightAltitude: 0,
-                cloudCoveragePercentage: 0
+                GSD: 0
             },
             ol: {
                 zoom: 14,

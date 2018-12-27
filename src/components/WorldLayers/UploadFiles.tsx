@@ -401,7 +401,7 @@ class UploadFiles extends React.Component {
         return {
             name: layer.fileData.name,
             flightAltitude: 0,
-            cloudCoveragePercentage: 0,
+            cloudCoveragePercentage: 0.1,
             sensor: {
                 maker: '',
                 name: '',

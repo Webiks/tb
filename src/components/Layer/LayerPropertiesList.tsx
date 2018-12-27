@@ -16,7 +16,7 @@ const LayerPropertiesList: IPropertiesList[] = [
     { label: 'File Date Modified', path: 'worldLayer.fileData.fileCreatedDate', type: 'date', readonly: true },
     { label: 'GPS (center point)', path:'worldLayer.geoData.centerPoint' , readonly: true },
     { label: 'GSD (cm)', path: 'worldLayer.inputData.tb.GSD', readonly: false, type: 'number', min: 0},
-    { label: 'Cloud Coverage (%)', path: 'worldLayer.inputData.tb.cloudCoveragePercentage', readonly: false, type: 'number', min: 0},
+    { label: 'Cloud Coverage (%)', path: 'worldLayer.inputData.cloudCoveragePercentage', readonly: false, type: 'number', min: 0},
     { label: 'Sensor Maker', path: 'worldLayer.inputData.sensor.maker', readonly: false, type: 'text'},
     { label: 'Sensor Name', path: 'worldLayer.inputData.sensor.name', readonly: false, type: 'text'},
     { label: 'Sensor Band 1', path: 'worldLayer.inputData.sensor.bands[0]', readonly: false, type: 'text'},

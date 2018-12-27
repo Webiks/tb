@@ -2,6 +2,8 @@ import { AFFILIATION_TYPES } from '../consts/layer-types';
 
 export interface IInputdata {
     name: string,
+    flightAltitude?: number,            // units: meters
+    cloudCoveragePercentage?: number,   // units: %  (raster only)
     sensor: ISensor,
     tb?: ITb,
     ol?: IopenLayers,
@@ -18,9 +20,7 @@ export interface ISensor {
 
 export interface ITb {
     affiliation: AFFILIATION_TYPES,
-    GSD: number,                         // units: cm (raster only)
-    flightAltitude: number,              // units: meters
-    cloudCoveragePercentage?: number     // units: %  raster only)
+    GSD: number                        // units: cm (raster only)
 }
 
 export interface IopenLayers {

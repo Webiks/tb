@@ -11,7 +11,7 @@ const LayerPropertiesList: IPropertiesList[] = [
     { label: 'File Name', path: 'worldLayer.inputData.name', readonly: false, type: 'text'},
     { label: 'File Type', path: 'worldLayer.fileType', readonly: true },
     { label: 'File Size(KB)', path:'worldLayer.fileData.size' , readonly: true },
-    { label: 'Folder Path', path: 'worldLayer.filePath', readonly: true },
+    { label: 'Folder Path', path: 'worldLayer.fileData.filePath', readonly: true },
     { label: 'Layer Date Upload', path: 'worldLayer.fileData.fileUploadDate', type: 'date', readonly: true },
     { label: 'File Date Modified', path: 'worldLayer.fileData.fileCreatedDate', type: 'date', readonly: true },
     { label: 'GPS (center point)', path:'worldLayer.geoData.centerPoint' , readonly: true },

@@ -81,7 +81,8 @@ class UploadFiles extends React.Component {
                 size: file.size,
                 fileCreatedDate: new Date(file.lastModified).toISOString(),
                 fileExtension,
-                fileType
+                fileType,
+                format: '',
             };
         });
         console.log(`selectedFiles Length: ${selectedFiles.length}`);

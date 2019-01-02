@@ -7,6 +7,7 @@ export interface IFileData {
     fileUploadDate?: Date | string;
     fileExtension: string,
     fileType: string,
+    format: string;                  // ['GEOTIFF', 'SHAPEFILE', 'JPEG']
     filePath?: string,
     encodeFileName?: string,
     zipPath?: string

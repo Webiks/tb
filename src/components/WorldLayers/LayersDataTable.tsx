@@ -184,7 +184,7 @@ class LayersDataTable extends React.Component {
                                     onSelectionChange={(e: any)=>{this.setState({selectedLayer: e.data});}}>
                             <Column field="inputData.name" header="Name" sortable={true} style={{textAlign:'left', padding:'7px 20px'}}/>
                             <Column field="fileType" header="Type" sortable={true} style={{width: '10%'}} />
-                            <Column field="format" header="Format" sortable={true} style={{width: '10%'}}/>
+                            <Column field="fileData.format" header="Format" sortable={true} style={{width: '10%'}}/>
                             <Column field="fileData.fileExtension" header="Extension" sortable={true} style={{width: '12%'}}/>
                             <Column field="fileData.fileCreatedDate" header="File Created" sortable={true} style={{width: '12%'}}/>
                             <Column field="fileData.fileUploadDate"  header="Layer Upload" sortable={true} style={{width: '12%'}}/>

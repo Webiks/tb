@@ -14,7 +14,6 @@ export interface IWorldLayer {
     displayUrl: string;
     thumbnailUrl: string;
     fileType: string;                // ['raster', 'vector', 'image']
-    format: string;                  // ['GEOTIFF', 'SHAPEFILE', 'JPG']
     createdDate: number;             // Created Date in numbers (from 1.1.1970)
     fileData: IFileData;             // data from the upload file
     inputData: IInputdata;           // data from the user

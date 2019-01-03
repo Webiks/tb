@@ -229,20 +229,14 @@ class UploadFiles extends React.Component {
             this.setState({ hideSpinner: true });
             this.showError('the upload was a failure!');
         } else {
-            if (parsingRes[0].fileType !== 'image') {
-                this.updateFilesList(parsingRes);
-                console.log('onUpload: ', JSON.stringify(this.uploadFiles));
-                this.getNewLayersData();
-            } else {
-                // update the layersId list
-                parsingRes.map(image => {
-                    this.layersId.push(image._id);
-                });
-                // update the App Store with the new image
-                const newLayers = [...this.props.world.layers, ...parsingRes];
-                console.log('onUpload image refreshing...');
-                this.refresh(this.layersId, newLayers);
-            }
+            // update the layersId list
+            parsingRes.map(layer => {
+                this.layersId.push(layer._id);
+            });
+            // update the App Store with the new image
+            const newLayers = [...this.props.world.layers, ...parsingRes];
+            console.log('onUpload image refreshing...');
+            this.refresh(this.layersId, newLayers);
         }
     };
 
@@ -294,141 +288,6 @@ class UploadFiles extends React.Component {
         } else {
             this.uploadFiles = [];
         }
-    };
-
-    updateFilesList = (reqFiles: IReqFile[]) => {
-        console.log('updateFilesList reqFiles: ' + JSON.stringify(reqFiles));
-        reqFiles.map((reqFile: IReqFile) => {
-            // find the match layer
-            const extension = this.getExtension(reqFile.name).toLowerCase();
-            if (extension.includes('tif') || extension === '.shp') {
-                console.log('reqFile name: ', reqFile.name);
-                console.log('reqFile id: ', reqFile._id);
-                const layerIndex = this.findFileIndex(reqFile.name);
-                console.log('updateFilesList layerIndex: ', layerIndex);
-                if (layerIndex !== -1) {
-                    // update the file new fields
-                    this.uploadFiles[layerIndex]._id = reqFile._id;
-                    this.uploadFiles[layerIndex].fileUploadDate = reqFile.fileUploadDate;
-                    this.uploadFiles[layerIndex].filePath = reqFile.filePath;
-                    this.uploadFiles[layerIndex].fileType = reqFile.fileType;
-                    this.uploadFiles[layerIndex].encodeFileName = reqFile.encodeFileName;
-                    this.uploadFiles[layerIndex].zipPath = reqFile.zipPath;
-                    console.log(`updateFilesList File list[${layerIndex}]: ${JSON.stringify(this.uploadFiles[layerIndex])}`);
-                }
-            }
-        });
-    };
-
-    getNewLayersList = (geolayers: IWorldLayer[]): IWorldLayer[] => {
-        // get only the non-image layers
-        const appLayers: IWorldLayer[] = this.props.world.layers.filter((layer: IWorldLayer) => layer.fileType !== 'image');
-        console.log('app layers length: ', appLayers.length);
-        console.log('geo layers length: ', geolayers.length);
-        // check if there is a difference between the App Store layers's list to the GeoServer layers's list
-        const newLayers = (appLayers.length && appLayers[0] !== null)
-            ? _.differenceWith(geolayers, appLayers,
-                (geoLayer: IWorldLayer, appLayer: IWorldLayer) => geoLayer.name === appLayer.name)
-            : geolayers;
-        console.log('diff layers length: ', newLayers.length);
-        return newLayers;
-    };
-
-    getNewLayersData = () => {
-        this.setState({ hideSpinner: false });
-        console.log('getNewLayersData...');
-        // 1. get an Array of all the world's layers from the GeoServer
-        LayerService.getWorldLayersFromGeoserver(this.props.world._id)
-            .then((geolayers: IWorldLayer[]) => this.getNewLayersList(geolayers))
-            // 2. get all the layers data from GeoServer (only for the new upload files)
-            .then((newLayers: IWorldLayer[]) => {
-                LayerService.getAllLayersData(this.props.world._id, newLayers)
-                    .then((layers: IWorldLayer[]) => this.saveLayersToDataBase(layers))
-                    .catch(error => this.handleError(`UPLOAD: getAllLayersData ERROR: ${error}`));
-            })
-            .catch(error => this.handleError(`UPLOAD: getWorldLayersFromGeoserver ERROR: ${error}`));
-    };
-
-    saveLayersToDataBase = (layers: IWorldLayer[]) => {
-        // 1. set the final layers list and save it in the DataBase
-        const promises = layers.map((layer: IWorldLayer) =>
-            this.createLayer(this.getOtherLayerData(layer)));
-        Promise.all(promises)
-            .then((layersList: IWorldLayer[]) => {
-                // 2. update the App Store with the new layer
-                const newLayers = [...this.props.world.layers, ...layersList];
-                console.log('getLayersDataByList refreshing...');
-                this.refresh(this.layersId, newLayers);
-            })
-            .catch(error => this.handleError('UPLOAD: saveLayersToDataBase ERROR: ' + error));
-    };
-
-    // get other data of the layer
-    getOtherLayerData = (layer: IWorldLayer): IWorldLayer => {
-        // set the fileData field with the upload layer data
-        console.log('layer name: ', layer.fileName);
-        console.log('encode name: ', this.uploadFiles[0].encodeFileName);
-        const currentFile = this.uploadFiles.find(file => file.encodeFileName === layer.fileName);
-        console.log(`currentFile id: ${currentFile._id}`);
-        layer._id = currentFile._id;
-        layer.fileType = currentFile.fileType;
-        layer.createdDate = currentFile.lastModified;
-        layer.fileData = this.setFileData(currentFile);
-        // set the inputData to be EMPTY for the new layer
-        layer.inputData = this.setInitInputData(layer);
-        console.log('uploadFile fileData: ', JSON.stringify(layer.fileData));
-        return { ...layer };
-    };
-
-    // get the Image Data of the layer from the App store
-    setFileData = (file: IFileData): any => {
-        console.log('getFileData...', file.name);
-        return {
-            name: file.name,
-            size: file.size,
-            fileCreatedDate: file.fileCreatedDate,
-            fileUploadDate: file.fileUploadDate,
-            fileExtension: file.fileExtension,
-            fileType: file.fileType,
-            filePath: file.filePath,
-            encodeFileName: file.encodeFileName,
-            zipPath: file.zipPath
-        };
-    };
-
-    // get the input Data of the layer from the App store
-    setInitInputData = (layer: IWorldLayer): IInputdata => {
-        console.log('setInitInputData...', layer.name);
-        return {
-            name: layer.fileData.name,
-            flightAltitude: 0,
-            cloudCoveragePercentage: 0.1,
-            sensor: {
-                maker: '',
-                name: '',
-                bands: []
-            },
-            tb: {
-                affiliation: AFFILIATION_TYPES.AFFILIATION_UNKNOWN,
-                GSD: 0
-            },
-            ol: {
-                zoom: 14,
-                opacity: 0.6
-            }
-        };
-    };
-
-    // create new layer in the DataBase and update its _id in the world layersId list
-    createLayer = (newLayer: IWorldLayer): Promise<any> => {
-        console.warn('start to create a layer: ' + newLayer._id);
-        return LayerService.createLayer(newLayer, this.props.world._id)
-            .then(dbLayer => {
-                console.warn('CREATE new layer in MongoDB id: ' + dbLayer._id);
-                this.layersId.push(newLayer._id);
-                return newLayer;
-            })
-            .catch(error => this.handleError('Failed to save the layer in MongoDB: ' + error));
     };
 
     // update the App store and refresh the page

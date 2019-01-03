@@ -194,7 +194,7 @@ class DisplayMap extends React.Component {
             .then ( res =>  {
                 console.warn(`Succeed to update ${this.props.worldName}'s layers`);
                 // 2. if vector for the first time - remove the zip directory in the upload directory
-                this.removeVectorZipDir();
+                // this.removeVectorZipDir();
                 // 3. update the changes in the App Store and refresh the page
                 this.refresh(layers);
             })
